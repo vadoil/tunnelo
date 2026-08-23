@@ -1,36 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hiddify/utils/utils.dart';
 
 abstract class Constants {
+  static const defaultSubscriptionTemplate = "https://panel.amnez.online/api/sub/{key}";
+  static const ruDirectDomainsUrl = "https://panel.amnez.online/lists/amnezia.json";
+  static const ruDirectIpsUrl = "https://panel.amnez.online/lists/amnezia-ip-lite.json";
   static const appName = "Tunnelo";
   static const githubUrl = "https://github.com/vadoil/tunnelo";
   static const licenseUrl = "https://github.com/vadoil/tunnelo?tab=License-1-ov-file#readme";
   static const githubReleasesApiUrl = "https://api.github.com/repos/vadoil/tunnelo/releases";
   static const githubLatestReleaseUrl = "https://github.com/vadoil/tunnelo/releases/latest";
-  static const appCastUrl = "https://raw.githubusercontent.com/vadoil/tunnelo/main/appcast.xml";
-  static const telegramChannelUrl = "https://t.me/tunnelo";
-  static const privacyPolicyUrl = "https://tunnelo.app/privacy";
-  static const termsAndConditionsUrl = "https://tunnelo.app/terms";
+  static const appCastUrl = "https://raw.githubusercontent.com/hiddify/hiddify-next/main/appcast.xml";
+  static const telegramChannelUrl = "https://t.me/hiddify";
+  static const privacyPolicyUrl = "https://hiddify.com/privacy-policy/";
+  static const termsAndConditionsUrl = "https://hiddify.com/terms/";
   static const cfWarpPrivacyPolicy = "https://www.cloudflare.com/application/privacypolicy/";
   static const cfWarpTermsOfService = "https://www.cloudflare.com/application/terms/";
-
-  /// Подписка, которая подставляется при первом запуске.
-  /// {key} заменяется на код пользователя.
-  static const defaultSubscriptionTemplate = "https://panel.amnez.online/api/sub/{key}";
-  /// Списки RU-сайтов, которые идут МИМО VPN.
-  static const ruDirectDomainsUrl = "https://panel.amnez.online/lists/amnezia.json";
-  static const ruDirectIpsUrl = "https://panel.amnez.online/lists/amnezia-ip-lite.json";
 }
 
 const kAnimationDuration = Duration(milliseconds: 250);
 
 abstract class AddProfileModalConst {
   static const fixBtnsGap = 16.0;
-  static const fixBtnsGapCount = 5;
-  static const fixBtnsGapCountDesktop = 4;
-  static const fixBtnsItemCount = 4;
-  static const fixBtnsItemCountDesktop = 3;
+  static const fixBtnsGapCount = 4;
+  static const fixBtnsItemCount = 3;
   static const navBarGap = 16.0;
   static const navBarBottomGap = 4.0;
   //switch default height
@@ -66,59 +59,21 @@ abstract class IntroConst {
   static const termsAndConditionsKey = 'terms-and-conditions';
   static const githubKey = 'github';
   static const licenseKey = 'license';
-  static const url = <String, String>{
-    IntroConst.termsAndConditionsKey: Constants.termsAndConditionsUrl,
-    IntroConst.githubKey: Constants.githubUrl,
-    IntroConst.licenseKey: Constants.licenseUrl,
-  };
+  static const url = <String, String>{IntroConst.termsAndConditionsKey: Constants.termsAndConditionsUrl, IntroConst.githubKey: Constants.githubUrl, IntroConst.licenseKey: Constants.licenseUrl};
 }
 
 abstract class WarpConst {
+  static const warpAccountId = 'warp-account-id';
+  static const warpAccessToken = "warp-access-token";
   static const warpConsentGiven = "warp-consent-given";
   static const warpTermsOfServiceKey = 'warp-terms-of-service';
   static const warpPrivacyPolicyKey = 'warp-privacy-policy';
-  static const url = <String, String>{
-    WarpConst.warpTermsOfServiceKey: Constants.cfWarpTermsOfService,
-    WarpConst.warpPrivacyPolicyKey: Constants.cfWarpPrivacyPolicy,
-  };
-}
-
-abstract class PsiphonConst {
-  static const psiphonConsentGiven = "psiphon-consent-given";
-  static const psiphonTermsOfServiceKey = 'psiphon-terms-of-service';
-  static const psiphonPrivacyPolicyKey = 'psiphon-privacy-policy';
-  static const url = <String, String>{
-    PsiphonConst.psiphonTermsOfServiceKey: "https://psiphon.ca/en/license.html",
-    PsiphonConst.psiphonPrivacyPolicyKey: "https://psiphon.ca/en/privacy.html",
-  };
+  static const url = <String, String>{WarpConst.warpTermsOfServiceKey: Constants.cfWarpTermsOfService, WarpConst.warpPrivacyPolicyKey: Constants.cfWarpPrivacyPolicy};
 }
 
 abstract class KeyboardConst {
-  static final allArrows = {
-    LogicalKeyboardKey.arrowUp,
-    LogicalKeyboardKey.arrowDown,
-    LogicalKeyboardKey.arrowLeft,
-    LogicalKeyboardKey.arrowRight,
-  };
+  static final allArrows = {LogicalKeyboardKey.arrowUp, LogicalKeyboardKey.arrowDown, LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.arrowRight};
   static final horizontalArrows = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.arrowRight};
   static final verticalArrows = {LogicalKeyboardKey.arrowUp, LogicalKeyboardKey.arrowDown};
   static final select = {LogicalKeyboardKey.select, LogicalKeyboardKey.enter, LogicalKeyboardKey.tab};
-}
-
-abstract class ChainConst {
-  static IconData iconByPlatform() {
-    if (PlatformUtils.isAndroid) return Icons.phone_android;
-    if (PlatformUtils.isIOS) return Icons.phone_iphone;
-    if (PlatformUtils.isWeb) return Icons.web;
-    // Desktops
-    return Icons.laptop;
-  }
-
-  static Color finalIpColor(ThemeData theme) =>
-      theme.brightness == Brightness.dark ? const Color(0xFF99AD7A) : const Color.fromARGB(255, 87, 136, 13);
-  static const warpColor = Color(0xFFF6821F);
-  static const psiphonColor = Color(0xFFD52027);
-  static const profileColor = Color(0xFF3282B8);
-
-  static const finalIpDuration = Duration(milliseconds: 500);
 }
