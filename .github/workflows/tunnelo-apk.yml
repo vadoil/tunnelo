@@ -4,10 +4,11 @@ name: Tunnelo APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, build]
     paths-ignore: ['**.md', 'docs/**']
 
 env:
+  CHANNEL: prod
   FLUTTER_VERSION: '3.38.5'
   NDK_VERSION: r28c
 
@@ -50,7 +51,7 @@ jobs:
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
-        run: make android-apk-prepare
+        run: make android-apk-prepare CHANNEL=prod
 
       - name: Build APK
         run: |
