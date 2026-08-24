@@ -68,3 +68,6 @@ app.*.map.json
 # Windows Self-Signed for msix
 windows/sign.pfx
 windows/sign.cer
+
+# локальный лаунчер Claude Code
+tunnelo.command

@@ -16,9 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
+      # Вложенные субмодули hiddify-sing-box прописаны по SSH — до чекаута
+      # переписываем на HTTPS (репо публичные, токен не нужен).
+      - name: Rewrite submodule SSH URLs to HTTPS
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          # рекурсивно: у hiddify-sing-box есть вложенные субмодули replace/*
+          submodules: recursive
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -29,8 +35,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
           cache: false
+
+      # Ядро собираем из сабмодуля с Tunnelo-оверлеем (dns/route для РФ),
+      # а не скачиваем чужой бинарник из релизов hiddify-next-core.
+      - name: Apply core overlay
+        run: cp core-overlay/v2/config/*.go hiddify-core/v2/config/
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -46,11 +57,11 @@ jobs:
           ndk-version: ${{ env.NDK_VERSION }}
           add-to-path: true
 
-      - name: Prepare (geo-assets, gomobile, ядро sing-box)
+      - name: Prepare (flutter deps, кодогенерация, сборка ядра)
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
-        run: make android-apk-prepare CHANNEL=prod
+        run: make tunnelo-android-prepare CHANNEL=prod
 
       - name: Build APK
         run: |
