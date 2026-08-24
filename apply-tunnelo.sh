@@ -16,8 +16,10 @@ echo "==> [1/3] Файлы Tunnelo"
 mkdir -p lib/features/tunnelo
 cp tunnelo-dart/tunnelo_activation.dart      lib/features/tunnelo/
 cp tunnelo-dart/tunnelo_setup_notifier.dart  lib/features/tunnelo/
+cp tunnelo-dart/tunnelo_theme.dart           lib/features/tunnelo/
+cp tunnelo-dart/tunnelo_setup_overlay.dart   lib/features/tunnelo/
 cp tunnelo-dart/promo_code_page.dart         lib/features/tunnelo/
-echo "    lib/features/tunnelo/ — 3 файла"
+echo "    lib/features/tunnelo/ — 5 файлов"
 
 echo "==> [2/3] Автозапуск настройки на домашнем экране"
 python3 - <<'PY'
