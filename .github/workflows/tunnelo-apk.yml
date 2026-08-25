@@ -76,9 +76,10 @@ jobs:
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: make build-android-libs
 
-      # На промахе кэша AAR уже собран и лежит в bin/, на хите — просто
-      # копируем его в android/app/libs для gradle.
-      - name: Place AAR for gradle
+      # build-android-libs делает mv bin/hiddify-core.aar -> android/app/libs/,
+      # поэтому на хите кэша (сборка пропущена) переносим файл из bin/ сами.
+      - name: Place AAR for gradle (cache hit only)
+        if: steps.aar-cache.outputs.cache-hit == 'true'
         run: |
           mkdir -p android/app/libs
           cp hiddify-core/bin/hiddify-core.aar android/app/libs/
