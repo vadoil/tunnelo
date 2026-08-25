@@ -51,12 +51,12 @@ var tunneloYandexCIDRs = []string{
 
 // setTunneloDns строит секцию dns.
 //
-// dns-remote (DoH 1.1.1.1) идёт через туннель; dns-domestic (Яндекс)
-// напрямую — detour у него намеренно пустой: detour на empty direct
-// outbound ядро отвергает. Формат серверов новый (type+server), старый
-// {"address": ...} в sing-box 1.12+ не работает без переменных окружения.
+// dns-remote — обычный UDP 8.8.8.8 через туннель (внутри hysteria2
+// провайдер его не видит, DoH не нужен и только добавляет TLS-слой,
+// который ТСПУ может душить); dns-domestic (Яндекс) напрямую — detour у
+// него намеренно пустой: detour на empty direct outbound ядро отвергает.
 func setTunneloDns(options *option.Options) error {
-	remoteDNS, err := getDNSServerOptions(DNSRemoteTag, "https://1.1.1.1/dns-query", "", OutboundMainDetour)
+	remoteDNS, err := getDNSServerOptions(DNSRemoteTag, "udp://8.8.8.8", "", OutboundMainDetour)
 	if err != nil {
 		return err
 	}

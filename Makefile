@@ -520,8 +520,13 @@ build-headers:
 	make -C hiddify-core -f Makefile headers && mv $(BINDIR)/$(CORE_NAME)-headers.h $(BINDIR)/hiddify-core.h
 
 build-android-libs:
-	make -C hiddify-core -f Makefile android 
+	make -C hiddify-core -f Makefile android
 	mv $(BINDIR)/$(LIB_NAME).aar $(ANDROID_OUT)/
+
+# Tunnelo: то же, но AAR остаётся в hiddify-core/bin/ — его забирает
+# кэш CI; в android/app/libs переносит отдельный шаг workflow.
+tunnelo-build-core:
+	make -C hiddify-core -f Makefile android
 
 build-windows-libs:
 	make -C hiddify-core -f Makefile windows-amd64

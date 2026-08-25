@@ -74,12 +74,10 @@ jobs:
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
-        run: make build-android-libs
+        # AAR остаётся в hiddify-core/bin/, чтобы его забрал post-кэш
+        run: make tunnelo-build-core
 
-      # build-android-libs делает mv bin/hiddify-core.aar -> android/app/libs/,
-      # поэтому на хите кэша (сборка пропущена) переносим файл из bin/ сами.
-      - name: Place AAR for gradle (cache hit only)
-        if: steps.aar-cache.outputs.cache-hit == 'true'
+      - name: Place AAR for gradle (always)
         run: |
           mkdir -p android/app/libs
           cp hiddify-core/bin/hiddify-core.aar android/app/libs/

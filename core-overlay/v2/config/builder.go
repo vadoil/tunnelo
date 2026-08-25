@@ -142,6 +142,16 @@ func setOutbounds(options *option.Options, input *option.Options, opt *HiddifyOp
 		if contains(PredefinedOutboundTags, out.Tag) {
 			continue
 		}
+		// Tunnelo: в подписке есть vless/vmess (Reality, XHTTP, vmess-ws) —
+		// они оставлены в панели для сторонних клиентов. Здесь они нерабочие:
+		// Reality падает с "verification failed" (гибридный X25519MLKEM768),
+		// TCP+TLS душит ТСПУ. Если их оставить, urltest/балансер гоняют
+		// трафик по мёртвым нодам — зарубежные сайты «открываются через раз».
+		// Рабочий протокол приложения один — Hysteria2.
+		switch out.Type {
+		case C.TypeVLESS, C.TypeVMess:
+			continue
+		}
 		outbound, err := patchOutbound(out, *opt, staticIPs)
 		if err != nil {
 			return err
