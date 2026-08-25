@@ -93,18 +93,7 @@ func setTunneloDns(options *option.Options) error {
 func tunneloDnsRules() []option.DNSRule {
 	rules := []option.DNSRule{}
 
-	rules = append(rules, option.DNSRule{
-		Type: C.RuleTypeDefault,
-		DefaultOptions: option.DefaultDNSRule{
-			RawDefaultDNSRule: option.RawDefaultDNSRule{IPAcceptAny: true},
-			DNSRuleAction: option.DNSRuleAction{
-				Action:       C.RuleActionTypeRoute,
-				RouteOptions: option.DNSRouteActionOptions{Server: DNSRemoteTag},
-			},
-		},
-	})
-
-	rules = append(rules, option.DNSRule{
+		rules = append(rules, option.DNSRule{
 		Type: C.RuleTypeDefault,
 		DefaultOptions: option.DefaultDNSRule{
 			RawDefaultDNSRule: option.RawDefaultDNSRule{
