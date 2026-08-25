@@ -14,7 +14,7 @@ env:
 jobs:
   apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       # Вложенные субмодули hiddify-sing-box прописаны по SSH — до чекаута
       # переписываем на HTTPS (репо публичные, токен не нужен).
@@ -36,18 +36,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
-          cache: false
-
-      # Ядро собираем из сабмодуля с Tunnelo-оверлеем (dns/route для РФ),
-      # а не скачиваем чужой бинарник из релизов hiddify-next-core.
-      - name: Apply core overlay
-        run: cp core-overlay/v2/config/*.go hiddify-core/v2/config/
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
           cache: true
 
       - name: Setup Android NDK
@@ -57,10 +45,45 @@ jobs:
           ndk-version: ${{ env.NDK_VERSION }}
           add-to-path: true
 
-      - name: Prepare (flutter deps, кодогенерация, сборка ядра)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # Ядро собираем из сабмодуля с Tunnelo-оверлеем (dns/route для РФ),
+      # а не скачиваем чужой бинарник из релизов hiddify-next-core.
+      - name: Apply core overlay
+        run: cp core-overlay/v2/config/*.go hiddify-core/v2/config/
+
+      # Готовый AAR кэшируется по содержимому оверлея и коммиту ядра:
+      # пока ядро не менялось, gomobile пропускается (~5 мин экономии).
+      - name: Record core commit for cache key
+        run: git -C hiddify-core rev-parse HEAD > .core-commit
+
+      - name: Cache core AAR
+        id: aar-cache
+        uses: actions/cache@v4
+        with:
+          path: hiddify-core/bin/hiddify-core.aar
+          key: core-aar-${{ runner.os }}-${{ hashFiles('core-overlay/**', '.core-commit') }}
+
+      - name: Build core (skipped on cache hit)
+        if: steps.aar-cache.outputs.cache-hit != 'true'
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: make build-android-libs
+
+      # На промахе кэша AAR уже собран и лежит в bin/, на хите — просто
+      # копируем его в android/app/libs для gradle.
+      - name: Place AAR for gradle
+        run: |
+          mkdir -p android/app/libs
+          cp hiddify-core/bin/hiddify-core.aar android/app/libs/
+
+      - name: Prepare (flutter deps, кодогенерация)
         run: make tunnelo-android-prepare CHANNEL=prod
 
       - name: Build APK

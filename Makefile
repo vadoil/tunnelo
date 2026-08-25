@@ -110,8 +110,9 @@ android-apk-prepare:android-prepare
 android-aab-prepare:android-prepare
 
 # Tunnelo: как android-prepare, но ядро не скачивается из релизов
-# hiddify-next-core, а собирается из сабмодуля (с Tunnelo-оверлеем dns/route).
-tunnelo-android-prepare: common-prepare build-android-libs
+# hiddify-next-core. Сборка ядра (build-android-libs) в CI делается
+# отдельным шагом — с кэшем AAR; здесь только flutter-подготовка.
+tunnelo-android-prepare: common-prepare
 
 .PHONY: generate_kotlin_protos
 generate_kotlin_protos: 
