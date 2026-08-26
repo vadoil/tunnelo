@@ -65,7 +65,7 @@ class _Curtain extends ConsumerWidget {
                 const SizedBox(height: 40),
                 Text(
                   failed ? 'Не удалось подключиться' : 'Tunnelo',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: TunneloColors.core,
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
