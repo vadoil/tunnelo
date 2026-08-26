@@ -8,6 +8,7 @@ import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/features/home/widget/connection_button.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_backdrop.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_status_card.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_card.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_delay_indicator.dart';
@@ -91,20 +92,9 @@ class HomePage extends HookConsumerWidget {
           const Gap(8),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: const AssetImage('assets/images/world_map.png'), // Replace with your image path
-            fit: BoxFit.cover,
-            opacity: 0.09,
-            colorFilter: theme.brightness == Brightness.dark
-                ? ColorFilter.mode(Colors.white.withValues(alpha: .15), BlendMode.srcIn) //
-                : ColorFilter.mode(
-                    Colors.grey.withValues(alpha: 1),
-                    BlendMode.srcATop,
-                  ), // Apply white tint in dark mode
-          ),
-        ),
+      // Tunnelo: вместо карты мира Hiddify — вид вдоль туннеля.
+      // Точка схода совпадает с кнопкой: она и есть свет в конце.
+      body: TunneloBackdrop(
         child: Stack(
           alignment: Alignment.center,
           children: [
