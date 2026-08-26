@@ -85,12 +85,14 @@ jobs:
       - name: Prepare (flutter deps, кодогенерация)
         run: make tunnelo-android-prepare CHANNEL=prod
 
+      # main_prod.dart вместо main.dart: иначе в релизе Environment.dev
+      # и у версии в шапке висит метка «dev».
       - name: Build APK
         run: |
-          flutter build apk --release \
+          flutter build apk --release --target lib/main_prod.dart \
             --target-platform android-arm,android-arm64,android-x64 \
             --split-per-abi
-          flutter build apk --release
+          flutter build apk --release --target lib/main_prod.dart
 
       - name: Собрать результаты
         run: |

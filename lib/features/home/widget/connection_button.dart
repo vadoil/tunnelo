@@ -233,7 +233,11 @@ class _ConnectionButton extends StatelessWidget {
             child: Material(
               key: const ValueKey("home_connection_button"),
               shape: const CircleBorder(),
-              color: Colors.white,
+              // На тёмной теме белый круг выбивается из палитры —
+              // берём приподнятую поверхность Tunnelo.
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Theme.of(context).colorScheme.surfaceContainer
+                  : Colors.white,
               child: InkWell(
                 focusColor: Colors.grey,
                 onTap: onTap,

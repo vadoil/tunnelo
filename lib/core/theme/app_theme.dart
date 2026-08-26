@@ -55,7 +55,7 @@ class AppTheme {
       ),
       dividerColor: TunneloColors.surfaceHi,
       fontFamily: fontFamily,
-      extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.light},
+      extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.dark},
     );
   }
 

@@ -11,6 +11,13 @@ class ConnectionButtonTheme extends ThemeExtension<ConnectionButtonTheme> {
     connectedColor: Color(0xFF44a334),
   );
 
+  /// Тёмная тема Tunnelo: в покое — синий цвет дальних колец,
+  /// в подключённом состоянии — зелёный.
+  static const ConnectionButtonTheme dark = ConnectionButtonTheme(
+    idleColor: Color(0xFF4874EB),
+    connectedColor: Color(0xFF2E8B57),
+  );
+
   @override
   ThemeExtension<ConnectionButtonTheme> copyWith({Color? idleColor, Color? connectedColor}) => ConnectionButtonTheme(
     idleColor: idleColor ?? this.idleColor,
