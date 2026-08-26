@@ -138,9 +138,16 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
     }
     loggy.info("Waiting for starting core finished");
 
-    if (!await waitUntilPort(portBack, true, null, maxTry: 10)) {
+    // Tunnelo: ждём ядро 30 секунд вместо пяти. На телефоне sing-box
+    // поднимается дольше — с гео-наборами и холодным стартом легко уходит
+    // за 5 секунд, и приложение убивало собственный сервис, показывая
+    // «Непредвиденный сбой» вместо подключения.
+    if (!await waitUntilPort(portBack, true, null, maxTry: 60)) {
       await stopMethodChannel();
-      return const CoreStatus.stopped(alert: CoreAlert.startService, message: "starting background core...");
+      return const CoreStatus.stopped(
+        alert: CoreAlert.startService,
+        message: "Не удалось запустить подключение. Попробуйте ещё раз.",
+      );
     }
     return const CoreStarted();
   }
