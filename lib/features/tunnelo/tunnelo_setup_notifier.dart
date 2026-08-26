@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
 import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
@@ -89,7 +91,7 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
 
       await activate(null, silent: true);
     } catch (e) {
-      loggy.error('автонастройка не удалась', e);
+      loggy.error('автонастройка не удалась: $e');
       state = const SetupFailed('Не удалось настроить подключение');
     }
   }
@@ -111,14 +113,51 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
       state = SetupFailed(e.message);
       return false;
     } catch (e) {
-      loggy.error('активация упала', e);
+      loggy.error('активация упала: $e');
       state = const SetupFailed('Не удалось настроить подключение');
       return false;
     }
   }
 
+  /// Добавить профиль по ссылке подписки.
+  ///
+  /// Если системный DNS не работает (провайдер режет запросы к внешним
+  /// резолверам), ссылку скачать нечем — тогда забираем список серверов
+  /// сами, через DoH, и создаём профиль из готового текста.
   Future<void> _addProfile(String url) async {
-    await _ref.read(addProfileNotifierProvider.notifier).addClipboard(url);
+    final notifier = _ref.read(addProfileNotifierProvider.notifier);
+
+    // Если имя не резолвится, обычный загрузчик всё равно не справится,
+    // а ждать его таймаут — почти минута тишины на экране. Проверяем
+    // заранее и сразу идём своим путём.
+    if (await _dnsWorks(url)) {
+      await notifier.addClipboard(url);
+      if (!_ref.read(addProfileNotifierProvider).hasError) return;
+      loggy.warning('ссылка подписки не открылась, пробую забрать список сам');
+    } else {
+      loggy.warning('DNS не отвечает, забираю список серверов напрямую');
+    }
+
+    final content = await _api.fetchSubscription(url);
+    if (content == null) {
+      throw const ActivationException(
+        'Не удалось загрузить список серверов. Проверьте интернет.',
+      );
+    }
+    await notifier.addClipboard(content);
+  }
+
+  /// Быстрая проверка: резолвится ли имя хоста подписки.
+  Future<bool> _dnsWorks(String url) async {
+    try {
+      final host = Uri.parse(url).host;
+      if (host.isEmpty) return false;
+      final result = await InternetAddress.lookup(host)
+          .timeout(const Duration(seconds: 4));
+      return result.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Российские сайты — мимо VPN.
