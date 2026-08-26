@@ -9,7 +9,8 @@ class ThemePreferences extends _$ThemePreferences {
   @override
   AppThemeMode build() {
     final persisted = ref.watch(sharedPreferencesProvider).requireValue.getString("theme_mode");
-    if (persisted == null) return AppThemeMode.system;
+    // Tunnelo: тёмная тема — часть брендинга, а не выбор системы.
+    if (persisted == null) return AppThemeMode.dark;
     return AppThemeMode.values.byName(persisted);
   }
 

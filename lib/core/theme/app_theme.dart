@@ -2,14 +2,20 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/theme/app_theme_mode.dart';
 import 'package:hiddify/core/theme/theme_extensions.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 
 class AppTheme {
   AppTheme(this.mode, this.fontFamily);
   final AppThemeMode mode;
   final String fontFamily;
 
+  /// Схемы Material You с устройства намеренно игнорируются: у продукта
+  /// своя палитра, и она должна выглядеть одинаково на всех телефонах.
   ThemeData lightTheme(ColorScheme? lightColorScheme) {
-    final ColorScheme scheme = lightColorScheme ?? ColorScheme.fromSeed(seedColor: const Color(0xFF293CA0));
+    final scheme = ColorScheme.fromSeed(seedColor: TunneloColors.ringFar).copyWith(
+      primary: TunneloColors.ringFar,
+      secondary: TunneloColors.ringNear,
+    );
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
@@ -19,12 +25,35 @@ class AppTheme {
   }
 
   ThemeData darkTheme(ColorScheme? darkColorScheme) {
-    final ColorScheme scheme =
-        darkColorScheme ?? ColorScheme.fromSeed(seedColor: const Color(0xFF293CA0), brightness: Brightness.dark);
+    final scheme = ColorScheme.fromSeed(seedColor: TunneloColors.ringFar, brightness: Brightness.dark).copyWith(
+      primary: TunneloColors.ringNear,
+      onPrimary: TunneloColors.abyss,
+      secondary: TunneloColors.ringFar,
+      surface: TunneloColors.abyss,
+      onSurface: TunneloColors.core,
+      surfaceContainer: TunneloColors.surface,
+      surfaceContainerHigh: TunneloColors.surfaceHi,
+      surfaceContainerHighest: TunneloColors.surfaceHi,
+      outline: TunneloColors.surfaceHi,
+      outlineVariant: TunneloColors.surfaceHi,
+      error: TunneloColors.alert,
+    );
+    final background = mode.trueBlack ? Colors.black : TunneloColors.abyss;
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: mode.trueBlack ? Colors.black : scheme.background,
+      scaffoldBackgroundColor: background,
+      appBarTheme: AppBarTheme(
+        backgroundColor: background,
+        foregroundColor: TunneloColors.core,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: TunneloColors.surface,
+        indicatorColor: TunneloColors.ringFar.withValues(alpha: 0.28),
+      ),
+      dividerColor: TunneloColors.surfaceHi,
       fontFamily: fontFamily,
       extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.light},
     );
