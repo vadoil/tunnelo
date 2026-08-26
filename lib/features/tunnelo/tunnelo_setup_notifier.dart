@@ -9,6 +9,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final tunneloActivationProvider = Provider((ref) => TunneloActivation());
 
+/// Сколько устройств занято из разрешённых.
+///
+/// Данные берём у сервиса активации (/status). Пока он их не отдаёт,
+/// провайдер возвращает null и строка «Устройства» просто не рисуется.
+class TunneloDevices {
+  const TunneloDevices({required this.used, required this.limit});
+  final int used;
+  final int limit;
+}
+
+final tunneloDevicesProvider = FutureProvider<TunneloDevices?>((ref) async {
+  final status = await ref.read(tunneloActivationProvider).status();
+  if (status == null) return null;
+  final used = status['devices'] ?? status['devicesUsed'] ?? status['ips'];
+  final limit = status['deviceLimit'] ?? status['limitIp'] ?? status['maxDevices'];
+  if (used is! int || limit is! int || limit <= 0) return null;
+  return TunneloDevices(used: used, limit: limit);
+});
+
 sealed class SetupState {
   const SetupState();
 }
