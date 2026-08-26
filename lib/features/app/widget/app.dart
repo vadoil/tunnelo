@@ -21,6 +21,7 @@ import 'package:hiddify/features/per_app_proxy/overview/per_app_proxy_service_no
 import 'package:hiddify/features/profile/notifier/profiles_update_notifier.dart';
 import 'package:hiddify/features/shortcut/shortcut_wrapper.dart';
 import 'package:hiddify/features/system_tray/notifier/system_tray_notifier.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_setup_overlay.dart';
 import 'package:hiddify/features/window/widget/window_wrapper.dart';
 import 'package:hiddify/hiddifycore/hiddify_core_service_provider.dart';
 import 'package:hiddify/utils/utils.dart';
@@ -98,6 +99,9 @@ class App extends HookConsumerWidget with WidgetsBindingObserver, PresLogger {
                       navigatorKey: router.routerDelegate.navigatorKey,
                       child: child ?? const SizedBox(),
                     );
+                    // Tunnelo: шторка первого запуска поверх всего приложения,
+                    // пока идёт автоактивация промокода и загрузка серверов.
+                    child = TunneloSetupOverlay(child: child);
                     if (kDebugMode && _debugAccessibility) {
                       return AccessibilityTools(checkFontOverflows: true, child: child);
                     }

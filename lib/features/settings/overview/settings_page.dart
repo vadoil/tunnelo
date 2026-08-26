@@ -141,6 +141,15 @@ class SettingsPage extends HookConsumerWidget {
       body: ListView(
         children: [
           // TipCard(message: t.settings.experimentalMsg),
+          // Tunnelo: ввод платного ключа — сюда заходят те, кто купил подписку.
+          ListTile(
+            leading: const Icon(Icons.vpn_key_rounded),
+            title: const Text('Промокод'),
+            subtitle: const Text('Активировать ключ подписки'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => context.pushNamed('promoCode'),
+          ),
+          const Divider(),
           SettingsSection(
             title: t.pages.settings.general.title,
             icon: Icons.layers_rounded,
