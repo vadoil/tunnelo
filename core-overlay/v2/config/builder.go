@@ -335,7 +335,12 @@ func setOutbounds(options *option.Options, input *option.Options, opt *HiddifyOp
 		} else {
 			outbounds = append([]option.Outbound{balancer, urlTest}, outbounds...)
 			selectorTags = append([]string{urlTest.Tag, balancer.Tag}, selectorTags...)
-			defaultSelect = balancer.Tag
+			// Tunnelo: по умолчанию выбираем самый быстрый узел, а не round-robin.
+			// Round-robin гоняет соединения по кругу через все узлы, включая
+			// заблокированные: у нас fi.amnez.online:443 не отвечает (ТСПУ душит
+			// UDP на 443), и каждое четвёртое соединение уходило в никуда.
+			// Выбор по задержке сам обходит мёртвые узлы.
+			defaultSelect = urlTest.Tag
 
 		}
 	}
