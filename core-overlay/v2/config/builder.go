@@ -293,12 +293,21 @@ func setOutbounds(options *option.Options, input *option.Options, opt *HiddifyOp
 		},
 	}
 
+	// Tunnelo: пустая стратегия роняет ядро целиком — sing-box отвечает
+	// «unknown load balance strategy: » и не запускается, а человек видит
+	// «Непредвиденный сбой». В Go значения по умолчанию нет, и если
+	// настройка не доехала из приложения, поле остаётся пустым.
+	balancerStrategy := opt.BalancerStrategy
+	if balancerStrategy == "" {
+		balancerStrategy = "round-robin"
+	}
+
 	balancer := option.Outbound{
 		Type: C.TypeBalancer,
 		Tag:  OutboundRoundRobinTag,
 		Options: &option.BalancerOutboundOptions{
 			Outbounds:            tags,
-			Strategy:             opt.BalancerStrategy,
+			Strategy:             balancerStrategy,
 			DelayAcceptableRatio: 2,
 			// URL:       opt.ConnectionTestUrl,
 			// URLs:      opt.ConnectionTestUrls,

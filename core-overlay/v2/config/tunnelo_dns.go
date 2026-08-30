@@ -20,7 +20,7 @@ import (
 )
 
 const tunneloDomesticDNSTag = "dns-domestic"
-const tunneloDomesticDNS = "77.88.8.8" // Яндекс-DNS, российские домены
+const tunneloDomesticDNS = "tcp://77.88.8.8" // Яндекс-DNS, российские домены
 
 // Домены российских сервисов: точные суффиксы поверх общих TLD.
 // Зеркало списка из проверенного серверного конфига.
@@ -51,12 +51,16 @@ var tunneloYandexCIDRs = []string{
 
 // setTunneloDns строит секцию dns.
 //
-// dns-remote — обычный UDP 8.8.8.8 через туннель (внутри hysteria2
-// провайдер его не видит, DoH не нужен и только добавляет TLS-слой,
-// который ТСПУ может душить); dns-domestic (Яндекс) напрямую — detour у
+// Оба резолвера ходят по TCP, а не по UDP. Российские провайдеры режут
+// UDP/53 к внешним резолверам (проверено: запрос к 8.8.8.8 по UDP уходит
+// в пустоту, TCP/53 открыт), а UDP внутри туннеля ненадёжен. На UDP
+// не резолвилось ничего: ни YouTube с Instagram через туннель, ни поиск.
+//
+// dns-remote — 8.8.8.8 через туннель (внутри hysteria2 трафик уже зашифрован,
+// поэтому TLS поверх не нужен); dns-domestic (Яндекс) напрямую — detour у
 // него намеренно пустой: detour на empty direct outbound ядро отвергает.
 func setTunneloDns(options *option.Options) error {
-	remoteDNS, err := getDNSServerOptions(DNSRemoteTag, "udp://8.8.8.8", "", OutboundMainDetour)
+	remoteDNS, err := getDNSServerOptions(DNSRemoteTag, "tcp://8.8.8.8", "", OutboundMainDetour)
 	if err != nil {
 		return err
 	}
