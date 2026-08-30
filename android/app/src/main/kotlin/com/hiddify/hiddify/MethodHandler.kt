@@ -1,5 +1,6 @@
 package com.hiddify.hiddify
 
+import android.net.VpnService
 import android.util.Log
 import com.hiddify.hiddify.bg.BoxService
 //import com.hiddify.hiddify.bg.BoxService.Companion.workingDir
@@ -34,6 +35,7 @@ class MethodHandler(private val scope: CoroutineScope) : FlutterPlugin,
             Restart("restart"),
             AddGrpcClientPublicKey("add_grpc_client_public_key"),
             GetGrpcServerPublicKey("get_grpc_server_public_key"),
+            VpnPermissionGranted("vpn_permission_granted"),
 
         }
     }
@@ -62,6 +64,15 @@ class MethodHandler(private val scope: CoroutineScope) : FlutterPlugin,
                         success("")
 
                     }
+                }
+            }
+
+            // Tunnelo: выдано ли разрешение на VPN. Нужно, чтобы отличать
+            // «человек ещё не ответил на системный запрос» от настоящего
+            // сбоя ядра — иначе оба случая выглядят как «Непредвиденный сбой».
+            Trigger.VpnPermissionGranted.method -> {
+                result.runCatching {
+                    success(VpnService.prepare(MainActivity.instance) == null)
                 }
             }
 

@@ -144,6 +144,15 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
     // «Непредвиденный сбой» вместо подключения.
     if (!await waitUntilPort(portBack, true, null, maxTry: 60)) {
       await stopMethodChannel();
+      // Чаще всего ядро не поднялось не потому, что сломалось, а потому что
+      // человек ещё не ответил на системный запрос «разрешить VPN». Спросим
+      // Android напрямую и скажем, что делать, вместо «Непредвиденного сбоя».
+      if (!await isVpnPermissionGranted()) {
+        return const CoreStatus.stopped(
+          alert: CoreAlert.requestVPNPermission,
+          message: "Разрешите подключение VPN и нажмите ещё раз.",
+        );
+      }
       return const CoreStatus.stopped(
         alert: CoreAlert.startService,
         message: "Не удалось запустить подключение. Попробуйте ещё раз.",
@@ -161,6 +170,18 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
 
     _isBgClientAvailable = false;
     return true;
+  }
+
+  /// Выдано ли разрешение на VPN. Спрашиваем у Android: пока человек
+  /// не нажал «ОК» в системном окне, туннель поднять невозможно.
+  Future<bool> isVpnPermissionGranted() async {
+    try {
+      final granted = await methodChannel.invokeMethod<bool>("vpn_permission_granted");
+      return granted ?? true;
+    } catch (e) {
+      loggy.warning("не удалось проверить разрешение VPN: $e");
+      return true; // не знаем — не пугаем лишним сообщением
+    }
   }
 
   Future stopMethodChannel() async {
