@@ -11,51 +11,57 @@ class AppTheme {
 
   /// Схемы Material You с устройства намеренно игнорируются: у продукта
   /// своя палитра, и она должна выглядеть одинаково на всех телефонах.
-  ThemeData lightTheme(ColorScheme? lightColorScheme) {
-    final scheme = ColorScheme.fromSeed(seedColor: TunneloColors.ringFar).copyWith(
-      primary: TunneloColors.ringFar,
-      secondary: TunneloColors.ringNear,
-    );
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: scheme,
-      fontFamily: fontFamily,
-      extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.light},
-    );
-  }
+  ///
+  /// Светлая мятная гамма: спокойный фон, белые карточки, зелёный —
+  /// основной, коралловый — действие.
+  ThemeData lightTheme(ColorScheme? lightColorScheme) => _tunneloTheme();
 
-  ThemeData darkTheme(ColorScheme? darkColorScheme) {
-    final scheme = ColorScheme.fromSeed(seedColor: TunneloColors.ringFar, brightness: Brightness.dark).copyWith(
-      primary: TunneloColors.ringNear,
-      onPrimary: TunneloColors.abyss,
-      secondary: TunneloColors.ringFar,
-      surface: TunneloColors.abyss,
-      onSurface: TunneloColors.core,
-      surfaceContainer: TunneloColors.surface,
-      surfaceContainerHigh: TunneloColors.surfaceHi,
-      surfaceContainerHighest: TunneloColors.surfaceHi,
-      outline: TunneloColors.surfaceHi,
-      outlineVariant: TunneloColors.surfaceHi,
+  ThemeData darkTheme(ColorScheme? darkColorScheme) => _tunneloTheme();
+
+  ThemeData _tunneloTheme() {
+    final scheme = ColorScheme.fromSeed(seedColor: TunneloColors.sea).copyWith(
+      primary: TunneloColors.sea,
+      onPrimary: Colors.white,
+      secondary: TunneloColors.coral,
+      onSecondary: Colors.white,
+      surface: TunneloColors.mist,
+      onSurface: TunneloColors.text,
+      surfaceContainer: TunneloColors.card,
+      surfaceContainerHigh: TunneloColors.card,
+      surfaceContainerHighest: TunneloColors.card,
+      outline: TunneloColors.line,
+      outlineVariant: TunneloColors.line,
       error: TunneloColors.alert,
     );
-    final background = mode.trueBlack ? Colors.black : TunneloColors.abyss;
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       colorScheme: scheme,
-      scaffoldBackgroundColor: background,
-      appBarTheme: AppBarTheme(
-        backgroundColor: background,
-        foregroundColor: TunneloColors.core,
+      scaffoldBackgroundColor: TunneloColors.mist,
+      fontFamily: fontFamily,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: TunneloColors.mist,
+        foregroundColor: TunneloColors.seaDeep,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: true,
+      ),
+      cardTheme: CardThemeData(
+        color: TunneloColors.card,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: TunneloColors.surface,
-        indicatorColor: TunneloColors.ringFar.withValues(alpha: 0.28),
+        backgroundColor: TunneloColors.card,
+        indicatorColor: TunneloColors.sea.withValues(alpha: 0.14),
+        elevation: 0,
       ),
-      dividerColor: TunneloColors.surfaceHi,
-      fontFamily: fontFamily,
-      extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.dark},
+      listTileTheme: const ListTileThemeData(
+        iconColor: TunneloColors.sea,
+        textColor: TunneloColors.text,
+      ),
+      dividerColor: TunneloColors.line,
+      extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.tunnelo},
     );
   }
 

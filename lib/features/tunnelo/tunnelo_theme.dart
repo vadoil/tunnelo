@@ -2,17 +2,30 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Палитра Tunnelo — выведена из иконки приложения: глубина туннеля,
-/// кольца, уходящие к светящемуся ядру.
+/// Палитра Tunnelo.
+///
+/// Светлая мятная гамма: спокойный фон, белые карточки, зелёный —
+/// основной цвет, коралловый — действие. Коралловым покрашено ровно одно:
+/// кнопка подключения. Она и есть главный предмет на экране.
 abstract class TunneloColors {
-  static const abyss = Color(0xFF0B0F1E); // фон, дно туннеля
-  static const surface = Color(0xFF161E38); // приподнятая поверхность
-  static const surfaceHi = Color(0xFF1E2A4A); // границы, разделители
-  static const ringFar = Color(0xFF4874EB); // дальние кольца
-  static const ringNear = Color(0xFF56E6FF); // ближние кольца, акцент
-  static const core = Color(0xFFEBFCFF); // ядро, текст
-  static const muted = Color(0xFF8A97BE); // подписи
-  static const alert = Color(0xFFFF6B6B); // ошибка
+  static const mist = Color(0xFFEDF7F2); // фон приложения
+  static const card = Color(0xFFFFFFFF); // карточки
+  static const line = Color(0xFFDCEBE3); // границы, разделители
+  static const sea = Color(0xFF4E9C87); // основной зелёный
+  static const seaDeep = Color(0xFF2F6B5C); // тёмный зелёный, заголовки
+  static const coral = Color(0xFFF97B5E); // действие: подключиться
+  static const coralSoft = Color(0xFFFFB39F); // свечение вокруг кнопки
+  static const text = Color(0xFF223B34); // основной текст
+  static const muted = Color(0xFF8AA69C); // подписи
+  static const alert = Color(0xFFE4572E); // ошибка
+
+  // Старые имена — чтобы не переписывать разом весь код.
+  static const abyss = mist;
+  static const surface = card;
+  static const surfaceHi = line;
+  static const ringFar = sea;
+  static const ringNear = coral;
+  static const core = text;
 }
 
 enum TunnelState { idle, working, success, error }

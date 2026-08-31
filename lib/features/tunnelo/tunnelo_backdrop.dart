@@ -101,8 +101,8 @@ class _TunnelFieldPainter extends CustomPainter {
           ),
           radius: 0.85,
           colors: [
-            TunneloColors.ringFar.withValues(alpha: 0.13 + 0.03 * breath),
-            TunneloColors.abyss.withValues(alpha: 0.0),
+            TunneloColors.sea.withValues(alpha: 0.10 + 0.03 * breath),
+            TunneloColors.mist.withValues(alpha: 0.0),
           ],
           stops: const [0.0, 1.0],
         ).createShader(Offset.zero & size),
@@ -123,7 +123,7 @@ class _TunnelFieldPainter extends CustomPainter {
       // остаться самым ярким предметом на экране.
       final clearCenter = ((r / maxR - 0.20) / 0.14).clamp(0.0, 1.0);
       final fade = math.min(phase / 0.12, 1.0) * math.min((1 - phase) / 0.18, 1.0) * clearCenter;
-      final color = Color.lerp(TunneloColors.ringNear, TunneloColors.ringFar, depth)!;
+      final color = Color.lerp(TunneloColors.coral, TunneloColors.sea, depth)!;
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
@@ -133,7 +133,7 @@ class _TunnelFieldPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.0 + 1.6 * (1 - depth)
-          ..color = color.withValues(alpha: (0.16 * (1 - depth * 0.55) * fade).clamp(0.0, 1.0)),
+          ..color = color.withValues(alpha: (0.13 * (1 - depth * 0.55) * fade).clamp(0.0, 1.0)),
       );
     }
   }
@@ -158,7 +158,7 @@ class _TunnelFieldPainter extends CustomPainter {
         pos,
         (0.8 + 1.5 * (1 - depth)),
         Paint()
-          ..color = TunneloColors.core.withValues(alpha: (0.30 * fade * (1 - depth * 0.6)).clamp(0.0, 1.0))
+          ..color = TunneloColors.sea.withValues(alpha: (0.22 * fade * (1 - depth * 0.6)).clamp(0.0, 1.0))
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4),
       );
     }

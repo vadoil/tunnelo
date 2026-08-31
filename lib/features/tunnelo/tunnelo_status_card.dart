@@ -26,9 +26,15 @@ class TunneloStatusCard extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
-        color: TunneloColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: TunneloColors.surfaceHi),
+        color: TunneloColors.card,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: TunneloColors.seaDeep.withValues(alpha: 0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -40,7 +46,7 @@ class TunneloStatusCard extends ConsumerWidget {
               Text(
                 _traffic(info),
                 style: const TextStyle(
-                  color: TunneloColors.core,
+                  color: TunneloColors.seaDeep,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
@@ -53,8 +59,8 @@ class TunneloStatusCard extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: info.total > 0 ? info.ratio : 0,
               minHeight: 6,
-              backgroundColor: TunneloColors.surfaceHi,
-              valueColor: const AlwaysStoppedAnimation(TunneloColors.ringNear),
+              backgroundColor: TunneloColors.line,
+              valueColor: const AlwaysStoppedAnimation(TunneloColors.sea),
             ),
           ),
           const SizedBox(height: 16),
@@ -65,7 +71,7 @@ class TunneloStatusCard extends ConsumerWidget {
               Text(
                 _daysLeft(info),
                 style: const TextStyle(
-                  color: TunneloColors.core,
+                  color: TunneloColors.seaDeep,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),

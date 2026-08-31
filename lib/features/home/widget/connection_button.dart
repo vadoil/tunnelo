@@ -62,7 +62,7 @@ class ConnectionButton extends HookConsumerWidget {
     //   //   },
     //   // );
 
-    const buttonTheme = ConnectionButtonTheme.light;
+    const buttonTheme = ConnectionButtonTheme.tunnelo;
 
     //   // return CircleDesignWidget(
     //   //   onTap: switch (connectionStatus) {
@@ -226,33 +226,32 @@ class _ConnectionButton extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(blurRadius: 16, color: buttonColor.withValues(alpha: .5))],
+              boxShadow: [
+                BoxShadow(blurRadius: 28, spreadRadius: 2, color: buttonColor.withValues(alpha: .38)),
+              ],
             ),
             width: 148,
             height: 148,
-            child: Material(
-              key: const ValueKey("home_connection_button"),
-              shape: const CircleBorder(),
-              // На тёмной теме белый круг выбивается из палитры —
-              // берём приподнятую поверхность Tunnelo.
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Theme.of(context).colorScheme.surfaceContainer
-                  : Colors.white,
-              child: InkWell(
-                focusColor: Colors.grey,
-                onTap: onTap,
-                child: Padding(
-                  padding: const EdgeInsets.all(36),
-                  child: TweenAnimationBuilder(
-                    tween: ColorTween(end: buttonColor),
-                    duration: const Duration(milliseconds: 250),
-                    builder: (context, value, child) {
-                      if (useImage) {
-                        return image.image();
-                      } else {
-                        return Assets.images.logo.svg(colorFilter: ColorFilter.mode(value!, BlendMode.srcIn));
-                      }
-                    },
+            // Кнопка — единственный цветной предмет на экране: заливка
+            // цветом состояния, знак внутри белый. Так она читается
+            // с расстояния вытянутой руки и не спорит с остальным.
+            child: TweenAnimationBuilder(
+              tween: ColorTween(end: buttonColor),
+              duration: const Duration(milliseconds: 250),
+              builder: (context, value, child) => Material(
+                key: const ValueKey("home_connection_button"),
+                shape: const CircleBorder(),
+                color: value,
+                child: InkWell(
+                  focusColor: Colors.white24,
+                  onTap: onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.all(38),
+                    child: useImage
+                        ? image.image()
+                        : Assets.images.logo.svg(
+                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          ),
                   ),
                 ),
               ),
