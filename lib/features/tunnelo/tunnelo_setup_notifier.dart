@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
 import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
+import 'package:hiddify/core/preferences/general_preferences.dart';
+import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart';
+import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_activation.dart';
 import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
@@ -72,6 +75,7 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
     if (state is SetupRunning) return;
     try {
       await _ensureRuRules();
+      await _ensureAppsOutsideTunnel();
 
       final profiles = await _ref.read(profilesNotifierProvider.future);
       if (profiles.isNotEmpty) {
@@ -157,6 +161,32 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
       return result.isNotEmpty;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// Приложения, которые нельзя пускать в туннель.
+  ///
+  /// MAX проверяет, поднят ли VPN, и отказывается работать, даже если
+  /// трафик идёт напрямую. Единственное лечение — увести его мимо
+  /// туннеля целиком: тогда для него сети выглядят обычными.
+  static const _kAppsExcluded = 'tunnelo_apps_excluded_v1';
+  static const _appsOutsideTunnel = <String>[
+    'ru.oneme.app', // МАКС: общение, звонки, сервисы
+  ];
+
+  Future<void> _ensureAppsOutsideTunnel() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kAppsExcluded) ?? false) return;
+    try {
+      await _ref.read(Preferences.perAppProxyMode.notifier).update(PerAppProxyMode.exclude);
+      final source = _ref.read(appProxyDataSourceProvider);
+      for (final pkg in _appsOutsideTunnel) {
+        await source.updatePkg(pkg: pkg, mode: AppProxyMode.exclude);
+      }
+      await prefs.setBool(_kAppsExcluded, true);
+      loggy.info('MAX выведен из туннеля');
+    } catch (e) {
+      loggy.warning('не удалось исключить приложения из туннеля: $e');
     }
   }
 

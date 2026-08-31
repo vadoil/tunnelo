@@ -464,9 +464,17 @@ func setInbound(options *option.Options, hopt *HiddifyOptions) {
 	ipv6Enable := isIPv6Supported()
 	if hopt.EnableTun {
 
+		// Tunnelo: MTU выше 1500 рвёт крупные пакеты внутри hysteria2 —
+		// лёгкие страницы открываются, а YouTube и Instagram висят.
+		// Страховка на случай, если из приложения пришло старое значение.
+		tunMTU := hopt.MTU
+		if tunMTU == 0 || tunMTU > 1500 {
+			tunMTU = 1400
+		}
+
 		opts := option.TunInboundOptions{
 			Stack:       hopt.TUNStack,
-			MTU:         hopt.MTU,
+			MTU:         tunMTU,
 			AutoRoute:   true,
 			StrictRoute: hopt.StrictRoute,
 

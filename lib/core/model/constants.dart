@@ -6,6 +6,7 @@ abstract class Constants {
   static const ruDirectDomainsUrl = "https://panel.amnez.online/lists/amnezia.json";
   static const ruDirectIpsUrl = "https://panel.amnez.online/lists/amnezia-ip-lite.json";
   static const appName = "Tunnelo";
+  static const payUrl = "https://tunnelo.app/pay";
   static const githubUrl = "https://github.com/vadoil/tunnelo";
   static const licenseUrl = "https://github.com/vadoil/tunnelo?tab=License-1-ov-file#readme";
   static const githubReleasesApiUrl = "https://api.github.com/repos/vadoil/tunnelo/releases";

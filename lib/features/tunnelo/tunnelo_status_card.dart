@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hiddify/core/model/constants.dart';
+import 'package:hiddify/utils/utils.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
@@ -18,7 +21,9 @@ class TunneloStatusCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(activeProfileProvider).value;
     final info = profile is RemoteProfileEntity ? profile.subInfo : null;
-    if (info == null) return const SizedBox.shrink();
+    // Пока подписки нет, человеку нужны ровно две вещи: оплатить
+    // или ввести промокод. Прятать их в настройки нельзя.
+    if (info == null) return const _NotActivatedCard();
 
     final devices = ref.watch(tunneloDevicesProvider).value;
 
@@ -95,6 +100,8 @@ class TunneloStatusCard extends ConsumerWidget {
               ],
             ),
           ],
+          const SizedBox(height: 16),
+          const _Actions(),
         ],
       ),
     );
@@ -135,5 +142,86 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     text,
     style: const TextStyle(color: TunneloColors.muted, fontSize: 14),
+  );
+}
+
+
+/// Действия подписки: продлить и ввести ключ.
+class _Actions extends StatelessWidget {
+  const _Actions();
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: FilledButton(
+          onPressed: () => UriUtils.tryLaunch(Uri.parse(Constants.payUrl)),
+          style: FilledButton.styleFrom(
+            backgroundColor: TunneloColors.coral,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 13),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          child: const Text('Продлить'),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: OutlinedButton(
+          onPressed: () => context.pushNamed('promoCode'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: TunneloColors.sea,
+            side: const BorderSide(color: TunneloColors.line, width: 1.4),
+            padding: const EdgeInsets.symmetric(vertical: 13),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          child: const Text('Промокод'),
+        ),
+      ),
+    ],
+  );
+}
+
+/// Экран до активации: подписки ещё нет.
+class _NotActivatedCard extends StatelessWidget {
+  const _NotActivatedCard();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+    decoration: BoxDecoration(
+      color: TunneloColors.card,
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: TunneloColors.seaDeep.withValues(alpha: 0.07),
+          blurRadius: 18,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Подписка не активна',
+          style: TextStyle(
+            color: TunneloColors.seaDeep,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Оплатите доступ или введите промокод, если он у вас есть.',
+          style: TextStyle(color: TunneloColors.muted, fontSize: 14, height: 1.35),
+        ),
+        const SizedBox(height: 16),
+        const _Actions(),
+      ],
+    ),
   );
 }

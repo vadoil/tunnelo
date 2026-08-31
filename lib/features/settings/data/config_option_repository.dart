@@ -132,7 +132,10 @@ abstract class ConfigOptions {
     mapTo: (value) => value.name,
   );
 
-  static final mtu = PreferencesNotifier.create<int, int>("mtu", 9000);
+  // Tunnelo: 1400 вместо 9000. Внутри hysteria2 путь несёт около 1400 байт;
+  // при 9000 крупные пакеты рвались, и тяжёлые сайты (YouTube, Instagram)
+  // висли, тогда как лёгкие страницы открывались.
+  static final mtu = PreferencesNotifier.create<int, int>("mtu", 1400);
 
   static final strictRoute = PreferencesNotifier.create<bool, bool>("strict-route", true);
 
