@@ -86,7 +86,11 @@ func setTunneloDns(options *option.Options) error {
 			Final:   DNSRemoteTag,
 			DNSClientOptions: option.DNSClientOptions{
 				IndependentCache: true,
-				Strategy:         option.DomainStrategy(C.DomainStrategyPreferIPv4),
+				// Только IPv4. YouTube, Instagram и Google отдают адреса IPv6, а узлы
+				// их не маршрутизируют — соединение обрывается на ровном месте
+				// (ERR_CONNECTION_CLOSED в браузере) при живом туннеле.
+				// Российские сайты работали лишь потому, что у них адреса IPv4.
+				Strategy: option.DomainStrategy(C.DomainStrategyIPv4Only),
 			},
 			ReverseMapping: true,
 		},
@@ -103,7 +107,7 @@ func setTunneloDns(options *option.Options) error {
 func tunneloDnsRules() []option.DNSRule {
 	rules := []option.DNSRule{}
 
-		rules = append(rules, option.DNSRule{
+	rules = append(rules, option.DNSRule{
 		Type: C.RuleTypeDefault,
 		DefaultOptions: option.DefaultDNSRule{
 			RawDefaultDNSRule: option.RawDefaultDNSRule{
