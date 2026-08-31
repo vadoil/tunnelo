@@ -40,7 +40,7 @@ abstract class ConfigOptions {
   static final blockAds = PreferencesNotifier.create<bool, bool>("block-ads", false);
   static final logLevel = PreferencesNotifier.create<LogLevel, String>(
     "log-level",
-    LogLevel.warn,
+    LogLevel.debug,
     mapFrom: LogLevel.values.byName,
     mapTo: (value) => value.name,
   );

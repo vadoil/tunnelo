@@ -186,21 +186,6 @@ func setTunneloRoute(options *option.Options, hopt *HiddifyOptions) {
 				RouteOptions: option.RouteActionOptions{Outbound: OutboundDirectTag},
 			},
 		}},
-		// QUIC в туннель не пускаем. YouTube и Instagram сначала пробуют
-		// HTTP/3 поверх UDP; через туннель он идёт рвано — видео замирает,
-		// лента не грузится. Отказ на UDP/443 заставляет их мгновенно
-		// вернуться на обычный TCP, который работает стабильно.
-		// Российские домены сюда не попадают: они ушли направо выше.
-		option.Rule{Type: C.RuleTypeDefault, DefaultOptions: option.DefaultRule{
-			RawDefaultRule: option.RawDefaultRule{
-				Network: []string{"udp"},
-				Port:    []uint16{443},
-			},
-			RuleAction: option.RuleAction{
-				Action:        C.RuleActionTypeReject,
-				RejectOptions: option.RejectActionOptions{Method: C.RuleActionRejectMethodDefault},
-			},
-		}},
 	)
 
 	options.Route = &option.RouteOptions{
