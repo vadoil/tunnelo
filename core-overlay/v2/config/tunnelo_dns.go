@@ -16,6 +16,8 @@ import (
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing/common/json/badoption"
+
+	mDNS "github.com/miekg/dns"
 )
 
 const tunneloDomesticDNSTag = "dns-domestic"
@@ -108,6 +110,28 @@ func tunneloDnsRules() []option.DNSRule {
 			},
 		},
 	})
+
+	// Второй замок против QUIC. Запрета UDP/443 недостаточно: браузер
+	// уже знает из записей HTTPS/SVCB, что у сайта есть HTTP/3, и упрямо
+	// пробует QUIC вместо честного отката на TCP — отсюда
+	// ERR_QUIC_PROTOCOL_ERROR на instagram.com и пустые заглушки YouTube.
+	// Не отдаём эти записи вовсе: неоткуда узнать про HTTP/3 — сразу TCP.
+	rules = append(rules, option.DNSRule{
+		Type: C.RuleTypeDefault,
+		DefaultOptions: option.DefaultDNSRule{
+			RawDefaultDNSRule: option.RawDefaultDNSRule{
+				QueryType: []option.DNSQueryType{
+					option.DNSQueryType(mDNS.StringToType["HTTPS"]),
+					option.DNSQueryType(mDNS.StringToType["SVCB"]),
+				},
+			},
+			DNSRuleAction: option.DNSRuleAction{
+				Action:        C.RuleActionTypeReject,
+				RejectOptions: option.RejectActionOptions{Method: C.RuleActionRejectMethodDefault},
+			},
+		},
+	})
+
 	return rules
 }
 
