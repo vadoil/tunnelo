@@ -9,8 +9,8 @@ import 'package:hiddify/features/home/widget/connection_button.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_backdrop.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_server_pill.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_status_card.dart';
-import 'package:hiddify/features/proxy/active/active_proxy_card.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_delay_indicator.dart';
 import 'package:hiddify/gen/assets.gen.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -81,14 +81,6 @@ class HomePage extends HookConsumerWidget {
             ),
           ),
           const Gap(8),
-          Semantics(
-            key: const ValueKey("profile_add_button"),
-            label: t.pages.profiles.add,
-            child: IconButton(
-              icon: Icon(Icons.add_rounded, color: theme.colorScheme.primary),
-              onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showAddProfile(),
-            ),
-          ),
           const Gap(8),
         ],
       ),
@@ -129,7 +121,7 @@ class HomePage extends HookConsumerWidget {
                                   children: [ConnectionButton(), ActiveProxyDelayIndicator()],
                                 ),
                               ),
-                              ActiveProxyFooter(),
+                              TunneloServerPill(),
                             ],
                           ),
                         ),
