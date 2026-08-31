@@ -16,7 +16,6 @@ import (
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing/common/json/badoption"
-	mDNS "github.com/miekg/dns"
 )
 
 const tunneloDomesticDNSTag = "dns-domestic"
@@ -92,8 +91,8 @@ func setTunneloDns(options *option.Options) error {
 //  1. ip_accept_any -> dns-remote: если адрес уже известен (кэш или
 //     reverse-mapping), не ходить в domestic повторно;
 //  2. российские TLD и домены сервисов -> dns-domestic;
-//  3. HTTPS/SVCB -> reject: ECH-записи ломают раздельную маршрутизацию
-//     (побочка: часть сайтов теряет HTTP/3; первый кандидат на отключение).
+//  3. остальное -> dns-remote (final).
+
 func tunneloDnsRules() []option.DNSRule {
 	rules := []option.DNSRule{}
 
@@ -109,23 +108,6 @@ func tunneloDnsRules() []option.DNSRule {
 			},
 		},
 	})
-
-	rules = append(rules, option.DNSRule{
-		Type: C.RuleTypeDefault,
-		DefaultOptions: option.DefaultDNSRule{
-			RawDefaultDNSRule: option.RawDefaultDNSRule{
-				QueryType: []option.DNSQueryType{
-					option.DNSQueryType(mDNS.StringToType["HTTPS"]),
-					option.DNSQueryType(mDNS.StringToType["SVCB"]),
-				},
-			},
-			DNSRuleAction: option.DNSRuleAction{
-				Action:        C.RuleActionTypeReject,
-				RejectOptions: option.RejectActionOptions{Method: C.RuleActionRejectMethodDefault},
-			},
-		},
-	})
-
 	return rules
 }
 
