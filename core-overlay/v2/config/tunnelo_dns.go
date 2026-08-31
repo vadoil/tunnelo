@@ -52,7 +52,12 @@ var tunneloYandexCIDRs = []string{
 
 // setTunneloDns строит секцию dns.
 //
-// Оба резолвера ходят по TCP, а не по UDP. Российские провайдеры режут
+// Заграничные имена резолвим по HTTPS (DoH) через туннель: порт 53
+// наружу закрыт у многих хостеров, и тогда не резолвится ничего — ни
+// YouTube, ни Instagram, ни поиск, при живом туннеле. Порт 443 проходит
+// везде. Российские имена — по TCP напрямую к Яндексу.
+//
+// По UDP не ходим вовсе: Российские провайдеры режут
 // UDP/53 к внешним резолверам (проверено: запрос к 8.8.8.8 по UDP уходит
 // в пустоту, TCP/53 открыт), а UDP внутри туннеля ненадёжен. На UDP
 // не резолвилось ничего: ни YouTube с Instagram через туннель, ни поиск.
@@ -61,7 +66,7 @@ var tunneloYandexCIDRs = []string{
 // поэтому TLS поверх не нужен); dns-domestic (Яндекс) напрямую — detour у
 // него намеренно пустой: detour на empty direct outbound ядро отвергает.
 func setTunneloDns(options *option.Options) error {
-	remoteDNS, err := getDNSServerOptions(DNSRemoteTag, "tcp://8.8.8.8", "", OutboundMainDetour)
+	remoteDNS, err := getDNSServerOptions(DNSRemoteTag, "https://8.8.8.8/dns-query", "", OutboundMainDetour)
 	if err != nil {
 		return err
 	}
