@@ -168,6 +168,26 @@ func setTunneloRoute(options *option.Options, hopt *HiddifyOptions) {
 				RouteOptions: option.RouteActionOptions{Outbound: OutboundDirectTag},
 			},
 		}},
+		// QUIC в туннель не пускаем — проверено на устройстве: браузер
+		// отдаёт ERR_QUIC_PROTOCOL_ERROR, а YouTube показывает пустые
+		// заглушки вместо видео. Отказ на UDP/443 возвращает клиентов
+		// на обычный TCP, который через туннель работает.
+		//
+		// Важно: это правило имеет смысл только вместе с MTU 1400.
+		// При MTU 9000 рвался и TCP, откатываться было некуда, и запрет
+		// QUIC выглядел бесполезным.
+		//
+		// Российские домены сюда не доходят: они ушли направо выше.
+		option.Rule{Type: C.RuleTypeDefault, DefaultOptions: option.DefaultRule{
+			RawDefaultRule: option.RawDefaultRule{
+				Network: []string{"udp"},
+				Port:    []uint16{443},
+			},
+			RuleAction: option.RuleAction{
+				Action:        C.RuleActionTypeReject,
+				RejectOptions: option.RejectActionOptions{Method: C.RuleActionRejectMethodDefault},
+			},
+		}},
 	)
 
 	options.Route = &option.RouteOptions{
