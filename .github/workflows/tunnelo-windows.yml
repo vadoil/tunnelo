@@ -49,8 +49,22 @@ jobs:
         run: cp core-overlay/v2/config/*.go hiddify-core/v2/config/
         shell: bash
 
-      # CMake сам ставит DLL из hiddify-core/bin в сборку — путь прописан
-      # в windows/CMakeLists.txt, никуда копировать не нужно.
+      - name: Prepare (deps, кодогенерация)
+        run: make windows-prepare
+        shell: bash
+        continue-on-error: true
+
+      - name: Fallback prepare
+        shell: bash
+        run: |
+          flutter pub get
+          dart run build_runner build --delete-conflicting-outputs
+          dart run slang
+
+      # ВАЖНО: ядро собираем ПОСЛЕ подготовки. Шаг windows-prepare тянет
+      # готовое ядро из чужих релизов и затирает наше — вместе со всеми
+      # исправлениями (IPv4-only, MTU, правила для России). Собираем следом
+      # и кладём поверх. CMake берёт DLL из hiddify-core/bin.
       - name: Build core DLL
         shell: bash
         working-directory: hiddify-core
@@ -66,20 +80,14 @@ jobs:
             -o bin/hiddify-core.dll ./platform/desktop
           ls -la bin/
 
-      - name: Prepare (deps, кодогенерация)
-        run: make windows-prepare
-        shell: bash
-        continue-on-error: true
-
-      - name: Fallback prepare
-        shell: bash
-        run: |
-          flutter pub get
-          dart run build_runner build --delete-conflicting-outputs
-          dart run slang
-
       - name: Build Windows app
         run: flutter build windows --release --target lib/main_prod.dart
+
+      - name: Проверить, что ядро наше
+        shell: bash
+        run: |
+          ls -la hiddify-core/bin/hiddify-core.dll
+          find build/windows -name 'hiddify-core.dll' -exec ls -la {} \;
 
       - name: Собрать результат
         shell: bash
