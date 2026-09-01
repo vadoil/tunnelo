@@ -175,6 +175,8 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
   ];
 
   Future<void> _ensureAppsOutsideTunnel() async {
+    // Разделение по приложениям есть только на Android.
+    if (!Platform.isAndroid) return;
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getBool(_kAppsExcluded) ?? false) return;
     try {
