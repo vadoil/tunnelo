@@ -1,0 +1,97 @@
+name: Tunnelo iOS
+
+# Запуск вручную: GitHub -> Actions -> "Tunnelo iOS" -> Run workflow
+# Пока собирается БЕЗ подписи: проверяем, что код под iPhone цел.
+# Установить такую сборку на устройство нельзя — для этого нужны
+# сертификаты, их добавим отдельным шагом.
+on:
+  workflow_dispatch:
+  push:
+    branches: [build]
+    paths:
+      - 'ios/**'
+      - 'core-overlay/**'
+      - '.github/workflows/tunnelo-ios.yml'
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+  GO_VERSION: '1.25'
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - name: Rewrite submodule SSH URLs to HTTPS
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Apply core overlay
+        run: cp core-overlay/v2/config/*.go hiddify-core/v2/config/
+        shell: bash
+
+      - name: Flutter deps и кодогенерация
+        shell: bash
+        run: |
+          flutter pub get
+          dart run build_runner build --delete-conflicting-outputs
+          dart run slang
+
+      # Ядро для iPhone — своё, с нашими исправлениями (IPv4-only, MTU,
+      # правила для России), а не скачанное из чужих релизов.
+      - name: Build core xcframework
+        shell: bash
+        working-directory: hiddify-core
+        run: |
+          go install -v github.com/sagernet/gomobile/cmd/gomobile@v0.1.11
+          go install -v github.com/sagernet/gomobile/cmd/gobind@v0.1.11
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          TAGS=with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_grpc,with_awg,tfogo_checklinkname0,with_conntrack,with_dhcp,with_low_memory,with_purego
+          gomobile bind -v -target ios -libname=hiddify-core \
+            -tags="$TAGS" -trimpath -ldflags="-w -s -checklinkname=0 -buildid=" \
+            -o bin/HiddifyCore.xcframework \
+            github.com/sagernet/sing-box/experimental/libbox ./platform/mobile
+          cp Info.plist bin/HiddifyCore.xcframework/ || true
+          ls -la bin/
+
+      - name: Положить ядро в проект
+        shell: bash
+        run: |
+          mkdir -p ios/Frameworks
+          rm -rf ios/Frameworks/HiddifyCore.xcframework
+          cp -R hiddify-core/bin/HiddifyCore.xcframework ios/Frameworks/
+          ls -la ios/Frameworks/
+
+      - name: Build iOS (без подписи)
+        run: flutter build ios --release --no-codesign --target lib/main_prod.dart
+
+      - name: Собрать результат
+        shell: bash
+        run: |
+          mkdir -p out
+          APP=$(find build/ios/iphoneos -maxdepth 1 -name '*.app' | head -1)
+          echo "приложение: $APP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" out/Tunnelo-iOS-unsigned.zip
+          ls -la out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Tunnelo-iOS-unsigned
+          path: out/Tunnelo-iOS-unsigned.zip
+          if-no-files-found: error

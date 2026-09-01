@@ -1,10 +1,15 @@
 //
 //  Base.xcconfig
-//  Runner
-//
-//  Created by GFWFighter on 7/24/1402 AP.
+//  Tunnelo
 //
 
-BASE_BUNDLE_IDENTIFIER=apple.hiddify.com
-SERVICE_IDENTIFIER=com.hiddify.app
-DEVELOPMENT_TEAM=3JFTY5BP58
+// Идентификаторы наши, не унаследованные от Hiddify.
+// Расширение VPN получает то же имя с суффиксом .HiddifyPacketTunnel —
+// оно внутреннее, пользователю не видно; переименование папки в проекте
+// Xcode делается отдельно и без нужды не трогаем.
+BASE_BUNDLE_IDENTIFIER=app.tunnelo.com
+SERVICE_IDENTIFIER=app.tunnelo.service
+
+// Team ID аккаунта Apple Developer. Взять на developer.apple.com ->
+// Membership details -> Team ID (десять символов).
+DEVELOPMENT_TEAM=
