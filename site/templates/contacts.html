@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Реквизиты и контакты — Tunnelo{% endblock %}
+{% block body %}
+<div class="wrap doc">
+  <h1>Реквизиты и контакты</h1>
+
+  <h2>Служба поддержки</h2>
+  <p>Отвечаем ежедневно с 9:00 до 21:00 по московскому времени, обычно в течение часа.</p>
+  <div class="card" style="margin:18px 0">
+    <div class="row"><span class="k">Telegram</span>
+      <span class="v"><a href="https://t.me/pervostok">@pervostok</a></span></div>
+    <div class="row"><span class="k">MAX</span>
+      <span class="v">{{ phone_pretty }}</span></div>
+    <div class="row"><span class="k">Телефон</span>
+      <span class="v"><a href="tel:{{ phone }}">{{ phone_pretty }}</a></span></div>
+    <div class="row"><span class="k">Почта</span>
+      <span class="v"><a href="mailto:{{ email }}">{{ email }}</a></span></div>
+  </div>
+
+  <h2>Сведения об организации</h2>
+  <div class="card">
+    <div class="row"><span class="k">Наименование</span><span class="v">{{ org.name }}</span></div>
+    <div class="row"><span class="k">ИНН</span><span class="v">{{ org.inn }}</span></div>
+    <div class="row"><span class="k">КПП</span><span class="v">{{ org.kpp }}</span></div>
+    <div class="row"><span class="k">ОГРН</span><span class="v">{{ org.ogrn }}</span></div>
+  </div>
+
+  <h2>Адрес</h2>
+  <p>Юридический и фактический адрес совпадают:<br>{{ org.address }}</p>
+
+  <h2>Банковские реквизиты</h2>
+  <div class="card">
+    <div class="row"><span class="k">Расчётный счёт</span><span class="v">{{ org.account }}</span></div>
+    <div class="row"><span class="k">Банк</span><span class="v">{{ org.bank }}</span></div>
+    <div class="row"><span class="k">БИК</span><span class="v">{{ org.bik }}</span></div>
+    <div class="row"><span class="k">Корр. счёт</span><span class="v">{{ org.corr }}</span></div>
+  </div>
+</div>
+{% endblock %}

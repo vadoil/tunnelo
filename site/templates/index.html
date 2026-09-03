@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="wrap">
+
+  <div class="hero">
+    <h1>VPN, который<br>не нужно выключать</h1>
+    <p>YouTube и Instagram открыты. Сбербанк, Госуслуги и Ozon при этом
+       работают как обычно — к ним вы идёте напрямую, без туннеля.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#plans">Выбрать тариф</a>
+      <a class="btn btn-ghost" href="#plans">Тарифы от 150 ₽</a>
+    </div>
+  </div>
+
+  <!-- Боль, которую снимаем: качели «включил-выключил». -->
+  <div class="compare">
+    <div class="col col-bad">
+      <div class="col-h">Обычный VPN</div>
+      <div class="line"><span class="ok">✓</span> YouTube работает</div>
+      <div class="line"><span class="no">✕</span> банк требует подтверждений</div>
+      <div class="line"><span class="no">✕</span> Ozon показывает чужие цены</div>
+      <div class="line"><span class="no">✕</span> Госуслуги не пускают</div>
+      <div class="col-f">и так каждый раз: включил — выключил</div>
+    </div>
+    <div class="col col-good">
+      <div class="col-h">Tunnelo</div>
+      <div class="line"><span class="ok">✓</span> YouTube работает</div>
+      <div class="line"><span class="ok">✓</span> банк работает</div>
+      <div class="line"><span class="ok">✓</span> Ozon показывает ваши цены</div>
+      <div class="line"><span class="ok">✓</span> Госуслуги пускают</div>
+      <div class="col-f">включили один раз и забыли</div>
+    </div>
+  </div>
+
+  <section style="padding-top:16px">
+    <h2>Как это работает</h2>
+    <p class="sub">Обычный VPN гонит через себя всё подряд — и банки начинают
+       требовать подтверждения, а маркетплейсы показывают чужие цены.
+       Tunnelo разделяет трафик.</p>
+    {% include "_scheme.html" %}
+  </section>
+
+  <div class="banner">
+    <div>
+      <h2>Одна подписка — все устройства</h2>
+      <p>Телефон, компьютер и планшет. Приложение одинаковое везде:
+         поставили, нажали одну кнопку — работает.</p>
+    </div>
+    <div class="devices">
+      <div class="device"><span class="ic">🤖</span><span class="nm">Android</span></div>
+      <div class="device"><span class="ic">🪟</span><span class="nm">Windows</span></div>
+      <div class="device"><span class="ic">🍎</span><span class="nm">macOS</span></div>
+      <div class="device"><span class="ic">📱</span><span class="nm">iPhone</span></div>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Ничего не нужно настраивать</h3>
+      <p>Ни регистрации, ни ключей, ни выбора серверов. Установили, открыли,
+         нажали кнопку — всё уже готово.</p>
+    </div>
+    <div class="card">
+      <h3>Банки и госуслуги не ругаются</h3>
+      <p>Российские сервисы видят ваш обычный адрес. Не будет ни блокировок
+         входа, ни бесконечных подтверждений.</p>
+    </div>
+    <div class="card">
+      <h3>Скорость, а не просто доступ</h3>
+      <p>Протокол поверх UDP не душится провайдерами: видео идёт в качестве,
+         а не в трёхстах пикселях с паузами.</p>
+    </div>
+  </div>
+
+  <section id="plans">
+    <h2>Тарифы</h2>
+    <p class="sub">При оплате за год — половина цены</p>
+    <div class="plans">
+      {% for p in plans %}
+      <div class="plan {% if p.best %}best{% endif %}">
+        <div class="term">{{ p.devices }}</div>
+        <div class="price">{{ p.month.price }} <small>₽ / мес</small></div>
+        <div class="note">или {{ p.year.price }} ₽ за год — это {{ p.year.per_month }} ₽ в месяц</div>
+        <a class="btn {% if p.best %}btn-primary{% else %}btn-ghost{% endif %}"
+           href="/pay?plan={{ p.year.id }}">Взять на год</a>
+        <div style="height:10px"></div>
+        <a class="btn btn-ghost" style="width:100%" href="/pay?plan={{ p.month.id }}">На месяц</a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

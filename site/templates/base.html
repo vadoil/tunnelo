@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Tunnelo — VPN, который не нужно выключать{% endblock %}</title>
+<meta name="description" content="VPN для России: YouTube и Instagram открыты, а банки, Госуслуги и Ozon работают напрямую. Без настроек и регистрации.">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="/static/logo.svg">
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="/">
+      <img src="/static/logo.svg" width="30" height="30" alt="">
+      <span>Tunnelo</span>
+    </a>
+    <nav>
+      <a href="/#plans">Тарифы</a>
+      <a href="/cabinet">Кабинет</a>
+      <a href="/contacts" class="hide-sm">Контакты</a>
+    </nav>
+  </div>
+</header>
+
+{% block body %}{% endblock %}
+
+<footer>
+  <div class="wrap foot">
+    <div class="foot-col">
+      <div class="foot-h">{{ org.name }}</div>
+      <p>{{ org.address }}</p>
+      <p>ИНН {{ org.inn }} · КПП {{ org.kpp }} · ОГРН {{ org.ogrn }}</p>
+    </div>
+
+    <div class="foot-col">
+      <div class="foot-h">Поддержка</div>
+      <p><a href="https://t.me/pervostok">Telegram @pervostok</a></p>
+      <p>MAX: {{ phone_pretty }}</p>
+      <p><a href="tel:{{ phone }}">{{ phone_pretty }}</a></p>
+      <p><a href="mailto:{{ email }}">{{ email }}</a></p>
+    </div>
+
+    <div class="foot-col">
+      <div class="foot-h">Документы</div>
+      <p><a href="/offer">Договор оферты</a></p>
+      <p><a href="/terms">Возврат и отмена</a></p>
+      <p><a href="/privacy">Персональные данные</a></p>
+      <p><a href="/contacts">Реквизиты</a></p>
+    </div>
+
+    <div class="foot-col">
+      <div class="foot-h">Оплата</div>
+      <div class="pays">
+        <span class="pay">VISA</span>
+        <span class="pay">Mastercard</span>
+        <span class="pay">МИР</span>
+        <span class="pay">СБП</span>
+      </div>
+      <p class="tiny">Платежи проводит сертифицированный платёжный сервис.
+         Реквизиты карты к нам не попадают.</p>
+    </div>
+  </div>
+  <div class="wrap foot-b">© {{ year }} {{ org.name }}. Все права защищены.</div>
+</footer>
+</body>
+</html>

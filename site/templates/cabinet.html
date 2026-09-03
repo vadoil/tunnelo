@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Личный кабинет — Tunnelo{% endblock %}
+{% block body %}
+<div class="wrap">
+  <div class="cabinet">
+
+    <h1 style="font-size:32px;color:var(--deep);margin-bottom:6px">Личный кабинет</h1>
+    <p style="color:var(--muted);margin-bottom:26px">
+      Проверьте срок подписки или создайте новый доступ</p>
+
+    <div class="card">
+      <div class="foot-h">У меня есть ключ</div>
+      <p style="color:var(--muted);font-size:14.5px;margin-bottom:14px">
+        Ключ виден в приложении: Настройки → Промокод</p>
+      <form method="get" action="/cabinet">
+        <input class="field" name="key" placeholder="Ключ подписки"
+               value="{{ key or '' }}" autocomplete="off" spellcheck="false">
+        <div style="height:12px"></div>
+        <button class="btn btn-ghost" style="width:100%" type="submit">Проверить</button>
+      </form>
+    </div>
+
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+    {% if reg_error %}<div class="msg err">{{ reg_error }}</div>{% endif %}
+
+    {% if status %}
+    <div class="card" style="margin-top:18px">
+      <div class="row"><span class="k">Состояние</span>
+        <span class="v">{{ 'активна' if status.active else 'истекла' }}</span></div>
+      <div class="row"><span class="k">Осталось</span>
+        <span class="v">{{ status.days_text }}</span></div>
+      <div class="row"><span class="k">Трафик</span>
+        <span class="v">{{ status.traffic_text }}</span></div>
+      <div style="height:16px"></div>
+      <a class="btn btn-primary" style="width:100%" href="/pay?plan=2d-12m&key={{ key }}">Продлить</a>
+    </div>
+    {% endif %}
+
+    {% if new_key %}
+    <div class="msg ok" style="margin-top:18px">
+      Доступ создан. Ваш ключ: <strong>{{ new_key }}</strong><br>
+      Сохраните его — по нему вы входите в кабинет и переносите подписку
+      на другое устройство.
+    </div>
+    {% endif %}
+
+    <div class="card" style="margin-top:18px">
+      <div class="foot-h">Я здесь впервые</div>
+      <p style="color:var(--muted);font-size:14.5px;margin-bottom:14px">
+        Оставьте почту — выдадим ключ и отправим его вам. Пароль придумывать
+        не нужно, регистрация занимает секунду.</p>
+      <form method="post" action="/register">
+        <input class="field" name="email" type="email" required
+               placeholder="Ваша почта" autocomplete="email">
+        <div style="height:10px"></div>
+        <label class="agree">
+          <input type="checkbox" name="agree" required>
+          <span>Согласен с <a href="/offer">офертой</a> и
+                <a href="/privacy">обработкой персональных данных</a></span>
+        </label>
+        <div style="height:12px"></div>
+        <button class="btn btn-primary" style="width:100%" type="submit">Получить ключ</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
