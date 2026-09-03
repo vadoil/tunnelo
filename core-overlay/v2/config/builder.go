@@ -289,7 +289,14 @@ func setOutbounds(options *option.Options, input *option.Options, opt *HiddifyOp
 			// IdleTimeout: badoption.Duration(opt.URLTestIdleTimeout.Duration()),
 			Tolerance: 1,
 			// IdleTimeout:               badoption.Duration(opt.URLTestInterval.Duration().Nanoseconds() * 3),
-			InterruptExistConnections: true,
+			// Tunnelo: не рвать живые соединения при смене узла.
+			// Балансировщик выбирает минимальную задержку без всякого запаса
+			// (Tolerance в этой реализации помечен «not implemented»), а узлы
+			// стоят в одном дата-центре и различаются на миллисекунду. Победитель
+			// менялся почти каждый замер, и каждый раз Interrupt закрывал ВСЕ
+			// соединения разом — Telegram и открытые страницы теряли связь.
+			// Теперь новый узел получают только новые соединения.
+			InterruptExistConnections: false,
 		},
 	}
 
@@ -315,7 +322,14 @@ func setOutbounds(options *option.Options, input *option.Options, opt *HiddifyOp
 			// IdleTimeout: badoption.Duration(opt.URLTestIdleTimeout.Duration()),
 			Tolerance: 1,
 			// IdleTimeout:               badoption.Duration(opt.URLTestInterval.Duration().Nanoseconds() * 3),
-			InterruptExistConnections: true,
+			// Tunnelo: не рвать живые соединения при смене узла.
+			// Балансировщик выбирает минимальную задержку без всякого запаса
+			// (Tolerance в этой реализации помечен «not implemented»), а узлы
+			// стоят в одном дата-центре и различаются на миллисекунду. Победитель
+			// менялся почти каждый замер, и каждый раз Interrupt закрывал ВСЕ
+			// соединения разом — Telegram и открытые страницы теряли связь.
+			// Теперь новый узел получают только новые соединения.
+			InterruptExistConnections: false,
 		},
 	}
 	defaultSelect := tags[0]
