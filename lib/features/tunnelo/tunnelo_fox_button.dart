@@ -20,13 +20,16 @@ class TunneloFoxButton extends HookConsumerWidget {
 
   /// Где на картинке фонарь. Подобрано по самому изображению: если лиса
   /// перерисуют, поправить нужно здесь.
-  static const _lantern = Alignment(-0.64, 0.20);
+  static const _lantern = Alignment(-0.67, 0.26);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(connectionNotifierProvider);
-    final connected = status.value is Connected;
-    final busy = status.value is Connecting || status.value is Disconnecting;
+    // valueOrNull, а не value: у AsyncError обращение к value бросает
+    // исключение, и главный экран падал бы красным при любом сбое ядра.
+    final state = status.valueOrNull;
+    final connected = state is Connected;
+    final busy = state is Connecting || state is Disconnecting;
 
     final pulse = useAnimationController(
       duration: const Duration(milliseconds: 2600),
@@ -79,7 +82,7 @@ class TunneloFoxButton extends HookConsumerWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            switch (status.value) {
+            switch (state) {
               Connected() => 'Подключено',
               Connecting() => 'Поднимаем туннель…',
               Disconnecting() => 'Отключаемся…',

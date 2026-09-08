@@ -246,7 +246,9 @@ input, textarea, select { background: var(--card-solid) !important; color: var(-
   animation: foxFloat 5.4s ease-in-out infinite;
 }
 .lantern-glow, .ring {
-  position: absolute; left: 18%; top: 60%;
+  /* Центр фонаря на картинке — найден по самому яркому тёплому пятну,
+     не на глаз. Перерисуют лиса — пересчитать. */
+  position: absolute; left: 16.6%; top: 63%;
   transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
 }
 .lantern-glow {
