@@ -1,20 +1,26 @@
 /* Палитра Tunnelo — та же, что в приложении. */
 :root {
-  --mist: #EDF7F2;   /* фон */
-  --card: #FFFFFF;   /* карточки */
-  --line: #DCEBE3;   /* границы */
-  --sea: #4E9C87;    /* основной зелёный */
-  --deep: #2F6B5C;   /* заголовки */
-  --coral: #F97B5E;  /* действие */
-  --text: #223B34;
-  --muted: #8AA69C;
+  /* Тёмный градиент со стеклом — как в приложении. Один продукт должен
+     выглядеть одним продуктом: человек приходит с сайта и узнаёт его. */
+  --mist: #141B3D;   /* верх градиента */
+  --deep-bg: #0C1230;/* низ градиента */
+  --warm-bg: #12403C;/* мятный край */
+  --card: rgba(255,255,255,.06);  /* стекло */
+  --card-solid: #1C2450;          /* плотная подложка под текст */
+  --line: rgba(255,255,255,.15);  /* границы стекла */
+  --sea: #5FE0B8;    /* мятный акцент */
+  --deep: #8CF0D0;   /* заголовки и цифры */
+  --coral: #FF8A6B;  /* действие */
+  --text: #EAF6F1;
+  --muted: #93AFA8;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--mist);
+  background: linear-gradient(180deg, var(--mist) 0%, var(--deep-bg) 55%, var(--warm-bg) 100%);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -42,7 +48,7 @@ nav a:hover { color: var(--sea); }
   padding: 13px 26px; border-radius: 14px; font-size: 15.5px; font-weight: 600;
   text-decoration: none; border: none; cursor: pointer; transition: transform .12s, box-shadow .12s;
 }
-.btn-primary { background: var(--coral); color: #fff; box-shadow: 0 6px 18px rgba(249,123,94,.28); }
+.btn-primary { background: var(--coral); color: var(--deep-bg); box-shadow: 0 6px 18px rgba(249,123,94,.28); }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(249,123,94,.34); }
 .btn-ghost { background: var(--card); color: var(--sea); border: 1.5px solid var(--line); }
 .btn-ghost:hover { border-color: var(--sea); }
@@ -68,7 +74,7 @@ nav a:hover { color: var(--sea); }
 .plan.best { border-color: var(--sea); position: relative; }
 .plan.best::after {
   content: 'выгодно'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-  background: var(--sea); color: #fff; font-size: 12px; font-weight: 600;
+  background: var(--sea); color: var(--deep-bg); font-size: 12px; font-weight: 600;
   padding: 4px 14px; border-radius: 20px;
 }
 .plan .term { color: var(--muted); font-size: 15px; margin-bottom: 10px; }
@@ -128,11 +134,14 @@ footer a { color: var(--muted); }
 
 /* баннер «одна подписка на все устройства» */
 .banner {
-  background: linear-gradient(135deg, #4E9C87 0%, #3C8672 100%);
-  border-radius: 26px; padding: 40px 36px; color: #fff; margin: 56px 0;
+  /* Баннер жил на старом зелёном градиенте и на тёмной странице
+     выглядел заплаткой. Теперь он из того же стекла, что и всё. */
+  background: linear-gradient(135deg, rgba(95,224,184,.16) 0%, rgba(255,138,107,.14) 100%);
+  border: 1px solid var(--line); backdrop-filter: blur(14px);
+  border-radius: 26px; padding: 40px 36px; color: var(--text); margin: 56px 0;
   display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: center;
 }
-.banner h2 { color: #fff; font-size: 29px; letter-spacing: -0.5px; margin-bottom: 10px; text-align: left; }
+.banner h2 { color: var(--deep); font-size: 29px; letter-spacing: -0.5px; margin-bottom: 10px; text-align: left; }
 .banner p { color: rgba(255,255,255,.85); font-size: 16.5px; max-width: 460px; }
 .devices { display: flex; gap: 10px; }
 .device {
@@ -185,3 +194,14 @@ footer a { color: var(--muted); }
 .agree { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--muted); }
 .agree input { margin-top: 3px; accent-color: var(--sea); }
 .agree a { color: var(--sea); }
+
+
+/* --- Стекло. Подложка под текстом плотная: красиво и нечитаемо — не красиво. --- */
+.card, .plan, .doc, .feat { backdrop-filter: blur(14px); border: 1px solid var(--line); }
+.hero-fox { display: block; margin: 0 auto 8px; width: 210px; max-width: 60vw;
+            filter: drop-shadow(0 0 34px rgba(255,196,107,.28)); }
+.plan-fox { display: block; margin: 0 auto 10px; width: 96px; }
+input, textarea, select { background: var(--card-solid) !important; color: var(--text) !important;
+                          border-color: var(--line) !important; }
+.msg.err { background: rgba(255,107,74,.16); color: #FFB8A6; }
+.msg.ok  { background: rgba(95,224,184,.16); color: var(--deep); }
