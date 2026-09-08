@@ -54,6 +54,12 @@ class TunneloSubscriptionPage extends ConsumerWidget {
               onTap: () => context.pushNamed('friends'),
             ),
             _Action(
+              icon: Icons.show_chart_rounded,
+              title: 'Статистика',
+              subtitle: 'Скорость и трафик за сеанс',
+              onTap: () => context.pushNamed('stats'),
+            ),
+            _Action(
               icon: Icons.confirmation_number_outlined,
               title: 'Ввести код',
               subtitle: 'Промокод, код друга или перенос подписки',
