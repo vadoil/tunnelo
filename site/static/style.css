@@ -205,3 +205,99 @@ input, textarea, select { background: var(--card-solid) !important; color: var(-
                           border-color: var(--line) !important; }
 .msg.err { background: rgba(255,107,74,.16); color: #FFB8A6; }
 .msg.ok  { background: rgba(95,224,184,.16); color: var(--deep); }
+
+/* ---------- Первый экран: текст слева, лис справа ----------------------------
+   Фонарь — смысловой центр: он и есть свет в конце туннеля, и он же кнопка
+   подключения в приложении. Поэтому свечение привязано именно к фонарю,
+   а не к середине картинки. */
+.hero {
+  display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px;
+  align-items: center; text-align: left; padding: 48px 0 24px;
+}
+.hero-text { text-align: left; }
+.hero h1 { text-align: left; font-size: clamp(30px, 4.4vw, 46px); line-height: 1.1; }
+.hero p { text-align: left; max-width: 560px; }
+.hero-badge {
+  display: inline-block; margin-bottom: 16px; padding: 7px 14px;
+  border-radius: 999px; background: rgba(95,224,184,.14);
+  border: 1px solid rgba(95,224,184,.34); color: var(--deep);
+  font-size: 13.5px; font-weight: 600;
+}
+.hero-actions { justify-content: flex-start; }
+.hero-note { margin-top: 12px; color: var(--muted); font-size: 13.5px; }
+
+/* Два столбца: что через туннель, что напрямую. Главное преимущество
+   должно быть видно, не читая абзацев. */
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 22px 0 26px; }
+.duo-col {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px 16px; backdrop-filter: blur(14px);
+}
+.duo-h { font-weight: 600; font-size: 14px; color: var(--text); margin-bottom: 6px; }
+.duo-i { color: var(--sea); font-weight: 700; margin-right: 6px; }
+.duo-col:last-child .duo-i { color: var(--coral); }
+.duo-list { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+/* ---------- Лис и живой фонарь ---------- */
+.hero-art { position: relative; max-width: 380px; margin: 0 auto; }
+.hero-fox {
+  position: relative; z-index: 2; display: block; width: 100%; height: auto;
+  margin: 0; filter: drop-shadow(0 18px 34px rgba(0,0,0,.35));
+  animation: foxFloat 5.4s ease-in-out infinite;
+}
+.lantern-glow, .ring {
+  position: absolute; left: 18%; top: 60%;
+  transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+}
+.lantern-glow {
+  z-index: 1; width: 190px; height: 190px;
+  background: radial-gradient(circle,
+      rgba(255,196,107,.55) 0%, rgba(255,196,107,.18) 45%, rgba(255,196,107,0) 70%);
+  animation: lanternPulse 2.8s ease-in-out infinite;
+}
+.ring {
+  z-index: 0; width: 150px; height: 150px;
+  border: 1.5px solid rgba(255,196,107,.42);
+  animation: ringOut 4.2s ease-out infinite;
+}
+.ring-2 { animation-delay: 1.4s; }
+.ring-3 { animation-delay: 2.8s; }
+
+@keyframes foxFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes lanternPulse {
+  0%, 100% { opacity: .62; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.14); }
+}
+@keyframes ringOut {
+  0%   { opacity: .55; transform: translate(-50%, -50%) scale(.45); }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(2.1); }
+}
+
+/* Кому движение мешает — тому его быть не должно. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-fox, .lantern-glow, .ring { animation: none; }
+  .ring { opacity: .25; }
+}
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; gap: 24px; text-align: center; padding-top: 28px; }
+  .hero-text, .hero h1, .hero p { text-align: center; }
+  .hero p { margin-left: auto; margin-right: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-art { order: -1; max-width: 260px; }
+  .duo { grid-template-columns: 1fr; }
+  .duo-col { text-align: left; }
+}
+
+/* Две кнопки рядом: годовая — цветом действия, месячная — спокойная.
+   Так видно, что выгоднее, но месячная не выглядит недоступной. */
+.plan-buy { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.plan-buy .btn { width: 100%; justify-content: center; padding: 13px 10px; font-size: 14.5px; }
+.save {
+  display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 999px;
+  background: rgba(12,18,48,.22); font-size: 12px; font-weight: 700;
+}
+@media (max-width: 420px) { .plan-buy { grid-template-columns: 1fr; } }

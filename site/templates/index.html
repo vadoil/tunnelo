@@ -3,14 +3,40 @@
 <div class="wrap">
 
   <div class="hero">
-    <img class="hero-fox" src="/static/fox/lantern.png"
-         alt="Лис Tunnelo с фонарём">
-    <h1>VPN, который<br>не нужно выключать</h1>
-    <p>YouTube и Instagram открыты. Сбербанк, Госуслуги и Ozon при этом
-       работают как обычно — к ним вы идёте напрямую, без туннеля.</p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="#plans">Выбрать тариф</a>
-      <a class="btn btn-ghost" href="#plans">Тарифы от 150 ₽</a>
+    <div class="hero-text">
+      <div class="hero-badge">Единственный VPN, который держит обе стороны сразу</div>
+      <h1>YouTube и Госуслуги<br>работают одновременно</h1>
+      <p>Остальные VPN гонят через туннель всё подряд — и банк требует
+         подтверждений, Ozon показывает чужие цены, Госуслуги не пускают.
+         Приходится включать и выключать по десять раз на дню.</p>
+      <p><b>Tunnelo разделяет трафик сам.</b> Заблокированное идёт через
+         туннель, российское — напрямую. Одновременно, без переключений.</p>
+
+      <div class="duo">
+        <div class="duo-col">
+          <div class="duo-h"><span class="duo-i">↗</span> Через туннель</div>
+          <div class="duo-list">YouTube · Instagram · Telegram · ChatGPT · Spotify</div>
+        </div>
+        <div class="duo-col">
+          <div class="duo-h"><span class="duo-i">→</span> Напрямую</div>
+          <div class="duo-list">Сбербанк · Госуслуги · Ozon · Wildberries · Avito</div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#plans">Выбрать тариф</a>
+        <a class="btn btn-ghost" href="#how">Как это работает</a>
+      </div>
+      <div class="hero-note">Первые 30 дней бесплатно. Карта не нужна.</div>
+    </div>
+
+    <div class="hero-art">
+      <span class="ring ring-1"></span>
+      <span class="ring ring-2"></span>
+      <span class="ring ring-3"></span>
+      <span class="lantern-glow"></span>
+      <img class="hero-fox" src="/static/fox/lantern.png"
+           alt="Лис Tunnelo с фонарём — свет в конце туннеля">
     </div>
   </div>
 
@@ -34,7 +60,7 @@
     </div>
   </div>
 
-  <section style="padding-top:16px">
+  <section id="how" style="padding-top:16px">
     <h2>Как это работает</h2>
     <p class="sub">Обычный VPN гонит через себя всё подряд — и банки начинают
        требовать подтверждения, а маркетплейсы показывают чужие цены.
@@ -84,10 +110,12 @@
         <div class="term">{{ p.devices }}</div>
         <div class="price">{{ p.month.price }} <small>₽ / мес</small></div>
         <div class="note">или {{ p.year.price }} ₽ за год — это {{ p.year.per_month }} ₽ в месяц</div>
-        <a class="btn {% if p.best %}btn-primary{% else %}btn-ghost{% endif %}"
-           href="/pay?plan={{ p.year.id }}">Взять на год</a>
-        <div style="height:10px"></div>
-        <a class="btn btn-ghost" style="width:100%" href="/pay?plan={{ p.month.id }}">На месяц</a>
+        <div class="plan-buy">
+          <a class="btn btn-primary" href="/pay?plan={{ p.year.id }}">
+            На год <span class="save">−50%</span>
+          </a>
+          <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}">На месяц</a>
+        </div>
       </div>
       {% endfor %}
     </div>
