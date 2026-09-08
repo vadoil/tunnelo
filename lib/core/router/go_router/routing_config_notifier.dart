@@ -26,6 +26,7 @@ import 'package:hiddify/features/tunnelo/promo_code_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_devices_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_friends_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_plans_page.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_servers_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_stats_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_welcome_page.dart';
@@ -291,6 +292,7 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
         GoRoute(name: 'devices', path: '/devices', builder: (_, _) => const TunneloDevicesPage()),
         GoRoute(name: 'friends', path: '/friends', builder: (_, _) => const TunneloFriendsPage()),
         GoRoute(name: 'stats', path: '/stats', builder: (_, _) => const TunneloStatsPage()),
+        GoRoute(name: 'servers', path: '/servers', builder: (_, _) => const TunneloServersPage()),
       ],
     );
   }
