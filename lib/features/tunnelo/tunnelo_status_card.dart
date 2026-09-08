@@ -17,13 +17,13 @@ class TunneloStatusCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(activeProfileProvider).value;
+    final profile = ref.watch(activeProfileProvider).valueOrNull;
     final info = profile is RemoteProfileEntity ? profile.subInfo : null;
     // Пока подписки нет, человеку нужны ровно две вещи: оплатить
     // или ввести промокод. Прятать их в настройки нельзя.
     if (info == null) return const _NotActivatedCard();
 
-    final devices = ref.watch(tunneloDevicesProvider).value;
+    final devices = ref.watch(tunneloDevicesProvider).valueOrNull;
 
     // Карточка целиком ведёт на экран подписки: это то, за что платят,
     // и добираться до него через настройки человек не должен.

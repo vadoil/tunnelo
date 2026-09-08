@@ -45,7 +45,7 @@ class TunneloPlansPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Год выбран по умолчанию: он вдвое выгоднее, и это стоит показать сразу.
     final yearly = useState(true);
-    final sub = ref.watch(tunneloSubscriptionProvider).value;
+    final sub = ref.watch(tunneloSubscriptionProvider).valueOrNull;
 
     return TunneloScaffold(
       title: 'Тарифы',

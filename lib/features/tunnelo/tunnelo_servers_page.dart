@@ -13,7 +13,7 @@ class TunneloServersPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final group = ref.watch(proxiesOverviewNotifierProvider).value;
+    final group = ref.watch(proxiesOverviewNotifierProvider).valueOrNull;
 
     return TunneloScaffold(
       title: 'Серверы',

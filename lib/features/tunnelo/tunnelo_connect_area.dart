@@ -16,7 +16,7 @@ class TunneloConnectArea extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sub = ref.watch(tunneloSubscriptionProvider).value;
+    final sub = ref.watch(tunneloSubscriptionProvider).valueOrNull;
 
     if (sub != null && sub.expired) {
       return const _Expired();

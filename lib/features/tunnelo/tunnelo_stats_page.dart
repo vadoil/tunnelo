@@ -20,8 +20,8 @@ class TunneloStatsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stats = ref.watch(statsNotifierProvider).value;
-    final profile = ref.watch(activeProfileProvider).value;
+    final stats = ref.watch(statsNotifierProvider).valueOrNull;
+    final profile = ref.watch(activeProfileProvider).valueOrNull;
     final info = profile is RemoteProfileEntity ? profile.subInfo : null;
 
     // История скорости для графика. Держим последние 60 отсчётов — этого
