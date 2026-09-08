@@ -97,6 +97,10 @@ class _TransferCode extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Center(
+          child: Image.asset('assets/images/fox/devices.png', height: 120),
+        ),
+        const SizedBox(height: 12),
         const Text(
           'Подключить ещё одно устройство',
           style: TextStyle(

@@ -112,9 +112,16 @@ class _SpeedCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Сейчас загружается',
-          style: TextStyle(color: TunneloColors.muted, fontSize: 14),
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Сейчас загружается',
+                style: TextStyle(color: TunneloColors.muted, fontSize: 14),
+              ),
+            ),
+            Image.asset('assets/images/fox/running.png', height: 62),
+          ],
         ),
         const SizedBox(height: 6),
         Text(

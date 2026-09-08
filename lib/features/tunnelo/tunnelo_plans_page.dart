@@ -55,6 +55,10 @@ class TunneloPlansPage extends HookConsumerWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
+              Center(
+                child: Image.asset('assets/images/fox/coins.png', height: 140),
+              ),
+              const SizedBox(height: 8),
               _TermSwitch(
                 yearly: yearly.value,
                 onChanged: (v) => yearly.value = v,

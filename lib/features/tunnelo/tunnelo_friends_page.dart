@@ -52,6 +52,10 @@ class _Body extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Center(
+              child: Image.asset('assets/images/fox/gift.png', height: 130),
+            ),
+            const SizedBox(height: 12),
             const Text(
               'Ваш код',
               style: TextStyle(color: TunneloColors.muted, fontSize: 14),

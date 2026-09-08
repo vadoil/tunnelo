@@ -172,7 +172,11 @@ class _Summary extends StatelessWidget {
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          Center(
+            child: Image.asset('assets/images/fox/sitting.png', height: 108),
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(

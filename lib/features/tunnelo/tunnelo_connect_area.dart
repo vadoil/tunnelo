@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hiddify/features/home/widget/connection_button.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_delay_indicator.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_fox_button.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,7 +25,7 @@ class TunneloConnectArea extends ConsumerWidget {
     return const Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [ConnectionButton(), ActiveProxyDelayIndicator()],
+      children: [TunneloFoxButton(), ActiveProxyDelayIndicator()],
     );
   }
 }
