@@ -32,6 +32,12 @@ class PromoCodePage extends HookConsumerWidget {
     ref.listen<SetupState>(tunneloSetupProvider, (prev, next) {
       if (next is SetupDone && context.mounted) {
         HapticFeedback.mediumImpact();
+        // Сообщение переживает закрытие экрана: ScaffoldMessenger общий.
+        if (next.message != null) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(next.message!)));
+        }
         Future.delayed(const Duration(milliseconds: 800), () {
           if (context.mounted) Navigator.of(context).maybePop();
         });
@@ -111,7 +117,7 @@ class PromoCodePage extends HookConsumerWidget {
     final code = value.trim();
     if (code.isEmpty) return;
     HapticFeedback.selectionClick();
-    ref.read(tunneloSetupProvider.notifier).activate(code);
+    ref.read(tunneloSetupProvider.notifier).redeem(code);
   }
 }
 

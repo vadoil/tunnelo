@@ -23,6 +23,11 @@ import 'package:hiddify/features/settings/overview/sections/tls_tricks_page.dart
 import 'package:hiddify/features/settings/overview/sections/warp_options_page.dart';
 import 'package:hiddify/features/settings/overview/settings_page.dart';
 import 'package:hiddify/features/tunnelo/promo_code_page.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_devices_page.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_friends_page.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_plans_page.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_subscription_page.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -66,6 +71,15 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
       redirect: (context, state) {
         final introCompleted = ref.read(Preferences.introCompleted);
         final isIntro = state.matchedLocation == '/intro';
+        // Tunnelo: возврат с оплаты. Ловим до разбора ссылок на подписку —
+        // иначе tunnelo://paid попробуют принять за профиль.
+        if (state.uri.scheme == 'tunnelo' && state.uri.host == 'paid') {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => ref.invalidate(tunneloSubscriptionProvider),
+          );
+          return '/subscription?paid=1';
+        }
+
         // fix path-parameters for deep link
         String? url;
         if (LinkParser.protocols.contains(state.uri.scheme)) {
@@ -259,6 +273,18 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
         ),
         GoRoute(name: 'intro', path: '/intro', builder: (_, _) => const IntroPage()),
         GoRoute(name: 'promoCode', path: '/promo-code', builder: (_, _) => const PromoCodePage()),
+        // Tunnelo: подписка и всё вокруг неё. Открывается тапом по карточке
+        // на главной, а не из настроек: это то, за что человек платит.
+        GoRoute(
+          name: 'subscription',
+          path: '/subscription',
+          builder: (_, state) => TunneloSubscriptionPage(
+            justPaid: state.uri.queryParameters['paid'] == '1',
+          ),
+        ),
+        GoRoute(name: 'plans', path: '/plans', builder: (_, _) => const TunneloPlansPage()),
+        GoRoute(name: 'devices', path: '/devices', builder: (_, _) => const TunneloDevicesPage()),
+        GoRoute(name: 'friends', path: '/friends', builder: (_, _) => const TunneloFriendsPage()),
       ],
     );
   }

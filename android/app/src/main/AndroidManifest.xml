@@ -74,6 +74,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
+                <!-- Своя схема: по ней сайт возвращает человека
+                     в приложение после оплаты. -->
+                <data android:scheme="tunnelo" />
                 <data android:scheme="hiddify" />
                 <data android:scheme="v2ray" />
                 <data android:scheme="v2rayn" />

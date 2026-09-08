@@ -7,6 +7,7 @@ import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart'
 import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_activation.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -47,9 +48,13 @@ class SetupRunning extends SetupState {
 }
 
 class SetupDone extends SetupState {
-  const SetupDone({this.daysLeft, this.servers});
+  const SetupDone({this.daysLeft, this.servers, this.message});
   final int? daysLeft;
   final int? servers;
+
+  /// Что именно получилось. Приходит от сервиса: он один знает, был код
+  /// промокодом, переносом подписки или приглашением друга.
+  final String? message;
 }
 
 class SetupFailed extends SetupState {
@@ -119,6 +124,34 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
     } catch (e) {
       loggy.error('активация упала: $e');
       state = const SetupFailed('Не удалось настроить подключение');
+      return false;
+    }
+  }
+
+  /// Ввести код: промокод, код переноса с другого устройства или код друга.
+  ///
+  /// Какой из трёх — решает сервис. Человеку незачем выбирать вид кода
+  /// заранее, а нам незачем гадать по виду строки.
+  Future<bool> redeem(String code) async {
+    state = const SetupRunning('Проверяем код…');
+    try {
+      final r = await _api.redeem(code);
+      // Промокод и код переноса дают подписку — профиль надо пересобрать.
+      // Код друга просто добавляет дни, трогать профиль незачем.
+      if (r.subscription != null) {
+        state = const SetupRunning('Загружаем серверы…');
+        await _addProfile(r.subscription!);
+      }
+      _ref.invalidate(tunneloSubscriptionProvider);
+      state = SetupDone(daysLeft: r.daysLeft, message: r.message);
+      return true;
+    } on ActivationException catch (e) {
+      loggy.warning('код не принят: ${e.message}');
+      state = SetupFailed(e.message);
+      return false;
+    } catch (e) {
+      loggy.error('ввод кода упал: $e');
+      state = const SetupFailed('Не удалось применить код');
       return false;
     }
   }

@@ -159,7 +159,7 @@ async def cabinet(request: Request, key: str = ""):
 
 
 @app.get("/pay")
-async def pay(plan: str = "2d-12m", key: str = ""):
+async def pay(plan: str = "2d-12m", key: str = "", app: str = ""):
     """
     Создаёт счёт в Enot и уводит человека на страницу оплаты.
 
@@ -182,7 +182,9 @@ async def pay(plan: str = "2d-12m", key: str = ""):
         "custom_fields": json.dumps({"key": key, "days": p["days"],
                                      "devices": p["devices"]}, ensure_ascii=False),
         "hook_url": f"{SITE_URL}/api/pay/callback",
-        "success_url": f"{SITE_URL}/cabinet?key={key}&paid=1",
+        # Из приложения возвращаем в приложение, из браузера — в кабинет.
+        "success_url": (f"{SITE_URL}/paid?key={key}" if app
+                        else f"{SITE_URL}/cabinet?key={key}&paid=1"),
         "fail_url": f"{SITE_URL}/cabinet?pay=fail",
         "expire": 60,
     }
@@ -201,6 +203,33 @@ async def pay(plan: str = "2d-12m", key: str = ""):
     except Exception as e:
         LOG.warning("Enot недоступен: %s", e)
     return RedirectResponse("/cabinet?pay=error", status_code=303)
+
+
+@app.get("/paid", response_class=HTMLResponse)
+async def paid(key: str = ""):
+    """
+    Возврат в приложение после оплаты.
+
+    Открывается в браузере поверх Tunnelo. Сразу пробуем открыть приложение
+    по своей схеме; если браузер это заблокировал — остаётся кнопка.
+    Ссылка ведёт на tunnelo://paid, приложение по ней обновляет подписку.
+    """
+    deep = f"tunnelo://paid?key={key}"
+    return HTMLResponse(
+        "<!doctype html><meta charset=utf-8>"
+        "<meta name=viewport content='width=device-width,initial-scale=1'>"
+        "<title>Оплачено — Tunnelo</title>"
+        "<style>body{font:16px/1.5 -apple-system,system-ui,sans-serif;"
+        "background:#EDF7F2;color:#223B34;margin:0;display:grid;"
+        "place-items:center;min-height:100vh;text-align:center;padding:24px}"
+        "a{display:inline-block;margin-top:20px;background:#4E9C87;color:#fff;"
+        "text-decoration:none;padding:14px 26px;border-radius:14px;"
+        "font-weight:600}p{color:#5E7C72}</style>"
+        "<div><h1>Оплачено</h1>"
+        "<p>Возвращаемся в Tunnelo.<br>Если ничего не произошло — нажмите кнопку.</p>"
+        f"<a href='{deep}'>Открыть Tunnelo</a></div>"
+        f"<script>location.href={deep!r}</script>"
+    )
 
 
 @app.post("/api/pay/callback")

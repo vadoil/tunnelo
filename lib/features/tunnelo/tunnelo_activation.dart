@@ -12,7 +12,36 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class TunneloConfig {
   static const activateUrl = 'https://api.amnez.online/activate';
   static const statusUrl = 'https://api.amnez.online/status';
+  static const redeemUrl = 'https://api.amnez.online/redeem';
   static const defaultPromo = 'PARDAUTO';
+
+  /// Оплата идёт на сайте, во внешнем браузере. Внутри приложения
+  /// банковское подтверждение часто ломается, и магазины к такому
+  /// относятся плохо.
+  static const siteUrl = 'https://tunello.online';
+}
+
+/// Что получилось от введённого кода.
+///
+/// Код бывает трёх видов — промокод, код переноса с другого устройства и
+/// код друга. Какой именно ввели, решает сервис: человеку незачем это знать,
+/// а нам незачем гадать по виду строки.
+class RedeemResult {
+  const RedeemResult({
+    required this.message,
+    this.key,
+    this.subscription,
+    this.daysLeft,
+    this.bonusDays,
+  });
+
+  final String message;
+  final String? key;
+  final String? subscription;
+  final int? daysLeft;
+
+  /// Начислено дней за код друга. null, если код был не реферальный.
+  final int? bonusDays;
 }
 
 class ActivationResult {
@@ -344,6 +373,76 @@ class TunneloActivation {
               409 => 'Промокод больше не действует',
               400 => 'Некорректный промокод',
               _ => 'Не удалось активировать (${resp.statusCode})',
+            },
+      );
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        throw const ActivationException(
+          'Нет связи с сервером. Проверьте интернет и попробуйте снова.',
+        );
+      }
+      throw ActivationException('Ошибка сети: ${e.message ?? e.type.name}');
+    }
+  }
+
+  /// Ввести код: промокод, код переноса или код друга.
+  ///
+  /// Все три идут одним запросом. Если код оказался переносом, подписка
+  /// сохраняется поверх текущей — устройство переезжает на общий ключ.
+  Future<RedeemResult> redeem(String code) async {
+    final device = await deviceId();
+    final key = await savedKey();
+    try {
+      final resp = await _request(
+        Uri.parse(TunneloConfig.redeemUrl),
+        body: {'code': code.trim(), 'device': device, 'key': key ?? ''},
+        options: Options(
+          contentType: Headers.jsonContentType,
+          sendTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 25),
+          validateStatus: (s) => s != null && s < 500,
+        ),
+      );
+
+      final Map<String, dynamic> body;
+      try {
+        body = resp.data is String
+            ? jsonDecode(resp.data as String) as Map<String, dynamic>
+            : Map<String, dynamic>.from(resp.data as Map);
+      } catch (_) {
+        throw const ActivationException(
+          'Сервер ответил неожиданным образом. Попробуйте позже.',
+        );
+      }
+
+      if (resp.statusCode == 200 || resp.statusCode == 201) {
+        final newKey = body['key'] as String?;
+        final sub = body['subscription'] as String?;
+        if (newKey != null && sub != null) {
+          await _save(ActivationResult(key: newKey, subscription: sub));
+        }
+        final days = body['days'] as int?;
+        return RedeemResult(
+          message: (body['message'] as String?) ??
+              (days != null
+                  ? 'Начислено $days дней'
+                  : 'Готово, подписка подключена'),
+          key: newKey,
+          subscription: sub,
+          daysLeft: body['daysLeft'] as int?,
+          bonusDays: days,
+        );
+      }
+
+      throw ActivationException(
+        (body['message'] as String?) ??
+            switch (resp.statusCode) {
+              404 => 'Такого кода нет',
+              409 => 'Этот код уже использован',
+              400 => 'Код введён неверно',
+              _ => 'Не удалось применить код (${resp.statusCode})',
             },
       );
     } on DioException catch (e) {

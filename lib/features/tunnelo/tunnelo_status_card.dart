@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hiddify/core/model/constants.dart';
-import 'package:hiddify/utils/utils.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
@@ -27,82 +25,88 @@ class TunneloStatusCard extends ConsumerWidget {
 
     final devices = ref.watch(tunneloDevicesProvider).value;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-      decoration: BoxDecoration(
-        color: TunneloColors.card,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: TunneloColors.seaDeep.withValues(alpha: 0.07),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _Label('Трафик'),
-              Text(
-                _traffic(info),
-                style: const TextStyle(
-                  color: TunneloColors.seaDeep,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: info.total > 0 ? info.ratio : 0,
-              minHeight: 6,
-              backgroundColor: TunneloColors.line,
-              valueColor: const AlwaysStoppedAnimation(TunneloColors.sea),
+    // Карточка целиком ведёт на экран подписки: это то, за что платят,
+    // и добираться до него через настройки человек не должен.
+    return GestureDetector(
+      onTap: () => context.pushNamed('subscription'),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+        decoration: BoxDecoration(
+          color: TunneloColors.card,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: TunneloColors.seaDeep.withValues(alpha: 0.07),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _Label('Осталось'),
-              Text(
-                _daysLeft(info),
-                style: const TextStyle(
-                  color: TunneloColors.seaDeep,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          if (devices != null) ...[
-            const SizedBox(height: 12),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _Label('Устройства'),
+                _Label('Трафик'),
                 Text(
-                  '${devices.used} из ${devices.limit}',
+                  _traffic(info),
                   style: const TextStyle(
-                    color: TunneloColors.core,
+                    color: TunneloColors.seaDeep,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: info.total > 0 ? info.ratio : 0,
+                minHeight: 6,
+                backgroundColor: TunneloColors.line,
+                valueColor: const AlwaysStoppedAnimation(TunneloColors.sea),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _Label('Осталось'),
+                Text(
+                  _daysLeft(info),
+                  style: const TextStyle(
+                    color: TunneloColors.seaDeep,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            if (devices != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _Label('Устройства'),
+                  Text(
+                    '${devices.used} из ${devices.limit}',
+                    style: const TextStyle(
+                      color: TunneloColors.core,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
+            const _Actions(),
           ],
-          const SizedBox(height: 16),
-          const _Actions(),
-        ],
+        ),
       ),
     );
   }
@@ -139,12 +143,9 @@ class _Label extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: const TextStyle(color: TunneloColors.muted, fontSize: 14),
-  );
+  Widget build(BuildContext context) =>
+      Text(text, style: const TextStyle(color: TunneloColors.muted, fontSize: 14));
 }
-
 
 /// Действия подписки: продлить и ввести ключ.
 class _Actions extends StatelessWidget {
@@ -155,7 +156,7 @@ class _Actions extends StatelessWidget {
     children: [
       Expanded(
         child: FilledButton(
-          onPressed: () => UriUtils.tryLaunch(Uri.parse(Constants.payUrl)),
+          onPressed: () => context.pushNamed('plans'),
           style: FilledButton.styleFrom(
             backgroundColor: TunneloColors.coral,
             foregroundColor: Colors.white,
@@ -208,11 +209,7 @@ class _NotActivatedCard extends StatelessWidget {
       children: [
         const Text(
           'Подписка не активна',
-          style: TextStyle(
-            color: TunneloColors.seaDeep,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: TunneloColors.seaDeep, fontSize: 17, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
         const Text(
