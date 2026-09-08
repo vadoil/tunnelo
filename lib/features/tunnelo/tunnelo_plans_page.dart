@@ -199,7 +199,7 @@ class _PlanCard extends StatelessWidget {
             onPressed: onTap,
             style: FilledButton.styleFrom(
               backgroundColor: TunneloColors.sea,
-              foregroundColor: Colors.white,
+              foregroundColor: TunneloColors.mistDeep,
               minimumSize: const Size.fromHeight(46),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),

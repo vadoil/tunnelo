@@ -79,7 +79,7 @@ class _Body extends StatelessWidget {
               icon: const Icon(Icons.ios_share_rounded, size: 18),
               style: FilledButton.styleFrom(
                 backgroundColor: TunneloColors.sea,
-                foregroundColor: Colors.white,
+                foregroundColor: TunneloColors.mistDeep,
                 minimumSize: const Size.fromHeight(48),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),

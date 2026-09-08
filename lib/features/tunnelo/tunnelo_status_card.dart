@@ -153,7 +153,7 @@ class _Actions extends StatelessWidget {
           onPressed: () => context.pushNamed('plans'),
           style: FilledButton.styleFrom(
             backgroundColor: TunneloColors.coral,
-            foregroundColor: Colors.white,
+            foregroundColor: TunneloColors.mistDeep,
             padding: const EdgeInsets.symmetric(vertical: 13),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),

@@ -69,7 +69,7 @@ class _Expired extends StatelessWidget {
             onPressed: () => context.pushNamed('plans'),
             style: FilledButton.styleFrom(
               backgroundColor: TunneloColors.coral,
-              foregroundColor: Colors.white,
+              foregroundColor: TunneloColors.mistDeep,
               minimumSize: const Size.fromHeight(54),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
