@@ -76,6 +76,17 @@ EXTEND_SECRET = os.environ.get("EXTEND_SECRET", "")
 # Сколько дней получают обе стороны за приглашение друга.
 REFERRAL_DAYS = int(os.environ.get("REFERRAL_DAYS", "15"))
 
+# Письма отправляет сайт: у этого сервера хостер закрыл исходящие SMTP-порты
+# (25, 465, 587), а HTTPS работает. Поэтому код входа мы генерируем здесь,
+# а отправку просим сделать сайт — он в той же связке и SMTP оттуда открыт.
+MAIL_URL = os.environ.get("MAIL_URL", "")
+MAIL_SECRET = os.environ.get("MAIL_SECRET", "")
+# Сколько живёт код входа и сколько раз можно ошибиться.
+CODE_TTL = int(os.environ.get("CODE_TTL", "900"))
+CODE_TRIES = int(os.environ.get("CODE_TRIES", "5"))
+# Не чаще одного письма в минуту на адрес — иначе почтой можно завалить чужой ящик.
+CODE_COOLDOWN = int(os.environ.get("CODE_COOLDOWN", "60"))
+
 PROMO_CODES = {
     "PARDAUTO": {"days": 30, "limit": 0, "note": "первый месяц бесплатно"},
 }
@@ -83,6 +94,8 @@ PROMO_CODES = {
 DEVICE_RE = re.compile(r"^[A-Za-z0-9_\-]{8,64}$")
 CODE_RE = re.compile(r"^[A-Z0-9\-]{4,32}$")
 KEY_RE = re.compile(r"^[a-z0-9]{16}$")
+EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s.]+(\.[^@\s.]+)+$")
+TOKEN_RE = re.compile(r"^[A-Za-z0-9_\-]{32,128}$")
 
 for name, val in (("PANEL_URL", PANEL_URL), ("PANEL_TOKEN", PANEL_TOKEN), ("SUB_URI", SUB_URI)):
     if not val or val == "/":
@@ -116,6 +129,40 @@ def db():
         days         INTEGER NOT NULL,
         created      TEXT NOT NULL)""")
     c.execute("CREATE INDEX IF NOT EXISTS idx_ref ON referrals(referrer_sub)")
+    # Учётные данные. Живут рядом с панелью намеренно: так состояние аккаунта
+    # и состояние подписки в 3x-ui не могут разъехаться.
+    c.execute("""CREATE TABLE IF NOT EXISTS users(
+        id      INTEGER PRIMARY KEY AUTOINCREMENT,
+        email   TEXT NOT NULL UNIQUE,
+        created TEXT NOT NULL)""")
+    # Одноразовые коды входа. Пароля нет намеренно: его забывают и крадут,
+    # а восстановление всё равно шло бы через ту же почту.
+    c.execute("""CREATE TABLE IF NOT EXISTS login_codes(
+        email   TEXT PRIMARY KEY,
+        code    TEXT NOT NULL,
+        expires REAL NOT NULL,
+        sent    REAL NOT NULL,
+        tries   INTEGER NOT NULL DEFAULT 0)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS sessions(
+        token   TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        created TEXT NOT NULL,
+        seen    TEXT)""")
+    # Подписка у человека одна, поэтому связь один к одному.
+    c.execute("""CREATE TABLE IF NOT EXISTS user_subs(
+        user_id INTEGER PRIMARY KEY,
+        sub_id  TEXT NOT NULL)""")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_usub ON user_subs(sub_id)")
+    c.execute("""CREATE TABLE IF NOT EXISTS payments(
+        order_id TEXT PRIMARY KEY,
+        user_id  INTEGER,
+        sub_id   TEXT,
+        amount   REAL NOT NULL,
+        plan     TEXT,
+        days     INTEGER,
+        devices  INTEGER,
+        status   TEXT NOT NULL,
+        created  TEXT NOT NULL)""")
     return c
 
 
@@ -235,6 +282,96 @@ def set_device_limit(con, sub_id, n):
     )
 
 
+def send_mail(to, subject, text):
+    """Попросить сайт отправить письмо. Отсюда SMTP наружу закрыт хостером."""
+    if not (MAIL_URL and MAIL_SECRET):
+        raise RuntimeError("отправка писем не настроена")
+    req = urllib.request.Request(
+        MAIL_URL,
+        data=json.dumps({"to": to, "subject": subject, "text": text}).encode(),
+        headers={"Content-Type": "application/json", "X-Tunnelo-Secret": MAIL_SECRET},
+        method="POST")
+    with urllib.request.urlopen(req, timeout=20) as r:
+        if r.status != 200:
+            raise RuntimeError(f"сайт не отправил письмо: {r.status}")
+
+
+def ensure_user(con, email):
+    row = con.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()
+    if row:
+        return row[0]
+    con.execute("INSERT INTO users(email,created) VALUES(?,?)",
+                (email, datetime.now(timezone.utc).isoformat()))
+    return con.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()[0]
+
+
+def new_session(con, user_id):
+    token = secrets.token_urlsafe(48)
+    con.execute("INSERT INTO sessions(token,user_id,created) VALUES(?,?,?)",
+                (token, user_id, datetime.now(timezone.utc).isoformat()))
+    return token
+
+
+def user_by_token(con, token):
+    if not token or not TOKEN_RE.match(token):
+        return None
+    row = con.execute(
+        "SELECT s.user_id, u.email FROM sessions s JOIN users u ON u.id=s.user_id "
+        "WHERE s.token=?", (token,)).fetchone()
+    if row:
+        con.execute("UPDATE sessions SET seen=? WHERE token=?",
+                    (datetime.now(timezone.utc).isoformat(), token))
+    return row
+
+
+def sub_of_user(con, user_id):
+    row = con.execute("SELECT sub_id FROM user_subs WHERE user_id=?", (user_id,)).fetchone()
+    return row[0] if row else None
+
+
+def bind_sub(con, user_id, sub_id):
+    """Привязать подписку к человеку, если она ещё ничья."""
+    row = con.execute("SELECT user_id FROM user_subs WHERE sub_id=?", (sub_id,)).fetchone()
+    if row and row[0] != user_id:
+        return False
+    con.execute(
+        "INSERT INTO user_subs(user_id,sub_id) VALUES(?,?) "
+        "ON CONFLICT(user_id) DO UPDATE SET sub_id=excluded.sub_id", (user_id, sub_id))
+    return True
+
+
+def account_state(con, user_id, email):
+    """Всё, что человек видит про свой аккаунт: и в кабинете, и в приложении."""
+    sub_id = sub_of_user(con, user_id)
+    out = {"email": email, "key": sub_id, "subscription": SUB_URI + sub_id if sub_id else None}
+    if not sub_id:
+        return out
+    row = con.execute(
+        "SELECT email FROM activations WHERE sub_id=? LIMIT 1", (sub_id,)).fetchone()
+    st = client_status(row[0]) if row else None
+    expiry = (st or {}).get("expiryTime", 0)
+    inv = con.execute(
+        "SELECT COUNT(*), COALESCE(SUM(days),0) FROM referrals WHERE referrer_sub=?",
+        (sub_id,)).fetchone()
+    out.update({
+        "active": bool((st or {}).get("enable")),
+        "expires": expiry,
+        "daysLeft": days_left_of(expiry),
+        "devices": devices_used(con, sub_id),
+        "deviceLimit": device_limit_of(con, sub_id),
+        "referralCode": referral_code(sub_id),
+        "invited": inv[0],
+        "bonusDays": inv[1],
+        "payments": [
+            {"date": r[0], "amount": r[1], "plan": r[2], "status": r[3]}
+            for r in con.execute(
+                "SELECT created, amount, plan, status FROM payments "
+                "WHERE user_id=? ORDER BY created DESC LIMIT 20", (user_id,))
+        ],
+    })
+    return out
+
+
 def devices_used(con, sub_id):
     return con.execute(
         "SELECT COUNT(DISTINCT device) FROM activations WHERE sub_id=?", (sub_id,)
@@ -348,6 +485,20 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send(503, {"ok": False, "error": str(e)})
 
+        if self.path == "/me":
+            token = self.headers.get("Authorization", "")
+            token = token[7:].strip() if token.startswith("Bearer ") else token.strip()
+            con = db()
+            try:
+                who = user_by_token(con, token)
+                if not who:
+                    return self._send(401, {"error": "unauthorized"})
+                state = account_state(con, who[0], who[1])
+                con.commit()
+                return self._send(200, state)
+            finally:
+                con.close()
+
         m = re.match(r"^/sub/([A-Za-z0-9_\-]+)/?$", self.path.split("?", 1)[0])
         if m:
             return self.serve_sub(m.group(1))
@@ -431,7 +582,8 @@ class H(BaseHTTPRequestHandler):
         self._write_body(body)
 
     def do_POST(self):
-        if self.path not in ("/activate", "/extend", "/redeem"):
+        if self.path not in ("/activate", "/extend", "/redeem",
+                             "/auth/request", "/auth/verify"):
             return self._send(404, {"error": "no route"})
         n = int(self.headers.get("Content-Length", "0") or 0)
         try:
@@ -443,6 +595,10 @@ class H(BaseHTTPRequestHandler):
             return self.do_extend(body)
         if self.path == "/redeem":
             return self.do_redeem(body)
+        if self.path == "/auth/request":
+            return self.do_auth_request(body)
+        if self.path == "/auth/verify":
+            return self.do_auth_verify(body)
 
         return self.do_activate(body)
 
@@ -540,6 +696,21 @@ class H(BaseHTTPRequestHandler):
                 set_device_limit(con, key, devices)
                 con.commit()
             extend(email, days)
+            # Платёж записываем здесь же: кабинет показывает историю оплат,
+            # и брать её больше неоткуда — уведомление Enot приходит один раз.
+            order = str(body.get("order_id", "")).strip()
+            if order:
+                owner = con.execute(
+                    "SELECT user_id FROM user_subs WHERE sub_id=?", (key,)).fetchone()
+                con.execute(
+                    "INSERT OR REPLACE INTO payments"
+                    "(order_id,user_id,sub_id,amount,plan,days,devices,status,created) "
+                    "VALUES(?,?,?,?,?,?,?,?,?)",
+                    (order, owner[0] if owner else None, key,
+                     float(body.get("amount") or 0), str(body.get("plan") or ""),
+                     days, devices if isinstance(devices, int) else None,
+                     "paid", datetime.now(timezone.utc).isoformat()))
+                con.commit()
         except Exception as e:
             sys.stderr.write(f"ВНИМАНИЕ: оплата прошла, продлить не удалось {key}: {e}\n")
             return self._send(502, {"error": "panel error"})
@@ -551,6 +722,105 @@ class H(BaseHTTPRequestHandler):
         sys.stderr.write(f"extended {email} +{days}d\n")
         return self._send(200, {"ok": True, "key": key, "expires": expiry,
                                 "daysLeft": days_left_of(expiry)})
+
+    # ---------- вход по почте -----------------------------------------------
+    def do_auth_request(self, body):
+        """Выслать одноразовый код. Пароля у нас нет намеренно."""
+        email = str(body.get("email", "")).strip().lower()
+        if not EMAIL_RE.match(email):
+            return self._send(400, {"error": "bad email",
+                                    "message": "Проверьте адрес почты."})
+        now = time.time()
+        con = db()
+        try:
+            row = con.execute(
+                "SELECT sent FROM login_codes WHERE email=?", (email,)).fetchone()
+            if row and now - row[0] < CODE_COOLDOWN:
+                wait = int(CODE_COOLDOWN - (now - row[0])) or 1
+                return self._send(429, {
+                    "error": "too soon",
+                    "message": f"Письмо уже отправлено. Повторить можно через {wait} с.",
+                })
+            code = f"{secrets.randbelow(1000000):06d}"
+            con.execute(
+                "INSERT INTO login_codes(email,code,expires,sent,tries) VALUES(?,?,?,?,0) "
+                "ON CONFLICT(email) DO UPDATE SET code=excluded.code, "
+                "expires=excluded.expires, sent=excluded.sent, tries=0",
+                (email, code, now + CODE_TTL, now))
+            con.commit()
+        finally:
+            con.close()
+
+        try:
+            send_mail(
+                email, "Код для входа в Tunnelo",
+                f"Ваш код: {code}\n\n"
+                f"Он действует {CODE_TTL // 60} минут.\n"
+                "Если вы не запрашивали вход, просто не отвечайте на это письмо.",
+            )
+        except Exception as e:
+            sys.stderr.write(f"письмо не ушло на {email}: {e}\n")
+            return self._send(502, {
+                "error": "mail failed",
+                "message": "Не удалось отправить письмо. Попробуйте позже.",
+            })
+        return self._send(200, {"ok": True, "message": "Код отправлен на почту."})
+
+    def do_auth_verify(self, body):
+        email = str(body.get("email", "")).strip().lower()
+        code = str(body.get("code", "")).strip()
+        device = str(body.get("device", "")).strip()
+        key = str(body.get("key", "")).strip().lower()
+        if not EMAIL_RE.match(email) or not re.fullmatch(r"\d{6}", code):
+            return self._send(400, {"error": "bad request",
+                                    "message": "Проверьте адрес и код."})
+
+        con = db()
+        try:
+            row = con.execute(
+                "SELECT code, expires, tries FROM login_codes WHERE email=?",
+                (email,)).fetchone()
+            if not row:
+                return self._send(404, {"error": "no code",
+                                        "message": "Сначала запросите код."})
+            saved, expires, tries = row
+            if time.time() > expires:
+                return self._send(410, {"error": "expired",
+                                        "message": "Код устарел, запросите новый."})
+            if tries >= CODE_TRIES:
+                return self._send(429, {
+                    "error": "too many",
+                    "message": "Слишком много попыток. Запросите новый код.",
+                })
+            if not secrets.compare_digest(saved, code):
+                con.execute("UPDATE login_codes SET tries=tries+1 WHERE email=?", (email,))
+                con.commit()
+                return self._send(403, {"error": "bad code", "message": "Код не подошёл."})
+            con.execute("DELETE FROM login_codes WHERE email=?", (email,))
+
+            user_id = ensure_user(con, email)
+            # Человек мог пользоваться приложением до регистрации: тогда ключ
+            # уже лежит на устройстве. Привязываем его, а не заводим второй.
+            mine = sub_of_user(con, user_id)
+            if not mine and KEY_RE.match(key or ""):
+                if con.execute("SELECT 1 FROM activations WHERE sub_id=?",
+                               (key,)).fetchone() and bind_sub(con, user_id, key):
+                    mine = key
+            if not mine and DEVICE_RE.match(device or ""):
+                r = con.execute("SELECT sub_id FROM activations WHERE device=? LIMIT 1",
+                                (device,)).fetchone()
+                if r and bind_sub(con, user_id, r[0]):
+                    mine = r[0]
+
+            token = new_session(con, user_id)
+            state = account_state(con, user_id, email)
+            con.commit()
+        finally:
+            con.close()
+
+        state["token"] = token
+        sys.stderr.write(f"вход {email}\n")
+        return self._send(200, state)
 
     # ---------- один вход для всех кодов ------------------------------------
     def do_redeem(self, body):

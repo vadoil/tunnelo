@@ -68,6 +68,58 @@ st, b = post("/redeem", {"code": "TUNABC123", "device": "device0001", "key": "ab
 ok(st == 409 and "собственный" in b.get("message", ""), "свой же код не засчитывается")
 st, _ = post("/nonexistent", {})
 ok(st == 404, "лишних маршрутов не появилось")
+
+
+# --- вход по почте -----------------------------------------------------------
+sent = []
+m.send_mail = lambda to, subject, text: sent.append((to, text))
+m.MAIL_URL, m.MAIL_SECRET = "http://stub", "s"
+# Панели в тестах нет: подменяем её ответ, иначе запрос к ней висит до таймаута.
+m.client_status = lambda email: {"enable": True,
+                                 "expiryTime": int((time.time() + 30 * 86400) * 1000)}
+
+st, b = post("/auth/request", {"email": "не-адрес"})
+ok(st == 400, f"кривой адрес почты отвергается ({st})")
+st, b = post("/auth/verify", {"email": "a@b.ru", "code": "123456"})
+ok(st == 404 and "запросите код" in b.get("message", ""), "вход без кода объясняет, что делать")
+
+st, b = post("/auth/request", {"email": "a@b.ru"})
+ok(st == 200 and len(sent) == 1, f"код отправлен ({st})")
+code = sent[0][1].split("Ваш код: ")[1].split("\n")[0]
+ok(len(code) == 6 and code.isdigit(), f"код шестизначный: {code}")
+
+st, b = post("/auth/request", {"email": "a@b.ru"})
+ok(st == 429, f"второе письмо подряд не уходит ({st})")
+
+st, b = post("/auth/verify", {"email": "a@b.ru", "code": "000000"})
+ok(st == 403, f"неверный код отвергается ({st})")
+
+st, b = post("/auth/verify", {"email": "a@b.ru", "code": code,
+                              "key": "abc123def4567890"})
+ok(st == 200 and b.get("token"), "верный код пускает и выдаёт токен")
+ok(b.get("key") == "abc123def4567890", "существующая подписка привязалась к аккаунту")
+ok(b.get("email") == "a@b.ru", "аккаунт помнит почту")
+token = b["token"]
+
+st, b = post("/auth/verify", {"email": "a@b.ru", "code": code})
+ok(st == 404, f"код одноразовый ({st})")
+
+def get(path, headers=None):
+    r = urllib.request.Request("http://127.0.0.1:18099" + path, headers=headers or {})
+    try:
+        with urllib.request.urlopen(r, timeout=5) as resp:
+            return resp.status, json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read())
+
+st, _ = get("/me")
+ok(st == 401, f"кабинет без токена закрыт ({st})")
+st, _ = get("/me", {"Authorization": "Bearer notarealtokenatall_0123456789abcdefXYZ"})
+ok(st == 401, f"чужой токен не пускает ({st})")
+st, b = get("/me", {"Authorization": "Bearer " + token})
+ok(st == 200 and b.get("email") == "a@b.ru", "по токену кабинет открывается")
+ok(b.get("referralCode") == "TUNABC123", "в кабинете есть код приглашения")
+
 srv.shutdown()
 
 print()

@@ -9,8 +9,11 @@
 не попадают в страницы: подпись уведомления об оплате проверяется здесь.
 """
 
+import asyncio
 import hashlib
 import hmac
+import smtplib
+from email.message import EmailMessage
 import json
 import logging
 import os
@@ -30,6 +33,16 @@ ACTIVATION_URL = os.getenv("TUNNELO_ACTIVATION_URL", "https://api.amnez.online")
 # Секрет для /extend. Метод раздаёт оплаченные дни, сервис активации без
 # секрета его не пускает — и правильно делает.
 EXTEND_SECRET = os.getenv("TUNNELO_EXTEND_SECRET", "")
+# Письма отправляем отсюда: у сервера с базой хостер закрыл исходящие SMTP.
+# Пока внешний ящик не заведён, письмо уходит через локальный postfix —
+# доходит, но в mail.ru и yandex часто попадает в спам. Настроенный SMTP
+# с SPF и DKIM это лечит.
+MAIL_SECRET = os.getenv("TUNNELO_MAIL_SECRET", "")
+SMTP_HOST = os.getenv("TUNNELO_SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("TUNNELO_SMTP_PORT", "465"))
+SMTP_USER = os.getenv("TUNNELO_SMTP_USER", "")
+SMTP_PASS = os.getenv("TUNNELO_SMTP_PASS", "")
+MAIL_FROM = os.getenv("TUNNELO_MAIL_FROM", "Tunnelo <noreply@tunello.online>")
 
 # Enot: идентификатор магазина и секреты. Живут только в окружении сервера.
 ENOT_SHOP_ID = os.getenv("ENOT_SHOP_ID", "")
@@ -203,6 +216,58 @@ async def pay(plan: str = "2d-12m", key: str = "", app: str = ""):
     except Exception as e:
         LOG.warning("Enot недоступен: %s", e)
     return RedirectResponse("/cabinet?pay=error", status_code=303)
+
+
+@app.post("/internal/mail")
+async def internal_mail(request: Request):
+    """
+    Отправка письма по просьбе сервиса аккаунтов.
+
+    Наружу этот метод открыт, поэтому закрыт секретом: иначе с нашего адреса
+    сможет писать кто угодно, и домен быстро окажется в чёрных списках.
+    """
+    if not MAIL_SECRET:
+        return JSONResponse({"error": "mail not configured"}, status_code=503)
+    if not hmac.compare_digest(request.headers.get("x-tunnelo-secret", ""), MAIL_SECRET):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+
+    body = await request.json()
+    to = str(body.get("to", "")).strip()
+    subject = str(body.get("subject", "")).strip() or "Tunnelo"
+    text = str(body.get("text", ""))
+    if "@" not in to or not text:
+        return JSONResponse({"error": "bad request"}, status_code=400)
+
+    msg = EmailMessage()
+    msg["From"] = MAIL_FROM
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.set_content(text)
+
+    def send():
+        if SMTP_HOST:
+            if SMTP_PORT == 465:
+                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as srv:
+                    if SMTP_USER:
+                        srv.login(SMTP_USER, SMTP_PASS)
+                    srv.send_message(msg)
+            else:
+                with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as srv:
+                    srv.starttls()
+                    if SMTP_USER:
+                        srv.login(SMTP_USER, SMTP_PASS)
+                    srv.send_message(msg)
+        else:
+            with smtplib.SMTP("127.0.0.1", 25, timeout=20) as srv:
+                srv.send_message(msg)
+
+    try:
+        await asyncio.to_thread(send)
+    except Exception as e:
+        LOG.error("письмо на %s не ушло: %s", to, e)
+        return JSONResponse({"error": "send failed"}, status_code=502)
+    LOG.info("письмо отправлено на %s", to)
+    return {"ok": True}
 
 
 @app.get("/paid", response_class=HTMLResponse)
