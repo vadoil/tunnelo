@@ -32,7 +32,7 @@ class TunneloServerPill extends ConsumerWidget {
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () => context.pushNamed('proxies'),
+          onTap: () => context.pushNamed('servers'),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(

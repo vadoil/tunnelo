@@ -67,7 +67,9 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
     if (isMobileBreakpoint == true) {
       showProfilesAction = false;
     } else {
-      showProfilesAction = ref.watch(hasAnyProfileProvider).value ?? false;
+      // Tunnelo: профилей у человека нет — подписка одна и приходит сама.
+      // Вкладка «Профили» показывала внутреннюю кухню Hiddify.
+      showProfilesAction = false;
     }
     if (isMobileBreakpoint == null) return loadingConfig;
     return RoutingConfig(
