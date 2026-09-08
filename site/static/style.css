@@ -338,3 +338,26 @@ input, textarea, select { background: var(--card-solid) !important; color: var(-
   .flow-split { grid-template-columns: 1fr; }
   .branch::before { display: none; }
 }
+
+/* ---------- Кабинет ---------- */
+.wrap-narrow { max-width: 720px; }
+.cab-fox { display: block; margin: 12px auto 4px; width: 150px; }
+.cab-form { display: grid; gap: 12px; max-width: 380px; margin: 18px auto 10px; }
+.cab-form .btn { width: 100%; justify-content: center; }
+.field {
+  width: 100%; padding: 14px 16px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--card-solid);
+  color: var(--text); font-size: 16px; font-family: inherit;
+}
+.field:focus { outline: none; border-color: var(--sea); }
+.row { display: flex; justify-content: space-between; gap: 16px; padding: 11px 0;
+       border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row .k { color: var(--muted); font-size: 14.5px; }
+.row .v { color: var(--text); font-size: 14.5px; font-weight: 600; }
+.keybox {
+  margin-top: 10px; padding: 14px; border-radius: 12px; text-align: center;
+  background: var(--card-solid); border: 1px solid var(--line);
+  color: var(--deep); font-size: 19px; font-weight: 700; letter-spacing: 1.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; user-select: all;
+}

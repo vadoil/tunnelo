@@ -1,68 +1,98 @@
 {% extends "base.html" %}
 {% block title %}Личный кабинет — Tunnelo{% endblock %}
 {% block body %}
-<div class="wrap">
-  <div class="cabinet">
+<div class="wrap wrap-narrow">
 
-    <h1 style="font-size:32px;color:var(--deep);margin-bottom:6px">Личный кабинет</h1>
-    <p style="color:var(--muted);margin-bottom:26px">
-      Проверьте срок подписки или создайте новый доступ</p>
+  {% if paid %}
+    <div class="msg ok">Оплачено. Дни появятся в течение минуты — обновите страницу.</div>
+  {% endif %}
+  {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+
+  {% if account %}
+    {# ---------- вошли ---------- #}
+    <h1>Ваша подписка</h1>
+    <p class="sub">{{ account.email }} · <a href="/cabinet/exit">выйти</a></p>
 
     <div class="card">
-      <div class="foot-h">У меня есть ключ</div>
-      <p style="color:var(--muted);font-size:14.5px;margin-bottom:14px">
-        Ключ виден в приложении: Настройки → Промокод</p>
-      <form method="get" action="/cabinet">
-        <input class="field" name="key" placeholder="Ключ подписки"
-               value="{{ key or '' }}" autocomplete="off" spellcheck="false">
-        <div style="height:12px"></div>
-        <button class="btn btn-ghost" style="width:100%" type="submit">Проверить</button>
-      </form>
-    </div>
-
-    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
-    {% if reg_error %}<div class="msg err">{{ reg_error }}</div>{% endif %}
-
-    {% if status %}
-    <div class="card" style="margin-top:18px">
       <div class="row"><span class="k">Состояние</span>
-        <span class="v">{{ 'активна' if status.active else 'истекла' }}</span></div>
+        <span class="v">{{ 'активна' if account.active else 'истекла' }}</span></div>
+      {% if account.daysLeft is not none %}
       <div class="row"><span class="k">Осталось</span>
-        <span class="v">{{ status.days_text }}</span></div>
-      <div class="row"><span class="k">Трафик</span>
-        <span class="v">{{ status.traffic_text }}</span></div>
-      <div style="height:16px"></div>
-      <a class="btn btn-primary" style="width:100%" href="/pay?plan=2d-12m&key={{ key }}">Продлить</a>
+        <span class="v">{{ account.daysLeft }} дн.</span></div>
+      {% endif %}
+      <div class="row"><span class="k">Устройства</span>
+        <span class="v">{{ account.devices }} из {{ account.deviceLimit }}</span></div>
+      {% if account.referralCode %}
+      <div class="row"><span class="k">Код приглашения</span>
+        <span class="v">{{ account.referralCode }}</span></div>
+      <div class="row"><span class="k">Приглашено</span>
+        <span class="v">{{ account.invited }} · начислено {{ account.bonusDays }} дн.</span></div>
+      {% endif %}
+    </div>
+
+    {% if account.key %}
+    <div class="card">
+      <div class="k">Код переноса</div>
+      <p class="note">Введите его в приложении на втором устройстве —
+         откройте «Промокод» и вставьте.</p>
+      <div class="keybox">{{ account.key }}</div>
     </div>
     {% endif %}
 
-    {% if new_key %}
-    <div class="msg ok" style="margin-top:18px">
-      Доступ создан. Ваш ключ: <strong>{{ new_key }}</strong><br>
-      Сохраните его — по нему вы входите в кабинет и переносите подписку
-      на другое устройство.
+    <h2 style="margin-top:34px">Продлить</h2>
+    <div class="plans">
+      {% for p in plans %}
+      <div class="plan {% if p.best %}best{% endif %}">
+        <div class="term">{{ p.devices }}</div>
+        <div class="price">{{ p.month.price }} <small>₽ / мес</small></div>
+        <div class="note">или {{ p.year.price }} ₽ за год</div>
+        <div class="plan-buy">
+          <a class="btn btn-primary" href="/pay?plan={{ p.year.id }}&key={{ account.key or '' }}">
+            На год <span class="save">−50%</span></a>
+          <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}&key={{ account.key or '' }}">На месяц</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if account.payments %}
+    <h2 style="margin-top:34px">Платежи</h2>
+    <div class="card">
+      {% for pay in account.payments %}
+      <div class="row"><span class="k">{{ pay.date[:10] }}</span>
+        <span class="v">{{ pay.amount|round|int }} ₽ · {{ pay.status }}</span></div>
+      {% endfor %}
     </div>
     {% endif %}
 
-    <div class="card" style="margin-top:18px">
-      <div class="foot-h">Я здесь впервые</div>
-      <p style="color:var(--muted);font-size:14.5px;margin-bottom:14px">
-        Оставьте почту — выдадим ключ и отправим его вам. Пароль придумывать
-        не нужно, регистрация занимает секунду.</p>
-      <form method="post" action="/register">
-        <input class="field" name="email" type="email" required
-               placeholder="Ваша почта" autocomplete="email">
-        <div style="height:10px"></div>
-        <label class="agree">
-          <input type="checkbox" name="agree" required>
-          <span>Согласен с <a href="/offer">офертой</a> и
-                <a href="/privacy">обработкой персональных данных</a></span>
-        </label>
-        <div style="height:12px"></div>
-        <button class="btn btn-primary" style="width:100%" type="submit">Получить ключ</button>
+  {% else %}
+    {# ---------- вход ---------- #}
+    <img class="cab-fox" src="/static/fox/lantern.png" alt="">
+    <h1>Вход</h1>
+
+    {% if code_sent %}
+      <p class="sub">Отправили код на {{ email }}. Он действует 15 минут.</p>
+      <form method="post" action="/cabinet/enter" class="cab-form">
+        <input type="hidden" name="email" value="{{ email }}">
+        <input class="field" name="code" inputmode="numeric" maxlength="6"
+               placeholder="000000" autocomplete="one-time-code" autofocus required>
+        <button class="btn btn-primary" type="submit">Войти</button>
       </form>
-    </div>
+      <p class="note">Письмо не пришло? Загляните в «Спам» или
+         <a href="/cabinet">попробуйте другой адрес</a>.</p>
+    {% else %}
+      <p class="sub">Введите почту — пришлём код. Пароль придумывать не нужно:
+         его забывают и крадут, а восстанавливать всё равно пришлось бы
+         через ту же почту.</p>
+      <form method="post" action="/cabinet/code" class="cab-form">
+        <input class="field" name="email" type="email" placeholder="you@example.com"
+               value="{{ email or '' }}" autocomplete="email" autofocus required>
+        <button class="btn btn-primary" type="submit">Прислать код</button>
+      </form>
+      <p class="note">Ещё не пользовались Tunnelo? Скачайте приложение —
+         первые 30 дней бесплатно, аккаунт заведётся при первой оплате.</p>
+    {% endif %}
+  {% endif %}
 
-  </div>
 </div>
 {% endblock %}

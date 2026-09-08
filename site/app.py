@@ -144,31 +144,83 @@ async def index(request: Request):
 
 
 @app.get("/cabinet", response_class=HTMLResponse)
-async def cabinet(request: Request, key: str = ""):
-    key = key.strip()
-    status = error = None
-
-    if key:
+async def cabinet(request: Request, paid: str = ""):
+    """
+    Личный кабинет. Вход по коду из письма — пароля нет намеренно:
+    его забывают и крадут, а восстанавливать пришлось бы через ту же почту.
+    """
+    token = request.cookies.get("tunnelo_session", "")
+    account = None
+    if token:
         try:
             async with httpx.AsyncClient(timeout=15) as client:
-                r = await client.get(f"{ACTIVATION_URL}/status/{key}")
+                r = await client.get(f"{ACTIVATION_URL}/me",
+                                     headers={"Authorization": "Bearer " + token})
             if r.status_code == 200:
-                data = r.json()
-                days = int(data.get("daysLeft") or 0)
-                used = int(data.get("up") or 0) + int(data.get("down") or 0)
-                status = {
-                    "active": bool(data.get("active")),
-                    "days_text": f"{days} {_plural_days(days)}" if days else "истекла",
-                    "traffic_text": _gb(used),
-                }
-            else:
-                error = "Такой ключ не найден. Проверьте, не потерялся ли символ."
+                account = r.json()
         except Exception:
-            error = "Не удалось связаться с сервером. Попробуйте через минуту."
+            LOG.warning("кабинет: сервис аккаунтов не ответил")
 
+    resp = templates.TemplateResponse("cabinet.html", _ctx(
+        request, account=account, paid=bool(paid), plans=PLAN_CARDS))
+    if token and account is None:
+        # Сессия протухла — не держим мёртвую печенье.
+        resp.delete_cookie("tunnelo_session")
+    return resp
+
+
+@app.post("/cabinet/code", response_class=HTMLResponse)
+async def cabinet_code(request: Request, email: str = Form("")):
+    """Выслать код на почту."""
+    email = email.strip().lower()
+    try:
+        async with httpx.AsyncClient(timeout=25) as client:
+            r = await client.post(f"{ACTIVATION_URL}/auth/request",
+                                  json={"email": email})
+        data = r.json()
+    except Exception:
+        return templates.TemplateResponse("cabinet.html", _ctx(
+            request, error="Сервис недоступен. Попробуйте через минуту.",
+            plans=PLAN_CARDS))
+    if r.status_code != 200:
+        return templates.TemplateResponse("cabinet.html", _ctx(
+            request, error=data.get("message") or "Не удалось отправить код",
+            email=email, plans=PLAN_CARDS))
     return templates.TemplateResponse("cabinet.html", _ctx(
-        request, key=key, status=status, error=error,
-    ))
+        request, email=email, code_sent=True, plans=PLAN_CARDS))
+
+
+@app.post("/cabinet/enter", response_class=HTMLResponse)
+async def cabinet_enter(request: Request, email: str = Form(""), code: str = Form("")):
+    """Обменять код на сессию."""
+    email, code = email.strip().lower(), code.strip()
+    try:
+        async with httpx.AsyncClient(timeout=25) as client:
+            r = await client.post(f"{ACTIVATION_URL}/auth/verify",
+                                  json={"email": email, "code": code})
+        data = r.json()
+    except Exception:
+        return templates.TemplateResponse("cabinet.html", _ctx(
+            request, error="Сервис недоступен. Попробуйте через минуту.",
+            email=email, code_sent=True, plans=PLAN_CARDS))
+    if r.status_code != 200 or not data.get("token"):
+        return templates.TemplateResponse("cabinet.html", _ctx(
+            request, error=data.get("message") or "Код не подошёл",
+            email=email, code_sent=True, plans=PLAN_CARDS))
+
+    resp = RedirectResponse("/cabinet", status_code=303)
+    # Печенье живёт год, только по HTTPS и недоступно скриптам:
+    # это ключ от подписки, красть его нельзя.
+    resp.set_cookie("tunnelo_session", data["token"], max_age=31536000,
+                    httponly=True, secure=True, samesite="lax")
+    return resp
+
+
+@app.get("/cabinet/exit")
+async def cabinet_exit():
+    resp = RedirectResponse("/cabinet", status_code=303)
+    resp.delete_cookie("tunnelo_session")
+    return resp
 
 
 @app.get("/pay")
