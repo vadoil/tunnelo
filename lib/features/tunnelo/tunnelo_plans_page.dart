@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_activation.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hiddify/utils/utils.dart';
@@ -68,7 +70,7 @@ class TunneloPlansPage extends HookConsumerWidget {
                 _PlanCard(
                   plan: p,
                   current: sub?.deviceLimit == p.devices,
-                  onTap: () => _openPayment(context, p, sub?.key),
+                  onTap: () => _pay(context, ref, p, sub?.key),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -83,6 +85,33 @@ class TunneloPlansPage extends HookConsumerWidget {
         },
       ),
     );
+  }
+
+  /// Перед оплатой заводим аккаунт.
+  ///
+  /// Без него подписка остаётся привязанной к одному телефону: потерял его —
+  /// потерял оплаченное, и на второе устройство не войти. Спрашиваем почту
+  /// именно здесь, а не на первом запуске: до оплаты человеку незачем её
+  /// давать, он ещё ничего не купил.
+  Future<void> _pay(
+    BuildContext context,
+    WidgetRef ref,
+    TunneloPlan plan,
+    String? key,
+  ) async {
+    final api = ref.read(tunneloActivationProvider);
+    if (await api.savedToken() == null) {
+      if (!context.mounted) return;
+      final ok = await context.pushNamed<bool>(
+        'login',
+        extra: 'Перед оплатой заведём аккаунт на вашу почту. '
+            'Тогда подписка не пропадёт вместе с телефоном, и её можно '
+            'будет включить на втором устройстве.',
+      );
+      if (ok != true) return;
+    }
+    if (!context.mounted) return;
+    _openPayment(context, plan, key ?? await api.savedKey());
   }
 
   void _openPayment(BuildContext context, TunneloPlan plan, String? key) {

@@ -18,6 +18,7 @@ class TunneloSubscriptionPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sub = ref.watch(tunneloSubscriptionProvider);
+    final account = ref.watch(tunneloAccountProvider).valueOrNull;
 
     return TunneloScaffold(
       title: 'Подписка',
@@ -58,6 +59,21 @@ class TunneloSubscriptionPage extends ConsumerWidget {
               title: 'Статистика',
               subtitle: 'Скорость и трафик за сеанс',
               onTap: () => context.pushNamed('stats'),
+            ),
+            _Action(
+              icon: account == null
+                  ? Icons.login_rounded
+                  : Icons.alternate_email_rounded,
+              title: account == null ? 'Войти по почте' : 'Аккаунт',
+              subtitle: account ??
+                  'Чтобы подписка не пропала вместе с телефоном',
+              onTap: () => context.pushNamed(
+                'login',
+                extra: account == null
+                    ? 'Введите почту — пришлём код. Пароль придумывать '
+                        'не нужно.'
+                    : null,
+              ),
             ),
             _Action(
               icon: Icons.confirmation_number_outlined,

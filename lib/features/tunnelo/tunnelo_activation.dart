@@ -13,6 +13,9 @@ abstract class TunneloConfig {
   static const activateUrl = 'https://api.amnez.online/activate';
   static const statusUrl = 'https://api.amnez.online/status';
   static const redeemUrl = 'https://api.amnez.online/redeem';
+  static const authRequestUrl = 'https://api.amnez.online/auth/request';
+  static const authVerifyUrl = 'https://api.amnez.online/auth/verify';
+  static const meUrl = 'https://api.amnez.online/me';
   static const defaultPromo = 'PARDAUTO';
 
   /// Оплата идёт на сайте, во внешнем браузере. Внутри приложения
@@ -384,6 +387,91 @@ class TunneloActivation {
         );
       }
       throw ActivationException('Ошибка сети: ${e.message ?? e.type.name}');
+    }
+  }
+
+  /// Попросить выслать код входа на почту.
+  Future<String> requestLoginCode(String email) async {
+    final resp = await _request(
+      Uri.parse(TunneloConfig.authRequestUrl),
+      body: {'email': email.trim().toLowerCase()},
+      options: Options(
+        contentType: Headers.jsonContentType,
+        sendTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 25),
+        validateStatus: (s) => s != null && s < 500,
+      ),
+    );
+    final body = _json(resp.data);
+    if (resp.statusCode == 200) {
+      return (body['message'] as String?) ?? 'Код отправлен на почту.';
+    }
+    throw ActivationException(
+      (body['message'] as String?) ?? 'Не удалось отправить код',
+    );
+  }
+
+  /// Обменять код на вход. Ключ с устройства привязывается к аккаунту,
+  /// чтобы у человека не завелась вторая подписка.
+  Future<String> verifyLoginCode(String email, String code) async {
+    final resp = await _request(
+      Uri.parse(TunneloConfig.authVerifyUrl),
+      body: {
+        'email': email.trim().toLowerCase(),
+        'code': code.trim(),
+        'device': await deviceId(),
+        'key': await savedKey() ?? '',
+      },
+      options: Options(
+        contentType: Headers.jsonContentType,
+        sendTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 25),
+        validateStatus: (s) => s != null && s < 500,
+      ),
+    );
+    final body = _json(resp.data);
+    if (resp.statusCode != 200) {
+      throw ActivationException(
+        (body['message'] as String?) ?? 'Код не подошёл',
+      );
+    }
+    final token = body['token'] as String?;
+    if (token == null) throw const ActivationException('Сервер не выдал доступ');
+    final p = await SharedPreferences.getInstance();
+    await p.setString(_kToken, token);
+    await p.setString(_kEmail, email.trim().toLowerCase());
+    final key = body['key'] as String?;
+    final sub = body['subscription'] as String?;
+    if (key != null && sub != null) {
+      await _save(ActivationResult(key: key, subscription: sub));
+    }
+    return token;
+  }
+
+  static const _kToken = 'tunnelo_token';
+  static const _kEmail = 'tunnelo_email';
+
+  Future<String?> savedToken() async =>
+      (await SharedPreferences.getInstance()).getString(_kToken);
+
+  Future<String?> savedEmail() async =>
+      (await SharedPreferences.getInstance()).getString(_kEmail);
+
+  Future<void> signOut() async {
+    final p = await SharedPreferences.getInstance();
+    await p.remove(_kToken);
+    await p.remove(_kEmail);
+  }
+
+  Map<String, dynamic> _json(Object? data) {
+    try {
+      return data is String
+          ? jsonDecode(data) as Map<String, dynamic>
+          : Map<String, dynamic>.from(data as Map);
+    } catch (_) {
+      throw const ActivationException(
+        'Сервер ответил неожиданным образом. Попробуйте позже.',
+      );
     }
   }
 

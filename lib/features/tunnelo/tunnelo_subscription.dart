@@ -73,3 +73,10 @@ final tunneloSubscriptionProvider =
   if (json == null) return null;
   return TunneloSubscription.fromJson(json, key: await api.savedKey());
 });
+
+/// Почта аккаунта, если человек вошёл. null — значит ещё нет.
+final tunneloAccountProvider = FutureProvider<String?>((ref) async {
+  final api = ref.read(tunneloActivationProvider);
+  if (await api.savedToken() == null) return null;
+  return api.savedEmail();
+});
