@@ -47,13 +47,8 @@ class TunneloPlansPage extends HookConsumerWidget {
     final yearly = useState(true);
     final sub = ref.watch(tunneloSubscriptionProvider).value;
 
-    return Scaffold(
-      backgroundColor: TunneloColors.mist,
-      appBar: AppBar(
-        title: const Text('Тарифы'),
-        backgroundColor: TunneloColors.mist,
-        surfaceTintColor: Colors.transparent,
-      ),
+    return TunneloScaffold(
+      title: 'Тарифы',
       body: Builder(
         builder: (context) {
           final plans = yearly.value ? _yearly : _monthly;

@@ -9,6 +9,7 @@ import 'package:hiddify/features/home/widget/connection_button.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_backdrop.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_server_pill.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_status_card.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_delay_indicator.dart';
@@ -29,116 +30,123 @@ class HomePage extends HookConsumerWidget {
     // Tunnelo: при первом запуске сами активируем промокод,
     // подтягиваем серверы и включаем RU-маршрутизацию.
     useEffect(() {
-      Future.microtask(
-        () => ref.read(tunneloSetupProvider.notifier).runIfNeeded(),
-      );
+      Future.microtask(() => ref.read(tunneloSetupProvider.notifier).runIfNeeded());
       return null;
     }, const []);
 
-    return Scaffold(
-      appBar: AppBar(
-        // leading: (RootScaffold.stateKey.currentState?.hasDrawer ?? false) && showDrawerButton(context)
-        //     ? DrawerButton(
-        //         onPressed: () {
-        //           RootScaffold.stateKey.currentState?.openDrawer();
-        //         },
-        //       )
-        //     : null,
-        title: Row(
-          children: [
-            Assets.images.logo.svg(height: 24),
-            const Gap(8),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: t.common.appTitle),
-                  const TextSpan(text: " "),
-                  const WidgetSpan(child: AppVersionLabel(), alignment: PlaceholderAlignment.middle),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          // IconButton(
-          //     onPressed: () => const QuickSettingsRoute().push(context),
-          //     icon: const Icon(FluentIcons.options_24_filled),
-          //     material: (context, platform) => MaterialIconButtonData(
-          //           tooltip: t.config.quickSettings,
-          //         )),
-          // IconButton(
-          //     onPressed: () => const AddProfileRoute().push(context),
-          //     icon: const Icon(FluentIcons.add_circle_24_filled),
-          //     material: (context, platform) => MaterialIconButtonData(
-          //           tooltip: t.profile.add.buttonText,
-          //         )),
-          Semantics(
-            key: const ValueKey("profile_quick_settings"),
-            label: t.pages.home.quickSettings,
-            child: IconButton(
-              icon: Icon(Icons.tune_rounded, color: theme.colorScheme.primary),
-              onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
-            ),
-          ),
-          const Gap(8),
-          const Gap(8),
-        ],
-      ),
-      // Tunnelo: вместо карты мира Hiddify — вид вдоль туннеля.
-      // Точка схода совпадает с кнопкой: она и есть свет в конце.
-      body: TunneloBackdrop(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 600, // Set the maximum width here
-                ),
-                child: CustomScrollView(
-                  slivers: [
-                    // switch (activeProfile) {
-                    // AsyncData(value: final profile?) =>
-                    MultiSliver(
-                      children: [
-                        // const Gap(100),
-                        // Tunnelo: вместо карточки профиля Hiddify — только
-                        // трафик, срок и устройства. Ключ и ссылку подписки
-                        // не показываем: по ним можно увести наши узлы.
-                        switch (activeProfile) {
-                          AsyncData(value: final _?) => const TunneloStatusCard(),
-                          _ => const SizedBox.shrink(),
-                        },
-                        const SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [ConnectionButton(), ActiveProxyDelayIndicator()],
-                                ),
-                              ),
-                              TunneloServerPill(),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    // AsyncData() => switch (hasAnyProfile) {
-                    //     AsyncData(value: true) => const EmptyActiveProfileHomeBody(),
-                    //     _ => const EmptyProfilesHomeBody(),
-                    //   },
-                    // AsyncError(:final error) => SliverErrorBodyPlaceholder(t.presentShortError(error)),
-                    // _ => const SliverToBoxAdapter(),
-                    // },
+    // Градиент обязан быть под всем: стеклянные карточки размывают то, что
+    // под ними, а на светлом фоне светлый текст просто пропадает.
+    return TunneloBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: TunneloColors.text,
+          elevation: 0,
+          // leading: (RootScaffold.stateKey.currentState?.hasDrawer ?? false) && showDrawerButton(context)
+          //     ? DrawerButton(
+          //         onPressed: () {
+          //           RootScaffold.stateKey.currentState?.openDrawer();
+          //         },
+          //       )
+          //     : null,
+          title: Row(
+            children: [
+              Assets.images.logo.svg(height: 24),
+              const Gap(8),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: t.common.appTitle),
+                    const TextSpan(text: " "),
+                    const WidgetSpan(child: AppVersionLabel(), alignment: PlaceholderAlignment.middle),
                   ],
                 ),
               ),
+            ],
+          ),
+          actions: [
+            // IconButton(
+            //     onPressed: () => const QuickSettingsRoute().push(context),
+            //     icon: const Icon(FluentIcons.options_24_filled),
+            //     material: (context, platform) => MaterialIconButtonData(
+            //           tooltip: t.config.quickSettings,
+            //         )),
+            // IconButton(
+            //     onPressed: () => const AddProfileRoute().push(context),
+            //     icon: const Icon(FluentIcons.add_circle_24_filled),
+            //     material: (context, platform) => MaterialIconButtonData(
+            //           tooltip: t.profile.add.buttonText,
+            //         )),
+            Semantics(
+              key: const ValueKey("profile_quick_settings"),
+              label: t.pages.home.quickSettings,
+              child: IconButton(
+                icon: Icon(Icons.tune_rounded, color: theme.colorScheme.primary),
+                onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
+              ),
             ),
+            const Gap(8),
+            const Gap(8),
           ],
+        ),
+        // Tunnelo: вместо карты мира Hiddify — вид вдоль туннеля.
+        // Точка схода совпадает с кнопкой: она и есть свет в конце.
+        body: TunneloBackdrop(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 600, // Set the maximum width here
+                  ),
+                  child: CustomScrollView(
+                    slivers: [
+                      // switch (activeProfile) {
+                      // AsyncData(value: final profile?) =>
+                      MultiSliver(
+                        children: [
+                          // const Gap(100),
+                          // Tunnelo: вместо карточки профиля Hiddify — только
+                          // трафик, срок и устройства. Ключ и ссылку подписки
+                          // не показываем: по ним можно увести наши узлы.
+                          switch (activeProfile) {
+                            AsyncData(value: final _?) => const TunneloStatusCard(),
+                            _ => const SizedBox.shrink(),
+                          },
+                          const SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [ConnectionButton(), ActiveProxyDelayIndicator()],
+                                  ),
+                                ),
+                                TunneloServerPill(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      // AsyncData() => switch (hasAnyProfile) {
+                      //     AsyncData(value: true) => const EmptyActiveProfileHomeBody(),
+                      //     _ => const EmptyProfilesHomeBody(),
+                      //   },
+                      // AsyncError(:final error) => SliverErrorBodyPlaceholder(t.presentShortError(error)),
+                      // _ => const SliverToBoxAdapter(),
+                      // },
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

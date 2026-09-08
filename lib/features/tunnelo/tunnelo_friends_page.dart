@@ -19,13 +19,8 @@ class TunneloFriendsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sub = ref.watch(tunneloSubscriptionProvider);
 
-    return Scaffold(
-      backgroundColor: TunneloColors.mist,
-      appBar: AppBar(
-        title: const Text('Друзья'),
-        backgroundColor: TunneloColors.mist,
-        surfaceTintColor: Colors.transparent,
-      ),
+    return TunneloScaffold(
+      title: 'Друзья',
       body: switch (sub) {
         AsyncData(value: final s?) when s.referralCode.isNotEmpty => _Body(sub: s),
         AsyncLoading() => const Center(child: CircularProgressIndicator()),

@@ -27,6 +27,7 @@ import 'package:hiddify/features/tunnelo/tunnelo_devices_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_friends_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_plans_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_welcome_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription_page.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -91,18 +92,16 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
           url = state.uri.queryParameters['url'];
         }
 
-        // Tunnelo: интро Hiddify не показываем — первый запуск ведёт
-        // TunneloSetupOverlay, человек ничего не настраивает руками.
+        // Tunnelo: своё знакомство вместо интро Hiddify. Третий его экран
+        // объясняет системный запрос на VPN до того, как Android покажет
+        // окно про отслеживание трафика: без объяснения люди уходят там же.
         if (!introCompleted) {
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) => ref.read(Preferences.introCompleted.notifier).update(true),
-          );
           if (url != null) {
             WidgetsBinding.instance.addPostFrameCallback(
               (_) => ref.read(bottomSheetsNotifierProvider.notifier).showAddProfile(url: url),
             );
           }
-          return '/home';
+          return state.matchedLocation == '/welcome' ? null : '/welcome';
         } else if (isIntro) {
           if (url != null)
             WidgetsBinding.instance.addPostFrameCallback(
@@ -272,6 +271,11 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
           ],
         ),
         GoRoute(name: 'intro', path: '/intro', builder: (_, _) => const IntroPage()),
+        GoRoute(
+          name: 'welcome',
+          path: '/welcome',
+          builder: (_, _) => const TunneloWelcomePage(),
+        ),
         GoRoute(name: 'promoCode', path: '/promo-code', builder: (_, _) => const PromoCodePage()),
         // Tunnelo: подписка и всё вокруг неё. Открывается тапом по карточке
         // на главной, а не из настроек: это то, за что человек платит.

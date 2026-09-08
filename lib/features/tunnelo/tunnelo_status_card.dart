@@ -36,13 +36,7 @@ class TunneloStatusCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: TunneloColors.card,
           borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              color: TunneloColors.seaDeep.withValues(alpha: 0.07),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          border: Border.all(color: TunneloColors.line),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -196,13 +190,7 @@ class _NotActivatedCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: TunneloColors.card,
       borderRadius: BorderRadius.circular(22),
-      boxShadow: [
-        BoxShadow(
-          color: TunneloColors.seaDeep.withValues(alpha: 0.07),
-          blurRadius: 18,
-          offset: const Offset(0, 6),
-        ),
-      ],
+      border: Border.all(color: TunneloColors.line),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

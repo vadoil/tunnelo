@@ -19,13 +19,8 @@ class TunneloSubscriptionPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sub = ref.watch(tunneloSubscriptionProvider);
 
-    return Scaffold(
-      backgroundColor: TunneloColors.mist,
-      appBar: AppBar(
-        title: const Text('Подписка'),
-        backgroundColor: TunneloColors.mist,
-        surfaceTintColor: Colors.transparent,
-      ),
+    return TunneloScaffold(
+      title: 'Подписка',
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(tunneloSubscriptionProvider),
         child: ListView(

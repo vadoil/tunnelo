@@ -1,31 +1,130 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
 /// Палитра Tunnelo.
 ///
-/// Светлая мятная гамма: спокойный фон, белые карточки, зелёный —
-/// основной цвет, коралловый — действие. Коралловым покрашено ровно одно:
-/// кнопка подключения. Она и есть главный предмет на экране.
+/// Глубокий градиент от индиго к мяте, карточки — матовое стекло, мятный
+/// акцент и коралловое действие. Коралловым покрашено ровно одно: кнопка
+/// подключения. Она и есть главный предмет на экране.
+///
+/// Стекло сделано честно: полупрозрачная подложка всегда достаточно плотная,
+/// чтобы текст на ней читался. Красиво и нечитаемо — это не красиво.
 abstract class TunneloColors {
-  static const mist = Color(0xFFEDF7F2); // фон приложения
-  static const card = Color(0xFFFFFFFF); // карточки
-  static const line = Color(0xFFDCEBE3); // границы, разделители
-  static const sea = Color(0xFF4E9C87); // основной зелёный
-  static const seaDeep = Color(0xFF2F6B5C); // тёмный зелёный, заголовки
-  static const coral = Color(0xFFF97B5E); // действие: подключиться
-  static const coralSoft = Color(0xFFFFB39F); // свечение вокруг кнопки
-  static const text = Color(0xFF223B34); // основной текст
-  static const muted = Color(0xFF8AA69C); // подписи
-  static const alert = Color(0xFFE4572E); // ошибка
+  // Фон: градиент рисуется TunneloBackground, mist — его средний тон,
+  // чтобы обычный Scaffold без градиента не выбивался.
+  static const mist = Color(0xFF141B3D); // глубокий индиго
+  static const mistDeep = Color(0xFF0C1230); // низ градиента
+  static const mistWarm = Color(0xFF12403C); // мятный край градиента
+
+  static const card = Color(0x14FFFFFF); // стекло: белый на 8%
+  static const cardSolid = Color(0xFF1C2450); // плотная подложка под текст
+  static const line = Color(0x26FFFFFF); // граница стекла
+
+  static const sea = Color(0xFF5FE0B8); // мятный акцент
+  static const seaDeep = Color(0xFF8CF0D0); // светлее — заголовки и цифры
+  static const coral = Color(0xFFFF8A6B); // действие: подключиться
+  static const coralSoft = Color(0xFFFFB7A0); // свечение вокруг кнопки
+
+  static const text = Color(0xFFEAF6F1); // основной текст
+  static const muted = Color(0xFF93AFA8); // подписи
+  static const alert = Color(0xFFFF6B4A); // ошибка
 
   // Старые имена — чтобы не переписывать разом весь код.
-  static const abyss = mist;
+  static const abyss = mistDeep;
   static const surface = card;
   static const surfaceHi = line;
   static const ringFar = sea;
   static const ringNear = coral;
   static const core = text;
+}
+
+/// Фон-градиент. Кладётся под содержимое экрана.
+class TunneloBackground extends StatelessWidget {
+  const TunneloBackground({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [TunneloColors.mist, TunneloColors.mistDeep, TunneloColors.mistWarm],
+        stops: [0.0, 0.55, 1.0],
+      ),
+    ),
+    child: child,
+  );
+}
+
+/// Экран с градиентом и прозрачной шапкой.
+///
+/// Градиент обязан быть под всем содержимым: стекло размывает то, что под
+/// ним, и на плоском цвете выглядит грязным пятном.
+class TunneloScaffold extends StatelessWidget {
+  const TunneloScaffold({super.key, required this.title, required this.body});
+
+  final String title;
+  final Widget body;
+
+  @override
+  Widget build(BuildContext context) => TunneloBackground(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: TunneloColors.text,
+        elevation: 0,
+      ),
+      body: body,
+    ),
+  );
+}
+
+/// Карточка из матового стекла.
+///
+/// Размытие берётся от того, что под ней, поэтому карточку нельзя класть
+/// на пустой цвет — под ней должен быть градиент или картинка.
+class TunneloGlass extends StatelessWidget {
+  const TunneloGlass({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.fromLTRB(18, 16, 18, 16),
+    this.radius = 20,
+    this.highlight = false,
+  });
+
+  final Widget child;
+  final EdgeInsets padding;
+  final double radius;
+
+  /// Подсветить рамку — для карточек, требующих внимания.
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(radius),
+    child: BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: TunneloColors.card,
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(
+            color: highlight ? TunneloColors.coral : TunneloColors.line,
+            width: highlight ? 1.4 : 1,
+          ),
+        ),
+        child: child,
+      ),
+    ),
+  );
 }
 
 enum TunnelState { idle, working, success, error }

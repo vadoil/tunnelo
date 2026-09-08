@@ -18,13 +18,8 @@ class TunneloDevicesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sub = ref.watch(tunneloSubscriptionProvider);
 
-    return Scaffold(
-      backgroundColor: TunneloColors.mist,
-      appBar: AppBar(
-        title: const Text('Устройства'),
-        backgroundColor: TunneloColors.mist,
-        surfaceTintColor: Colors.transparent,
-      ),
+    return TunneloScaffold(
+      title: 'Устройства',
       body: switch (sub) {
         AsyncData(value: final s?) => _Body(sub: s),
         AsyncError() => const _Unavailable(),
