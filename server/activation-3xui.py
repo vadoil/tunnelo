@@ -229,7 +229,8 @@ def create_client(code, days):
             "subId": sub_id,
             "expiryTime": expiry_ms,
             "totalGB": 0,
-            "limitIp": LIMIT_IP,
+            # Бесплатный месяц — одно устройство плюс запас на смену сети.
+            "limitIp": 2,
             "enable": True,
         },
         "inboundIds": ids,
@@ -246,6 +247,83 @@ def client_status(email):
 
 def extend(email, days):
     return panel("POST", "/panel/api/clients/bulkAdjust", {"emails": [email], "addDays": days})
+
+
+# Что панель отдаёт при чтении и что ждёт при записи — расходится: id
+# приходит числом, а принимается строкой; allowedIPs приходит строкой, а
+# принимается списком. Поэтому приводим payload к схеме записи явно, а не
+# ловим ошибки по одной.
+PANEL_CLIENT_FIELDS = {
+    "adTag": str, "allowedIPs": list, "auth": str, "comment": str,
+    "created_at": int, "email": str, "enable": bool, "expiryTime": int,
+    "flow": str, "group": str, "id": str, "keepAlive": int, "limitIp": int,
+    "password": str, "preSharedKey": str, "privateKey": str, "publicKey": str,
+    "reset": int, "secret": str, "security": str, "subId": str, "tgId": int,
+    "totalGB": int, "updated_at": int,
+}
+
+
+def panel_client_payload(client):
+    out = {}
+    for key, kind in PANEL_CLIENT_FIELDS.items():
+        if key not in client:
+            continue
+        v = client[key]
+        if v is None:
+            continue
+        if kind is list:
+            if isinstance(v, str):
+                v = [p.strip() for p in v.split(",") if p.strip()]
+            elif not isinstance(v, list):
+                v = []
+        elif kind is bool:
+            v = bool(v)
+        elif kind is int:
+            try:
+                v = int(v)
+            except (TypeError, ValueError):
+                continue
+        else:
+            v = str(v)
+        out[key] = v
+    return out
+
+
+def set_panel_device_limit(email, n):
+    """Привести лимит устройств в панели к купленному тарифу.
+
+    Без этого лимит остаётся общим (LIMIT_IP) и лишнее устройство можно
+    подключить в обход нашего счётчика — просто вставив ссылку подписки
+    в любой клиент.
+
+    Панель ЗАМЕНЯЕТ запись целиком, а не правит поля, поэтому сначала
+    читаем клиента, меняем одно поле и возвращаем всё обратно. И проверяем
+    привязку к инбаундам: она умеет молча схлопываться, а ответ приходит
+    успешный — это стоило нам однажды отвалившихся клиентов.
+    """
+    got = panel("GET", f"/panel/api/clients/get/{email}")
+    obj = got[0] if isinstance(got, list) else got
+    client = dict(obj.get("client") or obj)
+    before = list(obj.get("inboundIds") or [])
+    # Запас в единицу обязателен: телефон при переходе с Wi-Fi на мобильный
+    # какое-то время виден с двух адресов сразу, и жёсткий лимит рвал бы связь
+    # честному человеку.
+    client = panel_client_payload(client)
+
+    want = n + 1
+    if int(client.get("limitIp") or 0) == want:
+        return
+    client["limitIp"] = want
+    panel("POST", f"/panel/api/clients/update/{email}", client)
+
+    after_raw = panel("GET", f"/panel/api/clients/get/{email}")
+    after_obj = after_raw[0] if isinstance(after_raw, list) else after_raw
+    after = list(after_obj.get("inboundIds") or [])
+    if before and len(after) < len(before):
+        sys.stderr.write(
+            f"привязка схлопнулась у {email}: было {len(before)}, стало {len(after)} — чиню\n")
+        panel("POST", "/panel/api/clients/bulkAttach",
+              {"emails": [email], "inboundIds": before})
 
 
 def days_left_of(expiry_ms):
@@ -695,6 +773,12 @@ class H(BaseHTTPRequestHandler):
             if isinstance(devices, int) and 1 <= devices <= LIMIT_IP:
                 set_device_limit(con, key, devices)
                 con.commit()
+                # Лимит в панели должен совпадать с купленным, иначе лишнее
+                # устройство подключается мимо нашего счётчика.
+                try:
+                    set_panel_device_limit(email, devices)
+                except Exception as e:
+                    sys.stderr.write(f"лимит в панели не обновлён {key}: {e}\n")
             extend(email, days)
             # Платёж записываем здесь же: кабинет показывает историю оплат,
             # и брать её больше неоткуда — уведомление Enot приходит один раз.
