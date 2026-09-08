@@ -34,14 +34,19 @@ class _Unavailable extends StatelessWidget {
   const _Unavailable();
 
   @override
-  Widget build(BuildContext context) => const Padding(
-    padding: EdgeInsets.all(32),
-    child: Center(
-      child: Text(
-        'Подписка ещё настраивается.\nЗагляните сюда через минуту.',
-        textAlign: TextAlign.center,
-        style: TextStyle(color: TunneloColors.muted, height: 1.4),
-      ),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(32),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset('assets/images/fox/puzzled.png', height: 150),
+        const SizedBox(height: 20),
+        const Text(
+          'Подписка ещё настраивается.\nЗагляните сюда через минуту.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: TunneloColors.muted, height: 1.4, fontSize: 15),
+        ),
+      ],
     ),
   );
 }

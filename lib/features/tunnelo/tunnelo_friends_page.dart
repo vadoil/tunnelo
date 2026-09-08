@@ -24,14 +24,19 @@ class TunneloFriendsPage extends ConsumerWidget {
       body: switch (sub) {
         AsyncData(value: final s?) when s.referralCode.isNotEmpty => _Body(sub: s),
         AsyncLoading() => const Center(child: CircularProgressIndicator()),
-        _ => const Padding(
-          padding: EdgeInsets.all(32),
-          child: Center(
-            child: Text(
-              'Подписка ещё настраивается.\nЗагляните сюда через минуту.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: TunneloColors.muted, height: 1.4),
-            ),
+        _ => Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/images/fox/puzzled.png', height: 150),
+              const SizedBox(height: 20),
+              const Text(
+                'Подписка ещё настраивается.\nЗагляните сюда через минуту.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: TunneloColors.muted, height: 1.4, fontSize: 15),
+              ),
+            ],
           ),
         ),
       },
