@@ -26,11 +26,24 @@
 {% block body %}{% endblock %}
 
 <footer>
+  <!-- Документы кнопками, а не строчками: банк должен видеть их сразу,
+       не разглядывая мелкий текст в подвале. -->
+  <div class="wrap docs-bar">
+    <a class="doc-btn" href="/offer">Договор оферты</a>
+    <a class="doc-btn" href="/terms">Условия и возврат</a>
+    <a class="doc-btn" href="/privacy">Обработка данных</a>
+    <a class="doc-btn" href="/contacts">Контакты</a>
+  </div>
+
   <div class="wrap foot">
     <div class="foot-col">
-      <div class="foot-h">{{ org.name }}</div>
+      <div class="foot-h">Tunnelo</div>
+      <p>Сервис умной маршрутизации трафика.</p>
+      {% if show_org %}
+      <p>{{ org.name }}</p>
       <p>{{ org.address }}</p>
       <p>ИНН {{ org.inn }} · КПП {{ org.kpp }} · ОГРН {{ org.ogrn }}</p>
+      {% endif %}
     </div>
 
     <div class="foot-col">
@@ -61,7 +74,10 @@
          Реквизиты карты к нам не попадают.</p>
     </div>
   </div>
-  <div class="wrap foot-b">© {{ year }} {{ org.name }}. Все права защищены.</div>
+  <div class="wrap foot-b">
+    © {{ year }} Tunnelo. Все права защищены.
+    {% if review_code %}<span class="rev-code">{{ review_code }}</span>{% endif %}
+  </div>
 </footer>
 </body>
 </html>

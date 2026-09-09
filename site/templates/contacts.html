@@ -17,6 +17,7 @@
       <span class="v"><a href="mailto:{{ email }}">{{ email }}</a></span></div>
   </div>
 
+{% if show_org %}
   <h2>Сведения об организации</h2>
   <div class="card">
     <div class="row"><span class="k">Наименование</span><span class="v">{{ org.name }}</span></div>
@@ -34,6 +35,7 @@
     <div class="row"><span class="k">Банк</span><span class="v">{{ org.bank }}</span></div>
     <div class="row"><span class="k">БИК</span><span class="v">{{ org.bik }}</span></div>
     <div class="row"><span class="k">Корр. счёт</span><span class="v">{{ org.corr }}</span></div>
+{% endif %}
   </div>
 </div>
 {% endblock %}

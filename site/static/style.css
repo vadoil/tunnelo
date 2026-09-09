@@ -361,3 +361,15 @@ input, textarea, select { background: var(--card-solid) !important; color: var(-
   color: var(--deep); font-size: 19px; font-weight: 700; letter-spacing: 1.5px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; user-select: all;
 }
+
+/* Документы кнопками: банк при проверке должен находить их сразу. */
+.docs-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            padding: 26px 0 4px; }
+.doc-btn {
+  display: inline-block; padding: 11px 18px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line);
+  color: var(--text); font-size: 14px; font-weight: 600; text-decoration: none;
+  backdrop-filter: blur(14px); transition: border-color .12s, color .12s;
+}
+.doc-btn:hover { border-color: var(--sea); color: var(--deep); }
+.rev-code { margin-left: 10px; opacity: .5; }

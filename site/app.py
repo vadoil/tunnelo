@@ -45,10 +45,11 @@ SMTP_PASS = os.getenv("TUNNELO_SMTP_PASS", "")
 MAIL_FROM = os.getenv("TUNNELO_MAIL_FROM", "Tunnelo <noreply@tunello.online>")
 
 # Enot: идентификатор магазина и секреты. Живут только в окружении сервера.
-ENOT_SHOP_ID = os.getenv("ENOT_SHOP_ID", "")
-ENOT_SECRET = os.getenv("ENOT_SECRET", "")
-ENOT_SECRET_2 = os.getenv("ENOT_SECRET_2", "")
-ENOT_API = "https://api.enot.io/invoice/create"
+PLATEGA_MERCHANT = os.getenv("PLATEGA_MERCHANT", "")
+PLATEGA_SECRET = os.getenv("PLATEGA_SECRET", "")
+# Второй ключ Platega не нужен: подлинность уведомления она
+# подтверждает теми же X-MerchantId и X-Secret.
+PLATEGA_API = "https://app.platega.io/transaction/process"
 
 SITE_URL = os.getenv("TUNNELO_SITE_URL", "https://tunello.online")
 TRIAL_DAYS = int(os.getenv("TUNNELO_TRIAL_DAYS", "30"))
@@ -71,6 +72,15 @@ ORG = {
     "corr": "30101810745374525104",
 }
 SUPPORT_PHONE = "+79033017383"
+
+# Реквизиты юрлица на время согласования кассы скрыты — так просит платёжная
+# система. После регистрации вернуть: TUNNELO_SHOW_ORG=1 в .env и перезапуск.
+# Держать их скрытыми постоянно нельзя: публичная оферта без реквизитов
+# исполнителя юридически слаба, покупателю не с кем судиться.
+SHOW_ORG = os.getenv("TUNNELO_SHOW_ORG", "0") == "1"
+
+# Кодовое слово для проверки платёжной системой. Убрать после регистрации.
+REVIEW_CODE = os.getenv("TUNNELO_REVIEW_CODE", "плаtega")
 SUPPORT_PHONE_PRETTY = "+7 903 301-73-83"
 SUPPORT_EMAIL = os.getenv("TUNNELO_EMAIL", "support@tunello.online")
 OFFER_DATE = "1 сентября 2026 года"
@@ -125,6 +135,8 @@ def _ctx(request: Request, **extra):
     base = {
         "request": request,
         "org": ORG,
+        "show_org": SHOW_ORG,
+        "review_code": REVIEW_CODE,
         "phone": SUPPORT_PHONE,
         "phone_pretty": SUPPORT_PHONE_PRETTY,
         "email": SUPPORT_EMAIL,
@@ -224,160 +236,88 @@ async def cabinet_exit():
 
 
 @app.get("/pay")
-async def pay(plan: str = "2d-12m", key: str = "", app: str = ""):
+async def pay(plan: str = "2d-12m", key: str = "", app: str = "", method: int = 11):
     """
-    Создаёт счёт в Enot и уводит человека на страницу оплаты.
+    Создаёт платёж в Platega и уводит человека на страницу оплаты.
 
-    Ключ подписки кладём в custom_fields — он вернётся в уведомлении
-    об оплате, и по нему мы поймём, кому продлевать.
+    Ключ подписки кладём в payload — он вернётся в уведомлении об оплате,
+    и по нему мы поймём, кому продлевать. Способ по умолчанию — карта (11),
+    СБП это 2, SberPay 14.
     """
     p = PLANS.get(plan) or PLANS["2d-12m"]
 
-    if not (ENOT_SHOP_ID and ENOT_SECRET):
+    if not (PLATEGA_MERCHANT and PLATEGA_SECRET):
         return RedirectResponse("/cabinet?pay=soon", status_code=303)
 
     order_id = f"{plan}-{key or 'new'}-{int(datetime.now(timezone.utc).timestamp())}"
-    payload = {
-        "amount": p["price"],
-        "order_id": order_id,
-        "shop_id": ENOT_SHOP_ID,
-        "currency": "RUB",
-        "comment": f"Tunnelo — {p['devices']} устр., {p['term']}",
-        # custom_fields по документации — строка JSON, а не объект.
-        "custom_fields": json.dumps({"key": key, "days": p["days"],
-                                     "devices": p["devices"]}, ensure_ascii=False),
-        "hook_url": f"{SITE_URL}/api/pay/callback",
+    body = {
+        "paymentMethod": method,
+        "paymentDetails": {"amount": p["price"], "currency": "RUB"},
+        "description": f"Tunnelo — {p['devices']} устр., {p['term']}",
         # Из приложения возвращаем в приложение, из браузера — в кабинет.
-        "success_url": (f"{SITE_URL}/paid?key={key}" if app
-                        else f"{SITE_URL}/cabinet?key={key}&paid=1"),
-        "fail_url": f"{SITE_URL}/cabinet?pay=fail",
-        "expire": 60,
+        "return": (f"{SITE_URL}/paid?key={key}" if app
+                   else f"{SITE_URL}/cabinet?paid=1"),
+        "failedUrl": f"{SITE_URL}/cabinet?pay=fail",
+        "orderId": order_id,
+        # payload вернётся в уведомлении дословно — кладём туда всё, что нужно
+        # для продления: кому, на сколько и сколько устройств.
+        "payload": json.dumps({"key": key, "days": p["days"],
+                               "devices": p["devices"], "plan": plan},
+                              ensure_ascii=False),
     }
     try:
         async with httpx.AsyncClient(timeout=25) as client:
             r = await client.post(
-                ENOT_API, json=payload,
-                headers={"x-api-key": ENOT_SECRET,
-                         "Accept": "application/json",
+                PLATEGA_API, json=body,
+                headers={"X-MerchantId": PLATEGA_MERCHANT,
+                         "X-Secret": PLATEGA_SECRET,
                          "Content-Type": "application/json"})
         data = r.json()
-        link = (data.get("data") or data).get("url")
+        link = data.get("redirect")
         if link:
+            LOG.info("платёж создан: %s", data.get("transactionId"))
             return RedirectResponse(link, status_code=303)
-        LOG.warning("Enot не вернул ссылку: %s", str(data)[:300])
+        LOG.warning("Platega не вернула ссылку: %s", str(data)[:300])
     except Exception as e:
-        LOG.warning("Enot недоступен: %s", e)
+        LOG.warning("Platega недоступна: %s", e)
     return RedirectResponse("/cabinet?pay=error", status_code=303)
-
-
-@app.post("/internal/mail")
-async def internal_mail(request: Request):
-    """
-    Отправка письма по просьбе сервиса аккаунтов.
-
-    Наружу этот метод открыт, поэтому закрыт секретом: иначе с нашего адреса
-    сможет писать кто угодно, и домен быстро окажется в чёрных списках.
-    """
-    if not MAIL_SECRET:
-        return JSONResponse({"error": "mail not configured"}, status_code=503)
-    if not hmac.compare_digest(request.headers.get("x-tunnelo-secret", ""), MAIL_SECRET):
-        return JSONResponse({"error": "forbidden"}, status_code=403)
-
-    body = await request.json()
-    to = str(body.get("to", "")).strip()
-    subject = str(body.get("subject", "")).strip() or "Tunnelo"
-    text = str(body.get("text", ""))
-    if "@" not in to or not text:
-        return JSONResponse({"error": "bad request"}, status_code=400)
-
-    msg = EmailMessage()
-    msg["From"] = MAIL_FROM
-    msg["To"] = to
-    msg["Subject"] = subject
-    msg.set_content(text)
-
-    def send():
-        if SMTP_HOST:
-            if SMTP_PORT == 465:
-                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as srv:
-                    if SMTP_USER:
-                        srv.login(SMTP_USER, SMTP_PASS)
-                    srv.send_message(msg)
-            else:
-                with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as srv:
-                    srv.starttls()
-                    if SMTP_USER:
-                        srv.login(SMTP_USER, SMTP_PASS)
-                    srv.send_message(msg)
-        else:
-            with smtplib.SMTP("127.0.0.1", 25, timeout=20) as srv:
-                srv.send_message(msg)
-
-    try:
-        await asyncio.to_thread(send)
-    except Exception as e:
-        LOG.error("письмо на %s не ушло: %s", to, e)
-        return JSONResponse({"error": "send failed"}, status_code=502)
-    LOG.info("письмо отправлено на %s", to)
-    return {"ok": True}
-
-
-@app.get("/paid", response_class=HTMLResponse)
-async def paid(key: str = ""):
-    """
-    Возврат в приложение после оплаты.
-
-    Открывается в браузере поверх Tunnelo. Сразу пробуем открыть приложение
-    по своей схеме; если браузер это заблокировал — остаётся кнопка.
-    Ссылка ведёт на tunnelo://paid, приложение по ней обновляет подписку.
-    """
-    deep = f"tunnelo://paid?key={key}"
-    return HTMLResponse(
-        "<!doctype html><meta charset=utf-8>"
-        "<meta name=viewport content='width=device-width,initial-scale=1'>"
-        "<title>Оплачено — Tunnelo</title>"
-        "<style>body{font:16px/1.5 -apple-system,system-ui,sans-serif;"
-        "background:#EDF7F2;color:#223B34;margin:0;display:grid;"
-        "place-items:center;min-height:100vh;text-align:center;padding:24px}"
-        "a{display:inline-block;margin-top:20px;background:#4E9C87;color:#fff;"
-        "text-decoration:none;padding:14px 26px;border-radius:14px;"
-        "font-weight:600}p{color:#5E7C72}</style>"
-        "<div><h1>Оплачено</h1>"
-        "<p>Возвращаемся в Tunnelo.<br>Если ничего не произошло — нажмите кнопку.</p>"
-        f"<a href='{deep}'>Открыть Tunnelo</a></div>"
-        f"<script>location.href={deep!r}</script>"
-    )
 
 
 @app.post("/api/pay/callback")
 async def pay_callback(request: Request):
     """
-    Уведомление об оплате от Enot.
+    Уведомление об оплате от Platega.
 
-    Подпись обязательна: без проверки любой желающий продлевал бы себе
-    подписку простым запросом. Считается ровно как в документации —
-    sha256 hmac от тела, отсортированного по ключам, дополнительным
-    ключом кассы; приходит в заголовке x-api-sha256-signature.
+    Подлинность проверяем по заголовкам X-MerchantId и X-Secret: система
+    присылает в них те же значения, что мы используем сами. Без проверки
+    любой желающий продлевал бы себе подписку простым запросом.
+
+    Сравниваем побайтово через compare_digest, а не через ==, чтобы по
+    времени ответа нельзя было подобрать ключ.
     """
-    raw = await request.json()
-    got = request.headers.get("x-api-sha256-signature", "")
-
-    if not ENOT_SECRET_2:
-        LOG.warning("уведомление отброшено: дополнительный ключ не задан")
+    if not (PLATEGA_MERCHANT and PLATEGA_SECRET):
+        LOG.warning("уведомление отброшено: касса не настроена")
         return JSONResponse({"error": "not configured"}, status_code=503)
 
-    body = json.dumps(raw, sort_keys=True, separators=(", ", ": "))
-    want = hmac.new(ENOT_SECRET_2.encode(), body.encode("utf-8"),
-                    hashlib.sha256).hexdigest()
+    ok_merchant = hmac.compare_digest(
+        request.headers.get("x-merchantid", ""), PLATEGA_MERCHANT)
+    ok_secret = hmac.compare_digest(
+        request.headers.get("x-secret", ""), PLATEGA_SECRET)
+    if not (ok_merchant and ok_secret):
+        LOG.warning("уведомление с чужими ключами отброшено")
+        return JSONResponse({"error": "forbidden"}, status_code=403)
 
-    if not hmac.compare_digest(got, want):
-        LOG.warning("уведомление с неверной подписью, заказ %s", raw.get("order_id"))
-        return JSONResponse({"error": "bad signature"}, status_code=403)
+    raw = await request.json()
+    status = str(raw.get("status") or "")
+    tx = raw.get("id")
 
-    if str(raw.get("status")) not in ("success", "1"):
+    if status != "CONFIRMED":
+        # CANCELED и CHARGEBACKED тоже приходят сюда. Продлевать нечего,
+        # но записать нужно: возвраты придётся разбирать руками.
+        LOG.info("платёж %s: статус %s", tx, status)
         return {"ok": True}
 
-    fields = raw.get("custom_fields") or {}
+    fields = raw.get("payload") or {}
     if isinstance(fields, str):
         try:
             fields = json.loads(fields)
@@ -388,8 +328,8 @@ async def pay_callback(request: Request):
     days = int(fields.get("days") or 30)
     if not key:
         # Оплата без ключа: человек платил до регистрации. Разберём вручную —
-        # заказ и сумма записаны в журнал.
-        LOG.warning("оплата без ключа, заказ %s на %s", raw.get("order_id"), raw.get("amount"))
+        # номер платежа и сумма записаны в журнал.
+        LOG.warning("оплата без ключа: платёж %s на %s", tx, raw.get("amount"))
         return {"ok": True}
 
     try:
@@ -397,18 +337,21 @@ async def pay_callback(request: Request):
             r = await client.post(
                 f"{ACTIVATION_URL}/extend",
                 json={"key": key, "days": days,
-                      "devices": int(fields.get("devices") or 1)},
+                      "devices": int(fields.get("devices") or 1),
+                      "order_id": str(tx), "amount": raw.get("amount"),
+                      "plan": fields.get("plan")},
                 headers={"X-Tunnelo-Secret": EXTEND_SECRET},
             )
         if r.status_code == 200:
-            LOG.info("продлено %s на %s дней", key, days)
+            LOG.info("продлено %s на %s дней, платёж %s", key, days, tx)
         else:
-            # Двухсотый ответ Enot уже отправлен, повтора не будет. Пишем громко.
+            # Двухсотый ответ уже отправлен, повтора не будет. Пишем громко.
             LOG.error("ДЕНЬГИ ПОЛУЧЕНЫ, ПРОДЛЕНИЕ НЕ ПРОШЛО: ключ %s, дней %s, "
-                      "сервис ответил %s %s", key, days, r.status_code, r.text[:200])
+                      "платёж %s, сервис ответил %s %s",
+                      key, days, tx, r.status_code, r.text[:200])
     except Exception as e:
         # Деньги получены — молчать нельзя, иначе продление потеряется.
-        LOG.error("НЕ УДАЛОСЬ ПРОДЛИТЬ %s на %s дней: %s", key, days, e)
+        LOG.error("НЕ УДАЛОСЬ ПРОДЛИТЬ %s на %s дней (платёж %s): %s", key, days, tx, e)
 
     return {"ok": True}
 
