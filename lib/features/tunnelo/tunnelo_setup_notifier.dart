@@ -9,6 +9,9 @@ import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_activation.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
+import 'package:hiddify/features/settings/data/config_option_repository.dart';
+import 'package:hiddify/singbox/model/singbox_config_enum.dart';
+import 'package:hiddify/utils/platform_utils.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,6 +84,7 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
     try {
       await _ensureRuRules();
       await _ensureAppsOutsideTunnel();
+      await _ensureTunOnDesktop();
 
       final profiles = await _ref.read(profilesNotifierProvider.future);
       if (profiles.isNotEmpty) {
@@ -222,6 +226,30 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
       loggy.info('MAX выведен из туннеля');
     } catch (e) {
       loggy.warning('не удалось исключить приложения из туннеля: $e');
+    }
+  }
+
+  /// Перевести десктоп с системного прокси на туннель.
+  ///
+  /// Умолчание мы уже поменяли, но у тех, кто запускал приложение раньше,
+  /// в настройках лежит «системный прокси» — и записанное значение
+  /// перебивает умолчание. Прокси не переносит UDP, поэтому YouTube и
+  /// Instagram не открывались, а российские сайты работали: им прокси
+  /// не нужен. Переключаем один раз, дальше человек волен менять сам.
+  static const _kTunOnDesktop = 'tunnelo_desktop_tun_v1';
+
+  Future<void> _ensureTunOnDesktop() async {
+    if (!PlatformUtils.isDesktop) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kTunOnDesktop) ?? false) return;
+    try {
+      if (_ref.read(ConfigOptions.serviceMode) != ServiceMode.tun) {
+        await _ref.read(ConfigOptions.serviceMode.notifier).update(ServiceMode.tun);
+        loggy.info('десктоп переведён на туннель');
+      }
+      await prefs.setBool(_kTunOnDesktop, true);
+    } catch (e) {
+      loggy.warning('не удалось перевести десктоп на туннель: $e');
     }
   }
 

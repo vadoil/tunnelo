@@ -16,7 +16,15 @@ enum ServiceMode {
 
   final String key;
 
-  static ServiceMode get defaultMode => PlatformUtils.isDesktop ? systemProxy : tun;
+  /// Туннель на всех платформах, включая десктоп.
+  ///
+  /// Раньше на десктопе по умолчанию стоял системный прокси — и туннеля не
+  /// возникало вовсе. Прокси не переносит UDP, а браузер для YouTube и
+  /// Instagram предпочитает QUIC поверх UDP: этот трафик уходил мимо прокси
+  /// напрямую и упирался в блокировку. Российские сайты при этом работали,
+  /// потому что им прокси и не нужен — отсюда и путаница «вроде подключено,
+  /// но ничего не грузится».
+  static ServiceMode get defaultMode => tun;
 
   /// supported service mode based on platform, use this instead of [values] in UI
   static List<ServiceMode> get choices {

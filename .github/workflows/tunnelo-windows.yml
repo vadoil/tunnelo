@@ -89,6 +89,17 @@ jobs:
           ls -la hiddify-core/bin/hiddify-core.dll
           find build/windows -name 'hiddify-core.dll' -exec ls -la {} \;
 
+      # Драйвер сетевого адаптера. Ядро грузит wintun.dll с диска, а ни
+      # CMake, ни архив ядра его не кладут — без него туннель на Windows
+      # не поднимается.
+      - name: Положить wintun
+        shell: bash
+        run: |
+          curl -sL https://www.wintun.net/builds/wintun-0.14.1.zip -o wintun.zip
+          7z x wintun.zip -owintun_x >/dev/null
+          cp wintun_x/wintun/bin/amd64/wintun.dll build/windows/x64/runner/Release/
+          ls -la build/windows/x64/runner/Release/wintun.dll
+
       - name: Собрать результат
         shell: bash
         run: |
