@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <!-- Создание сетевого адаптера для туннеля требует повышенных прав.
-       Без этого запроса Windows запускает программу от обычного
-       пользователя, ядро поднимается, а туннель — нет.
-       Пространства имён важны: trustInfo — asm.v2, requestedPrivileges —
-       asm.v3. При других mt.exe роняет сборку с LNK1327. -->
+  <!-- Creating the TUN adapter needs elevation. Keep this file ASCII-only:
+       mt.exe fails the link with LNK1327 on non-ASCII manifest content. -->
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
