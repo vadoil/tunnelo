@@ -18,7 +18,8 @@ class TunneloWelcomePage extends HookConsumerWidget {
     _Step(
       image: 'assets/images/fox/lantern.png',
       title: 'Интернет без границ',
-      text: 'YouTube, Instagram и всё остальное открываются как обычно. '
+      text: 'YouTube, ChatGPT, Spotify и другие зарубежные сервисы '
+          'открываются как обычно. '
           'Настраивать ничего не нужно — приложение уже готово к работе.',
     ),
     _Step(
