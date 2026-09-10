@@ -33,7 +33,11 @@ class TunneloFoxButton extends HookConsumerWidget {
 
     final pulse = useAnimationController(
       duration: const Duration(milliseconds: 2600),
-    )..repeat(reverse: true);
+    );
+    // Запуск только в useEffect. Раньше repeat() стоял прямо в build и
+    // срабатывал на каждой перерисовке — Flutter ругался «setState() called
+    // during build», а дыхание сбивалось при любом изменении состояния.
+    //
     // Пока идёт подключение — дышим вдвое чаще: это и есть индикатор работы.
     useEffect(() {
       pulse.duration = Duration(milliseconds: busy ? 900 : 2600);

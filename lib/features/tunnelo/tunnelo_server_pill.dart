@@ -83,6 +83,11 @@ class TunneloServerPill extends ConsumerWidget {
   /// Из тега узла («🇫🇮 Финляндия-2 · HY2-2 § 3») оставляем страну.
   static String _country(String? tag) {
     if (tag == null || tag.trim().isEmpty) return 'Сервер не выбран';
+    // Служебные имена групп человеку ничего не говорят: «lowest» — это
+    // балансировщик по задержке, «balance» — перебор по кругу.
+    if (tag == 'lowest') return 'Быстрейший сервер';
+    if (tag == 'balance') return 'По очереди';
+    if (tag == 'select') return 'Выбор сервера';
     var name = tag.split('§').first.split('·').first.trim();
     name = name.replaceAll(RegExp(r'[-–]\s*\d+$'), '').trim();
     return name.isEmpty ? 'Сервер не выбран' : name;
