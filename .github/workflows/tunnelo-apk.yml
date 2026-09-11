@@ -85,6 +85,29 @@ jobs:
       - name: Prepare (flutter deps, кодогенерация)
         run: make tunnelo-android-prepare CHANNEL=prod
 
+      # Подпись релиза. Без ключа gradle берёт debug-ключ раннера, а он у
+      # каждого прогона новый — обновиться поверх старой версии нельзя
+      # («signatures do not match»). Секреты репозитория:
+      #   ANDROID_KEYSTORE_B64 — .jks в base64, ANDROID_KEYSTORE_PASSWORD,
+      #   ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
+      # Пока секретов нет, шаг пропускается и сборка остаётся как раньше.
+      - name: Ключ подписи из секретов
+        if: env.ANDROID_KEYSTORE_B64 != ''
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_B64" | base64 -d > android/app/tunnelo-release.jks
+          {
+            echo "storeFile=tunnelo-release.jks"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+          } > android/key.properties
+          echo "keystore подключён"
+
       # main_prod.dart вместо main.dart: иначе в релизе Environment.dev
       # и у версии в шапке висит метка «dev».
       - name: Build APK

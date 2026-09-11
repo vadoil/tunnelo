@@ -74,3 +74,8 @@ tunnelo.command
 
 # Собранные локально APK — в репозиторий не кладём
 *.apk
+
+# Ключ подписи Android живёт только в GitHub Secrets и на машине владельца
+android/key.properties
+*.jks
+*.keystore
