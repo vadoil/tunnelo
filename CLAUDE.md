@@ -31,6 +31,7 @@
 | Сервис активации | `https://api.amnez.online` | там же, systemd `tunnelo-activation`, файл `/opt/tunnelo/activation-3xui.py`, окружение `/etc/default/tunnelo-activation` |
 | Узел fi-1 | `fi.amnez.online` → `217.177.33.106` | 3x-ui на `:2053` |
 | Подписка | `https://panel.amnez.online/sub/{subId}` | обновление раз в 12 ч |
+| Скачивание сборок | `https://api.amnez.online/dl/<файл>` | nginx, файлы в `/var/www/dl` на том же сервере (`scp` туда) |
 
 Сервис активации: `POST /activate {"code":"PARDAUTO","device":"<hwid>"}` →
 создаёт клиента в панели на 30 дней, возвращает `{key, subscription, daysLeft, servers}`.
