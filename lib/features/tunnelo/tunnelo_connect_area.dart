@@ -6,6 +6,15 @@ import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Размер лиса под высоту окна. На телефоне — полные 260, в низком окне
+/// на десктопе меньше, чтобы карточка выбора сервера не уезжала за край.
+/// 560 — всё остальное на главной по вертикали: шапка, карточка подписки,
+/// подпись под лисом, индикатор задержки и карточка сервера. Ниже 160
+/// лис уже не читается. Считаем от MediaQuery, а не LayoutBuilder: главная
+/// лежит в SliverFillRemaining, которому нужна intrinsic-высота, а
+/// LayoutBuilder её не даёт.
+double foxSizeFor(double viewHeight) => (viewHeight - 560).clamp(160.0, 260.0);
+
 /// Середина главного экрана: кнопка подключения — или причина, почему её нет.
 ///
 /// Когда подписка кончилась, звать нажимать кнопку жестоко: она не сработает,
@@ -22,10 +31,13 @@ class TunneloConnectArea extends ConsumerWidget {
       return const _Expired();
     }
 
-    return const Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [TunneloFoxButton(), ActiveProxyDelayIndicator()],
+      children: [
+        TunneloFoxButton(size: foxSizeFor(MediaQuery.sizeOf(context).height)),
+        const ActiveProxyDelayIndicator(),
+      ],
     );
   }
 }

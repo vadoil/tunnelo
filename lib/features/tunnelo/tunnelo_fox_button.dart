@@ -16,7 +16,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// тлеет; при подключении разгорается. Одна метафора на весь продукт лучше
 /// круглой кнопки, которая ничего не значит.
 class TunneloFoxButton extends HookConsumerWidget {
-  const TunneloFoxButton({super.key});
+  const TunneloFoxButton({super.key, this.size = 260});
+
+  /// Сторона квадрата с лисом. Свет и картинка масштабируются вместе с ним.
+  final double size;
 
   /// Где на картинке фонарь. Подобрано по самому изображению: если лиса
   /// перерисуют, поправить нужно здесь.
@@ -55,9 +58,10 @@ class TunneloFoxButton extends HookConsumerWidget {
             animation: pulse,
             builder: (context, _) {
               final t = Curves.easeInOut.transform(pulse.value);
+              final k = size / 260;
               return SizedBox(
-                width: 260,
-                height: 260,
+                width: size,
+                height: size,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -67,7 +71,7 @@ class TunneloFoxButton extends HookConsumerWidget {
                       child: _Glow(
                         strength: connected ? 0.55 + 0.45 * t : 0.10 + 0.12 * t,
                         warm: connected,
-                        size: connected ? 150 + 26 * t : 90 + 10 * t,
+                        size: (connected ? 150 + 26 * t : 90 + 10 * t) * k,
                       ),
                     ),
                     // Лис слегка покачивается — экран перестаёт быть мёртвым.
@@ -75,7 +79,7 @@ class TunneloFoxButton extends HookConsumerWidget {
                       offset: Offset(0, -3 * math.sin(t * math.pi)),
                       child: Image.asset(
                         'assets/images/fox/lantern.png',
-                        height: 240,
+                        height: size - 20,
                         fit: BoxFit.contain,
                       ),
                     ),
