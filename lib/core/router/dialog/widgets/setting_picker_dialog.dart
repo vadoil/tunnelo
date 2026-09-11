@@ -30,19 +30,21 @@ class SettingPickerDialog<T> extends HookConsumerWidget with PresLogger {
     return AlertDialog(
       title: Text(title),
       content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.map((e) {
-            final title = getTitle(e);
-            final countryCode = title.substring(title.length - 3, title.length - 1);
-            return RadioListTile(
-              title: Text(title),
-              secondary: showFlag ? IPCountryFlag(countryCode: countryCode, size: 32) : null,
-              value: e,
-              groupValue: selected,
-              onChanged: (value) => context.pop(e),
-            );
-          }).toList(),
+        child: RadioGroup<T>(
+          groupValue: selected,
+          onChanged: context.pop,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: options.map((e) {
+              final title = getTitle(e);
+              final countryCode = title.substring(title.length - 3, title.length - 1);
+              return RadioListTile<T>(
+                title: Text(title),
+                secondary: showFlag ? IPCountryFlag(countryCode: countryCode, size: 32) : null,
+                value: e,
+              );
+            }).toList(),
+          ),
         ),
       ),
       actions: [

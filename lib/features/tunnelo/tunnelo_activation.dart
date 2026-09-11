@@ -2,10 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Настройки Tunnelo. Всё, что может поменяться на сервере, — здесь.
@@ -467,7 +466,7 @@ class TunneloActivation {
     try {
       return data is String
           ? jsonDecode(data) as Map<String, dynamic>
-          : Map<String, dynamic>.from(data as Map);
+          : Map<String, dynamic>.from(data! as Map);
     } catch (_) {
       throw const ActivationException(
         'Сервер ответил неожиданным образом. Попробуйте позже.',

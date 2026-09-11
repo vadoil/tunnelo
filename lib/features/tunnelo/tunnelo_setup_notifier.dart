@@ -1,17 +1,16 @@
 import 'dart:io';
 
-import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
-import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart';
 import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
+import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
+import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_activation.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
-import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/singbox/model/singbox_config_enum.dart';
-import 'package:hiddify/utils/platform_utils.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -164,7 +164,7 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
   @override
   Future<bool> stop() async {
     await stopMethodChannel();
-    if (!await waitUntilPort(portBack, false, null, maxTry: 10)) {
+    if (!await waitUntilPort(portBack, false, null)) {
       return false;
     }
 

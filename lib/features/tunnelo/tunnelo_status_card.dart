@@ -44,7 +44,7 @@ class TunneloStatusCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _Label('Трафик'),
+                const _Label('Трафик'),
                 Text(
                   _traffic(info),
                   style: const TextStyle(
@@ -69,7 +69,7 @@ class TunneloStatusCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _Label('Осталось'),
+                const _Label('Осталось'),
                 Text(
                   _daysLeft(info),
                   style: const TextStyle(
@@ -85,7 +85,7 @@ class TunneloStatusCard extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _Label('Устройства'),
+                  const _Label('Устройства'),
                   Text(
                     '${devices.used} из ${devices.limit}',
                     style: const TextStyle(
@@ -125,7 +125,8 @@ class TunneloStatusCard extends ConsumerWidget {
   }
 
   static String _pluralDays(int n) {
-    final m10 = n % 10, m100 = n % 100;
+    final m10 = n % 10;
+    final m100 = n % 100;
     if (m10 == 1 && m100 != 11) return 'день';
     if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'дня';
     return 'дней';
@@ -192,20 +193,20 @@ class _NotActivatedCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(22),
       border: Border.all(color: TunneloColors.line),
     ),
-    child: Column(
+    child: const Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           'Подписка не активна',
           style: TextStyle(color: TunneloColors.seaDeep, fontSize: 17, fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 6),
-        const Text(
+        SizedBox(height: 6),
+        Text(
           'Оплатите доступ или введите промокод, если он у вас есть.',
           style: TextStyle(color: TunneloColors.muted, fontSize: 14, height: 1.35),
         ),
-        const SizedBox(height: 16),
-        const _Actions(),
+        SizedBox(height: 16),
+        _Actions(),
       ],
     ),
   );

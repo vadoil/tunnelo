@@ -156,7 +156,7 @@ class _TunnelFieldPainter extends CustomPainter {
 
       canvas.drawCircle(
         pos,
-        (0.8 + 1.5 * (1 - depth)),
+        0.8 + 1.5 * (1 - depth),
         Paint()
           ..color = TunneloColors.sea.withValues(alpha: (0.22 * fade * (1 - depth * 0.6)).clamp(0.0, 1.0))
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4),

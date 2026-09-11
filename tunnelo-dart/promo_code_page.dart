@@ -1,4 +1,3 @@
-import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -167,7 +166,8 @@ class _Headline extends StatelessWidget {
   }
 
   static String _plural(int n) {
-    final m10 = n % 10, m100 = n % 100;
+    final m10 = n % 10;
+    final m100 = n % 100;
     if (m10 == 1 && m100 != 11) return 'сервер';
     if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'сервера';
     return 'серверов';
@@ -329,6 +329,5 @@ class UpperCaseFormatter extends TextInputFormatter {
       TextEditingValue(
         text: now.text.toUpperCase(),
         selection: now.selection,
-        composing: TextRange.empty,
       );
 }
