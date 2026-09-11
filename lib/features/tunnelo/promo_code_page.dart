@@ -17,6 +17,9 @@ class PromoCodePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useTextEditingController();
+    // Человек набрал кириллицу или пробел — фильтр это отрежет молча, а он
+    // увидит пустое поле и не поймёт. Флаг включает подсказку под полем.
+    final foreign = useState(false);
     final setup = ref.watch(tunneloSetupProvider);
     final busy = setup is SetupRunning;
 
@@ -89,6 +92,8 @@ class PromoCodePage extends HookConsumerWidget {
                           controller: controller,
                           enabled: !busy,
                           error: setup is SetupFailed ? setup.message : null,
+                          hint: foreign.value ? 'Код набирается латиницей: буквы A–Z и цифры' : null,
+                          onProbe: (v) => foreign.value = v,
                           onChanged: (_) =>
                               ref.read(tunneloSetupProvider.notifier).clearError(),
                           onSubmit: busy ? null : () => _submit(ref, controller.text),
@@ -186,6 +191,8 @@ class _CodeField extends StatelessWidget {
     required this.controller,
     required this.enabled,
     required this.error,
+    required this.hint,
+    required this.onProbe,
     required this.onChanged,
     required this.onSubmit,
   });
@@ -193,6 +200,8 @@ class _CodeField extends StatelessWidget {
   final TextEditingController controller;
   final bool enabled;
   final String? error;
+  final String? hint;
+  final ValueChanged<bool> onProbe;
   final ValueChanged<String> onChanged;
   final VoidCallback? onSubmit;
 
@@ -224,6 +233,7 @@ class _CodeField extends StatelessWidget {
             enableSuggestions: false,
             cursorColor: TunneloColors.ringNear,
             inputFormatters: [
+              NonLatinProbe(onProbe),
               UpperCaseFormatter(),
               LengthLimitingTextInputFormatter(32),
               FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9\-]')),
@@ -255,29 +265,40 @@ class _CodeField extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           alignment: Alignment.topCenter,
           child: hasError
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 10, left: 4),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error_outline_rounded,
-                          size: 15, color: TunneloColors.alert),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          error!,
-                          style: const TextStyle(
-                            color: TunneloColors.alert,
-                            fontSize: 13,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : const SizedBox(width: double.infinity),
+              ? _Note(icon: Icons.error_outline_rounded, color: TunneloColors.alert, text: error!)
+              : hint != null
+                  ? _Note(icon: Icons.info_outline_rounded, color: TunneloColors.muted, text: hint!)
+                  : const SizedBox(width: double.infinity),
         ),
       ],
+    );
+  }
+}
+
+/// Строка под полем: ошибка или подсказка, одна и та же вёрстка.
+class _Note extends StatelessWidget {
+  const _Note({required this.icon, required this.color, required this.text});
+
+  final IconData icon;
+  final Color color;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, left: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: color, fontSize: 13, height: 1.3),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -323,6 +344,22 @@ class _ActivateButton extends StatelessWidget {
             : Text(done ? 'Готово' : 'Активировать'),
       ),
     );
+  }
+}
+
+/// Смотрит на сырой ввод до фильтра и сообщает, отрежет ли фильтр что-то.
+/// Сам ничего не меняет — режет [FilteringTextInputFormatter] следом.
+/// Строчная латиница не считается: её поднимет [UpperCaseFormatter].
+class NonLatinProbe extends TextInputFormatter {
+  NonLatinProbe(this.onProbe);
+
+  final ValueChanged<bool> onProbe;
+  static final _foreign = RegExp(r'[^A-Za-z0-9\-]');
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue old, TextEditingValue now) {
+    onProbe(_foreign.hasMatch(now.text));
+    return now;
   }
 }
 
