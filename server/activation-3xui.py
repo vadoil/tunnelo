@@ -89,6 +89,11 @@ CODE_COOLDOWN = int(os.environ.get("CODE_COOLDOWN", "60"))
 
 PROMO_CODES = {
     "PARDAUTO": {"days": 30, "limit": 0, "note": "первый месяц бесплатно"},
+    # Именные коды: лимит 1, чтобы код нельзя было передать дальше, и чтобы
+    # в базе было видно, чья это активация — общий PARDAUTO этого не даёт.
+    "ROMAN1": {"days": 30, "limit": 1, "note": "Роман, приглашение"},
+    # Тестовый код: без лимита, чтобы переустановка на Windows не съедала слот.
+    "FROLKO": {"days": 30, "limit": 0, "note": "Фролко, тесты на Windows"},
 }
 
 DEVICE_RE = re.compile(r"^[A-Za-z0-9_\-]{8,64}$")

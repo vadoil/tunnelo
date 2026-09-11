@@ -71,3 +71,6 @@ windows/sign.cer
 
 # локальный лаунчер Claude Code
 tunnelo.command
+
+# Собранные локально APK — в репозиторий не кладём
+*.apk

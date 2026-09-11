@@ -3,7 +3,6 @@ import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hiddify/features/tunnelo/tunnelo_activation.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -237,12 +236,12 @@ class _CodeField extends StatelessWidget {
               fontFeatures: [FontFeature.tabularFigures()],
             ),
             decoration: InputDecoration(
-              hintText: TunneloConfig.defaultPromo,
+              hintText: 'Промокод',
               hintStyle: TextStyle(
                 color: TunneloColors.muted.withValues(alpha: 0.4),
-                fontSize: 21,
-                letterSpacing: 5,
-                fontWeight: FontWeight.w500,
+                fontSize: 17,
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.w400,
               ),
               border: InputBorder.none,
               contentPadding:
