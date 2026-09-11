@@ -12,8 +12,10 @@ import 'package:window_manager/window_manager.dart';
 
 part 'window_notifier.g.dart';
 
-const minimumWindowSize = Size(368, 568);
-const defaultWindowSize = Size(868, 668);
+// Tunnelo: главная свёрстана под высоту телефона — карточка подписки, лис,
+// кнопка и выбор сервера. В окне 800×600 от Hiddify низ уходил за край.
+const minimumWindowSize = Size(400, 720);
+const defaultWindowSize = Size(920, 820);
 
 @Riverpod(keepAlive: true)
 class WindowNotifier extends _$WindowNotifier with AppLogger {

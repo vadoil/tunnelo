@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_account_row.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -99,6 +101,8 @@ class TunneloStatusCard extends ConsumerWidget {
             ],
             const SizedBox(height: 16),
             const _Actions(),
+            const Divider(height: 22, color: TunneloColors.line),
+            const _AccountRow(),
           ],
         ),
       ),
@@ -140,6 +144,31 @@ class _Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Text(text, style: const TextStyle(color: TunneloColors.muted, fontSize: 14));
+}
+
+/// Вход и выход из аккаунта прямо на главной — иначе человек ищет
+/// «где войти» по настройкам. Отдельной регистрации нет: аккаунт появляется
+/// при первом входе по коду из письма.
+class _AccountRow extends ConsumerWidget {
+  const _AccountRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final email = ref.watch(tunneloAccountProvider).valueOrNull;
+    return TunneloAccountRow(
+      email: email,
+      onLogin: () => context.pushNamed(
+        'login',
+        extra: 'Введите почту — пришлём код. Пароль придумывать не нужно.',
+      ),
+      onLogout: () async {
+        await ref.read(tunneloActivationProvider).signOut();
+        ref
+          ..invalidate(tunneloAccountProvider)
+          ..invalidate(tunneloSubscriptionProvider);
+      },
+    );
+  }
 }
 
 /// Действия подписки: продлить и ввести ключ.
@@ -207,6 +236,8 @@ class _NotActivatedCard extends StatelessWidget {
         ),
         SizedBox(height: 16),
         _Actions(),
+        Divider(height: 22, color: TunneloColors.line),
+        _AccountRow(),
       ],
     ),
   );
