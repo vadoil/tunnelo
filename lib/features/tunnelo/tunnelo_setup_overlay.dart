@@ -21,12 +21,16 @@ class TunneloSetupOverlay extends ConsumerWidget {
     return Stack(
       children: [
         child,
-        IgnorePointer(
-          ignoring: !visible,
-          child: AnimatedOpacity(
-            opacity: visible ? 1 : 0,
-            duration: const Duration(milliseconds: 320),
-            child: _Curtain(state: setup),
+        // Positioned.fill обязателен: без него Stack даёт шторке размер по
+        // содержимому, и она закрывала ~60 % ширины, а справа торчала главная.
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: !visible,
+            child: AnimatedOpacity(
+              opacity: visible ? 1 : 0,
+              duration: const Duration(milliseconds: 320),
+              child: _Curtain(state: setup),
+            ),
           ),
         ),
       ],
