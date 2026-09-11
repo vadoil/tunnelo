@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_backdrop.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_connect_area.dart';
@@ -21,7 +20,6 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final t = ref.watch(translationsProvider).requireValue;
     // final hasAnyProfile = ref.watch(hasAnyProfileProvider);
     final activeProfile = ref.watch(activeProfileProvider);
@@ -65,7 +63,7 @@ class HomePage extends HookConsumerWidget {
               ),
             ],
           ),
-          actions: [
+          actions: const [
             // IconButton(
             //     onPressed: () => const QuickSettingsRoute().push(context),
             //     icon: const Icon(FluentIcons.options_24_filled),
@@ -78,16 +76,10 @@ class HomePage extends HookConsumerWidget {
             //     material: (context, platform) => MaterialIconButtonData(
             //           tooltip: t.profile.add.buttonText,
             //         )),
-            Semantics(
-              key: const ValueKey("profile_quick_settings"),
-              label: t.pages.home.quickSettings,
-              child: IconButton(
-                icon: Icon(Icons.tune_rounded, color: theme.colorScheme.primary),
-                onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
-              ),
-            ),
-            const Gap(8),
-            const Gap(8),
+            // Tunnelo: шторка быстрых настроек Hiddify (режим прокси/VPN, WARP)
+            // убрана — это их термины, нашему человеку они ни о чём.
+            // Настройки остаются в нижней панели и в боковом меню.
+            Gap(8),
           ],
         ),
         // Tunnelo: вместо карты мира Hiddify — вид вдоль туннеля.
