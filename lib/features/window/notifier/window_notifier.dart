@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,14 @@ part 'window_notifier.g.dart';
 // кнопка и выбор сервера. В окне 800×600 от Hiddify низ уходил за край.
 const minimumWindowSize = Size(400, 720);
 const defaultWindowSize = Size(920, 820);
+
+/// Сохранённый размер не меньше минимума. Нужно потому, что на macOS
+/// minimumSize действует только при ручном ресайзе, а программная установка
+/// размера из настроек его обходит — окно открывалось старыми 868×668.
+Size clampWindowSize(Size size) => Size(
+  max(size.width, minimumWindowSize.width),
+  max(size.height, minimumWindowSize.height),
+);
 
 @Riverpod(keepAlive: true)
 class WindowNotifier extends _$WindowNotifier with AppLogger {
@@ -48,7 +57,7 @@ class WindowNotifier extends _$WindowNotifier with AppLogger {
   Future<void> initWindowState() async {
     final isMaximized = ref.read(Preferences.windowMaximized);
     loggy.debug("window state. maximized: $isMaximized");
-    final size = ref.read(Preferences.windowSize);
+    final size = clampWindowSize(ref.read(Preferences.windowSize));
     loggy.debug("window state. size: $size");
     final position = ref.read(Preferences.windowPosition);
     final isWindowVisible = position != null && await checkWindowVisivility(position, size);
