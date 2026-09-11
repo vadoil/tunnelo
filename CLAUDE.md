@@ -28,7 +28,7 @@
 | Что | Где | Доступ |
 |---|---|---|
 | Панель 3x-ui | `https://panel.amnez.online:54629/JHrp6hPbUORIYq4aUm` | `78.17.33.149` |
-| Сервис активации | `https://api.amnez.online` | там же, systemd `tunnelo-activation` |
+| Сервис активации | `https://api.amnez.online` | там же, systemd `tunnelo-activation`, файл `/opt/tunnelo/activation-3xui.py`, окружение `/etc/default/tunnelo-activation` |
 | Узел fi-1 | `fi.amnez.online` → `217.177.33.106` | 3x-ui на `:2053` |
 | Подписка | `https://panel.amnez.online/sub/{subId}` | обновление раз в 12 ч |
 
@@ -36,6 +36,9 @@
 создаёт клиента в панели на 30 дней, возвращает `{key, subscription, daysLeft, servers}`.
 Повтор с того же `device` возвращает тот же ключ. Токен панели живёт только
 на сервере, в APK его нет и быть не должно.
+
+Выкат сервиса: `server/deploy.sh` (бэкап, копия, рестарт, журнал, список
+кодов). Заходить по SSH ключом `~/.ssh/id_ed25519` под root.
 
 Промокоды лежат в таблице `promos` базы сервиса, не в коде. Добавить или
 поправить — на сервере, без перезапуска:
