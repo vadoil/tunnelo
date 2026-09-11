@@ -18,6 +18,12 @@ linter:
     sort_pub_dependencies: false
     sort_unnamed_constructors_first: false
     avoid_classes_with_only_static_members: false
+    # Tunnelo: стиль апстрима Hiddify. Править его код под эти правила —
+    # раздувать diff при слияниях, а пользы ноль.
+    prefer_constructors_over_static_methods: false
+    no_leading_underscores_for_local_identifiers: false
+    dangling_library_doc_comments: false
+    eol_at_end_of_file: false
 
 custom_lint:
   rules:
