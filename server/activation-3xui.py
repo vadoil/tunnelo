@@ -87,6 +87,10 @@ CODE_TRIES = int(os.environ.get("CODE_TRIES", "5"))
 # Не чаще одного письма в минуту на адрес — иначе почтой можно завалить чужой ящик.
 CODE_COOLDOWN = int(os.environ.get("CODE_COOLDOWN", "60"))
 
+# Стартовый набор промокодов. Источник правды — таблица promos в базе:
+# сюда коды попадают один раз при первом запуске, дальше их добавляют
+# командой `activation-3xui.py promo add КОД ДНИ [ЛИМИТ] [заметка]` — без
+# правки файла и перезапуска. Правка словаря уже засеянный код не меняет.
 PROMO_CODES = {
     "PARDAUTO": {"days": 30, "limit": 0, "note": "первый месяц бесплатно"},
     # Именные коды: лимит 1, чтобы код нельзя было передать дальше, и чтобы
@@ -102,9 +106,10 @@ KEY_RE = re.compile(r"^[a-z0-9]{16}$")
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s.]+(\.[^@\s.]+)+$")
 TOKEN_RE = re.compile(r"^[A-Za-z0-9_\-]{32,128}$")
 
-for name, val in (("PANEL_URL", PANEL_URL), ("PANEL_TOKEN", PANEL_TOKEN), ("SUB_URI", SUB_URI)):
-    if not val or val == "/":
-        sys.exit(f"{name} не задан")
+def require_env():
+    for name, val in (("PANEL_URL", PANEL_URL), ("PANEL_TOKEN", PANEL_TOKEN), ("SUB_URI", SUB_URI)):
+        if not val or val == "/":
+            sys.exit(f"{name} не задан")
 
 
 # ---------- база -------------------------------------------------------------
@@ -168,6 +173,19 @@ def db():
         devices  INTEGER,
         status   TEXT NOT NULL,
         created  TEXT NOT NULL)""")
+    # Промокоды. Лимит 0 = без ограничения. Засеваем из PROMO_CODES один раз:
+    # OR IGNORE не трогает то, что уже поправили командой promo add.
+    c.execute("""CREATE TABLE IF NOT EXISTS promos(
+        code     TEXT PRIMARY KEY,
+        days     INTEGER NOT NULL,
+        max_uses INTEGER NOT NULL DEFAULT 0,
+        note     TEXT NOT NULL DEFAULT '',
+        created  TEXT NOT NULL)""")
+    c.executemany(
+        "INSERT OR IGNORE INTO promos(code,days,max_uses,note,created) VALUES(?,?,?,?,?)",
+        [(k, v["days"], v["limit"], v["note"], datetime.now(timezone.utc).isoformat())
+         for k, v in PROMO_CODES.items()])
+    c.commit()
     return c
 
 
@@ -350,6 +368,61 @@ def sub_by_referral(con, code):
         "SELECT DISTINCT sub_id FROM activations WHERE sub_id LIKE ?", (code[3:].lower() + "%",)
     ).fetchall()
     return rows[0][0] if len(rows) == 1 else None
+
+
+# ---------- промокоды --------------------------------------------------------
+def promo_get(con, code):
+    """Код (уже в верхнем регистре) -> {"days", "limit", "note"} или None."""
+    row = con.execute("SELECT days, max_uses, note FROM promos WHERE code=?", (code,)).fetchone()
+    return {"days": row[0], "limit": row[1], "note": row[2]} if row else None
+
+
+def promo_add(con, code, days, limit=0, note=""):
+    """Добавить код или поправить существующий. Коммитит вызывающий."""
+    code = code.strip().upper()
+    if not CODE_RE.match(code):
+        raise ValueError(f"код — 4–32 символа из A-Z, 0-9 и дефиса, а не {code!r}")
+    con.execute(
+        "INSERT INTO promos(code,days,max_uses,note,created) VALUES(?,?,?,?,?) "
+        "ON CONFLICT(code) DO UPDATE SET days=excluded.days, max_uses=excluded.max_uses, "
+        "note=excluded.note",
+        (code, int(days), int(limit), note, datetime.now(timezone.utc).isoformat()),
+    )
+
+
+def promo_list(con):
+    rows = con.execute(
+        "SELECT p.code, p.days, p.max_uses, p.note, "
+        "(SELECT COUNT(*) FROM activations a WHERE a.code=p.code) "
+        "FROM promos p ORDER BY p.created"
+    ).fetchall()
+    return [{"code": r[0], "days": r[1], "limit": r[2], "note": r[3], "used": r[4]} for r in rows]
+
+
+def promo_cli(argv):
+    """`promo list` и `promo add КОД ДНИ [ЛИМИТ] [заметка...]`. Возвращает код выхода."""
+    con = db()
+    try:
+        if argv[:1] == ["list"]:
+            print(f"база: {DB}", file=sys.stderr)
+            for p in promo_list(con):
+                print(f"{p['code']:<14}{p['days']:>4} дн.  лимит {str(p['limit'] or '—'):<4} "
+                      f"использован {p['used']:<4} {p['note']}")
+            return 0
+        if argv[:1] == ["add"] and len(argv) >= 3:
+            code, days = argv[1], int(argv[2])
+            limit = int(argv[3]) if len(argv) > 3 else 0
+            note = " ".join(argv[4:])
+            promo_add(con, code, days, limit, note)
+            con.commit()
+            print(f"{code.upper()}: {days} дн., лимит {limit or 'нет'}  (база: {DB})")
+            return 0
+        print("использование: activation-3xui.py promo list\n"
+              "               activation-3xui.py promo add КОД ДНИ [ЛИМИТ] [заметка]",
+              file=sys.stderr)
+        return 2
+    finally:
+        con.close()
 
 
 def device_limit_of(con, sub_id):
@@ -693,12 +766,11 @@ class H(BaseHTTPRequestHandler):
             return self._send(400, {"error": "bad code format"})
         if not DEVICE_RE.match(device):
             return self._send(400, {"error": "bad device id"})
-        promo = PROMO_CODES.get(code)
-        if not promo:
-            return self._send(404, {"error": "promo not found", "message": "Такого промокода нет"})
-
         con = db()
         try:
+            promo = promo_get(con, code)
+            if not promo:
+                return self._send(404, {"error": "promo not found", "message": "Такого промокода нет"})
             row = con.execute(
                 "SELECT sub_id, email FROM activations WHERE device=? AND code=?", (device, code)
             ).fetchone()
@@ -925,7 +997,12 @@ class H(BaseHTTPRequestHandler):
             return self._send(400, {"error": "bad device id"})
 
         upper = code.upper()
-        if upper in PROMO_CODES:
+        con = db()
+        try:
+            is_promo = promo_get(con, upper) is not None
+        finally:
+            con.close()
+        if is_promo:
             return self.do_activate({"code": upper, "device": device})
 
         lower = code.lower()
@@ -1040,12 +1117,17 @@ class H(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    db().close()
+    if sys.argv[1:2] == ["promo"]:
+        sys.exit(promo_cli(sys.argv[2:]))
+    require_env()
+    con = db()
+    codes = ", ".join(p["code"] for p in promo_list(con))
+    con.close()
     try:
         n = len(inbound_ids())
         print(f"панель ответила, инбаундов: {n}", file=sys.stderr)
     except Exception as e:
         print(f"!! панель недоступна: {e}", file=sys.stderr)
     print(f"activation service on :{PORT}", file=sys.stderr)
-    print(f"промокоды: {', '.join(PROMO_CODES)}", file=sys.stderr)
+    print(f"промокоды: {codes}", file=sys.stderr)
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()

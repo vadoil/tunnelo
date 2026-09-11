@@ -120,6 +120,34 @@ st, b = get("/me", {"Authorization": "Bearer " + token})
 ok(st == 200 and b.get("email") == "a@b.ru", "по токену кабинет открывается")
 ok(b.get("referralCode") == "TUNABC123", "в кабинете есть код приглашения")
 
+# --- промокоды живут в базе, не в коде ---------------------------------------
+con = m.db()
+ok(m.promo_get(con, "PARDAUTO") == {"days": 30, "limit": 0, "note": "первый месяц бесплатно"},
+   "коды из словаря засеяны в базу при старте")
+ok(m.promo_get(con, "NEMA") is None, "неизвестного кода в базе нет")
+m.promo_add(con, "zed42", 10, 1, "тест"); con.commit()
+ok(m.promo_get(con, "ZED42") == {"days": 10, "limit": 1, "note": "тест"},
+   "код добавляется в базу и приводится к верхнему регистру")
+try:
+    m.promo_add(con, "ab", 10, 0, ""); bad = False
+except ValueError:
+    bad = True
+ok(bad, "код короче 4 символов не добавляется")
+lst = {p["code"]: p for p in m.promo_list(con)}
+ok("ZED42" in lst and lst["PARDAUTO"]["used"] == 2, "в списке есть добавленный код и счётчик использований")
+ok(m.promo_cli(["add", "cli1", "5", "2", "из", "консоли"]) == 0
+   and m.promo_get(con, "CLI1") == {"days": 5, "limit": 2, "note": "из консоли"},
+   "консольная команда добавляет код")
+ok(m.promo_cli(["bogus"]) == 2, "непонятная консольная команда объясняет, как надо")
+con.close()
+
+m.create_client = lambda code, days: (f"tun_{code.lower()}_test", "zed42abcdef01234", 0, 1)
+st, b = post("/activate", {"code": "zed42", "device": "device0002"})
+ok(st == 201 and b.get("key") == "zed42abcdef01234", f"код из базы активируется без перезапуска ({st})")
+st, b = post("/redeem", {"code": "zed42", "device": "device0003"})
+ok(st == 409 and "больше не действует" in b.get("message", ""),
+   f"/redeem узнаёт код из базы и держит лимит ({st})")
+
 srv.shutdown()
 
 print()
