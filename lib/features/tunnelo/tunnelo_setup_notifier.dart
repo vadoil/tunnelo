@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart';
 import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/notifier/profile_notifier.dart';
 import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
@@ -86,13 +87,14 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
       await _ensureTunOnDesktop();
 
       final profiles = await _ref.read(profilesNotifierProvider.future);
+      final saved = await _api.savedSubscription();
       if (profiles.isNotEmpty) {
         loggy.debug('профили уже есть');
         state = const SetupDone();
+        await _repairLocalProfile(profiles, saved);
         return;
       }
 
-      final saved = await _api.savedSubscription();
       if (saved != null) {
         loggy.debug('подписка сохранена, добавляю профиль');
         state = const SetupRunning('Загружаем серверы…');
@@ -161,43 +163,42 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
 
   /// Добавить профиль по ссылке подписки.
   ///
-  /// Если системный DNS не работает (провайдер режет запросы к внешним
-  /// резолверам), ссылку скачать нечем — тогда забираем список серверов
-  /// сами, через DoH, и создаём профиль из готового текста.
+  /// Без системного DNS ссылка тоже открывается: HTTP-клиент профилей сам
+  /// уходит на DoH (см. DohFallbackAdapter). Профиль при этом остаётся
+  /// удалённым — с данными подписки и обновлением по расписанию.
   Future<void> _addProfile(String url) async {
     final notifier = _ref.read(addProfileNotifierProvider.notifier);
-
-    // Если имя не резолвится, обычный загрузчик всё равно не справится,
-    // а ждать его таймаут — почти минута тишины на экране. Проверяем
-    // заранее и сразу идём своим путём.
-    if (await _dnsWorks(url)) {
-      await notifier.addClipboard(url);
-      if (!_ref.read(addProfileNotifierProvider).hasError) return;
-      loggy.warning('ссылка подписки не открылась, пробую забрать список сам');
-    } else {
-      loggy.warning('DNS не отвечает, забираю список серверов напрямую');
+    await notifier.addClipboard(url);
+    if (_ref.read(addProfileNotifierProvider).hasError) {
+      throw const ActivationException('Не удалось загрузить список серверов. Проверьте интернет.');
     }
-
-    final content = await _api.fetchSubscription(url);
-    if (content == null) {
-      throw const ActivationException(
-        'Не удалось загрузить список серверов. Проверьте интернет.',
-      );
-    }
-    await notifier.addClipboard(content);
   }
 
-  /// Быстрая проверка: резолвится ли имя хоста подписки.
-  Future<bool> _dnsWorks(String url) async {
+  /// Старые сборки при отказе DNS сохраняли список серверов локальным
+  /// профилем: без данных подписки и без обновлений, а карточка на главной
+  /// писала «Подписка не активна» при живом ключе. Ставим настоящий профиль
+  /// подписки (он встаёт активным), слепок убираем. Тихо, без шторки:
+  /// приложение и так работает, а если сети нет — попробуем в другой раз.
+  Future<void> _repairLocalProfile(List<ProfileEntity> profiles, String? saved) async {
+    if (saved == null) return;
+    if (profiles.any((p) => p is RemoteProfileEntity && p.url == saved)) return;
+    if (profiles.whereType<LocalProfileEntity>().isEmpty) return;
+
+    loggy.info('профиль подписки локальный, пересобираю удалённый');
     try {
-      final host = Uri.parse(url).host;
-      if (host.isEmpty) return false;
-      final result = await InternetAddress.lookup(host)
-          .timeout(const Duration(seconds: 4));
-      return result.isNotEmpty;
-    } catch (_) {
-      return false;
+      await _addProfile(saved);
+    } catch (e) {
+      loggy.warning('пересобрать профиль не вышло, оставляю как есть: $e');
+      return;
     }
+    // Список читаем заново: после вставки активным стал новый профиль,
+    // и удаление старого не дёргает ни соединение, ни выбор активного.
+    final fresh = await _ref.read(profilesNotifierProvider.future);
+    final notifier = _ref.read(profilesNotifierProvider.notifier);
+    for (final stale in fresh.whereType<LocalProfileEntity>().where((p) => !p.active)) {
+      await notifier.deleteProfile(stale);
+    }
+    loggy.info('профиль подписки пересобран');
   }
 
   /// Приложения, которые нельзя пускать в туннель.

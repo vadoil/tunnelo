@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 
+import 'package:hiddify/core/http_client/doh_fallback.dart';
 import 'package:hiddify/utils/custom_loggers.dart';
 
 class DioHttpClient with InfraLogger {
@@ -29,20 +30,28 @@ class DioHttpClient with InfraLogger {
         ),
       );
 
-      _dio[mode]!.httpClientAdapter = IOHttpClientAdapter(
-        createHttpClient: () {
-          final client = HttpClient();
-          client.findProxy = (url) {
-            if (mode == "proxy") {
-              return "PROXY localhost:$port";
-            } else if (mode == "direct") {
-              return "DIRECT";
-            } else {
-              return "PROXY localhost:$port; DIRECT";
-            }
-          };
-          return client;
-        },
+      // Без системного DNS (провайдер режет UDP/53) обычный клиент падает
+      // на «Failed host lookup». Адаптер тогда резолвит имя через DoH и
+      // повторяет запрос по IP — подписка скачивается с заголовками, как
+      // и по обычному пути. Пробу резолва делаем только в прямом режиме:
+      // через локальный прокси имя резолвит сам прокси.
+      _dio[mode]!.httpClientAdapter = DohFallbackAdapter(
+        probe: mode == "direct",
+        IOHttpClientAdapter(
+          createHttpClient: () {
+            final client = HttpClient();
+            client.findProxy = (url) {
+              if (mode == "proxy") {
+                return "PROXY localhost:$port";
+              } else if (mode == "direct") {
+                return "DIRECT";
+              } else {
+                return "PROXY localhost:$port; DIRECT";
+              }
+            };
+            return client;
+          },
+        ),
       );
     }
 
