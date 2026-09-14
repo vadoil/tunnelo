@@ -66,11 +66,19 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; \
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{group}\Удалить {#AppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
-Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: autostart
 
 [Run]
+; Приложение требует прав администратора, а такие программы Windows из
+; папки автозагрузки не запускает. Поэтому автозапуск — задача планировщика
+; с наивысшими правами: стартует при входе без запроса UAC.
+Filename: "schtasks"; Parameters: "/Create /F /TN ""{#AppName}"" /SC ONLOGON /RL HIGHEST /TR ""\""{app}\{#AppExe}\"""""; \
+  Flags: runhidden; Tasks: autostart
 Filename: "{app}\{#AppExe}"; Description: "Запустить {#AppName}"; \
   Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+Filename: "schtasks"; Parameters: "/Delete /F /TN ""{#AppName}"""; \
+  Flags: runhidden; RunOnceId: "TunneloAutostartTask"
 
 [UninstallDelete]
 ; Настройки и журналы приложение держит рядом с собой — убираем за собой.

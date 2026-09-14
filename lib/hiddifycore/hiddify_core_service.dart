@@ -183,6 +183,18 @@ class HiddifyCoreService with InfraLogger {
         if (e.code == StatusCode.unavailable) {
           return left(const ConnectionFailure.unexpected("background core is not started yet!"));
         }
+        // Windows: «configure tun interface: Access is denied» — приложение
+        // запущено без прав администратора, адаптер wintun не создать.
+        // Сборка требует их сама, но если запустили в обход — сказать прямо,
+        // а не «Непредвиденный сбой».
+        if ((e.message ?? '').contains('Access is denied')) {
+          return left(
+            const ConnectionFailure.missingVpnPermission(
+              'Нужны права администратора. Закройте Tunnelo и запустите его правой кнопкой → '
+              '«Запуск от имени администратора».',
+            ),
+          );
+        }
         // throw InvalidConfig(e.message);
         // throw DioException.connectionError(requestOptions: RequestOptions(), reason: e.codeName, error: e);
 

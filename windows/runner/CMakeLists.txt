@@ -22,13 +22,14 @@ apply_standard_settings(${BINARY_NAME})
 
 # Туннелю нужен сетевой адаптер, а его создание требует прав администратора.
 #
-# Уровень задаём компоновщику, а не в runner.exe.manifest. Манифест подключён
-# как исходный файл, и компоновщик всё равно генерирует свой — с уровнем
-# «обычный пользователь». Два противоречащих требования mt.exe слить не может
-# и роняет сборку с LNK1327. Через /MANIFESTUAC оба совпадают.
+# Компоновщик генерирует свой фрагмент манифеста с уровнем UAC, и он должен
+# совпадать с runner.exe.manifest, иначе mt.exe роняет сборку (LNK1327).
+# Генератор Visual Studio переводит флаг в свойство проекта UACExecutionLevel
+# только в точной форме ниже: составной вариант с uiAccess в кавычках
+# CMake не распознавал, и exe молча оставался asInvoker (проверено по
+# манифесту готового Tunnelo.exe из CI, сборка 1.0.25).
 if(MSVC)
-  target_link_options(${BINARY_NAME} PRIVATE
-    "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
+  target_link_options(${BINARY_NAME} PRIVATE "/MANIFESTUAC:level='requireAdministrator'")
 endif()
 
 # Add preprocessor definitions for the build version.

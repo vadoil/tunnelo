@@ -12,6 +12,18 @@
       <supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
     </application>
   </compatibility>
+  <!-- Туннелю нужен сетевой адаптер wintun, а его создание требует прав
+       администратора: без них ядро отвечает «configure tun interface:
+       Access is denied». Уровень задан и здесь, и компоновщику в
+       CMakeLists.txt; если они разойдутся, mt.exe уронит сборку (LNK1327),
+       и это лучше, чем exe, который молча остаётся asInvoker. -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
       <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
