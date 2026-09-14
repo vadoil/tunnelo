@@ -73,7 +73,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopico
 ; с наивысшими правами: стартует при входе без запроса UAC.
 Filename: "schtasks"; Parameters: "/Create /F /TN ""{#AppName}"" /SC ONLOGON /RL HIGHEST /TR ""\""{app}\{#AppExe}\"""""; \
   Flags: runhidden; Tasks: autostart
-Filename: "{app}\{#AppExe}"; Description: "Запустить {#AppName}"; \
+Filename: "{app}\{#AppExe}"; Description: "Запустить {#AppName}"; WorkingDir: "{app}"; \
   Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
