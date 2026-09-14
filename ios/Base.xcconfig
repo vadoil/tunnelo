@@ -8,7 +8,14 @@
 // оно внутреннее, пользователю не видно; переименование папки в проекте
 // Xcode делается отдельно и без нужды не трогаем.
 BASE_BUNDLE_IDENTIFIER=app.tunnelo.com
-SERVICE_IDENTIFIER=app.tunnelo.service
+
+// Префикс имён платформенных каналов Flutter <-> Swift. Dart-сторона ждёт
+// ровно com.hiddify.app (channelPrefix в core_interface_mobile.dart и
+// MethodChannel в directories_provider.dart), Android тоже. Это внутреннее
+// имя, как namespace com.hiddify.hiddify: пользователю не видно, а от
+// «своего» значения app.tunnelo.service приложение на iOS не выходило за
+// заставку — MissingPluginException(get_paths).
+SERVICE_IDENTIFIER=com.hiddify.app
 
 // Team ID аккаунта Apple Developer. Взять на developer.apple.com ->
 // Membership details -> Team ID (десять символов).

@@ -44,6 +44,13 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      # flutter_keyboard_visibility (транзитивная зависимость) разрешает
+      # симулятору только x86_64, и Xcode собирает всё приложение под
+      # x86_64 — на Apple Silicon оно в симулятор не ставится
+      # («Failed to find matching arch»). Снимаем ограничение: ядро и
+      # остальные поды под arm64-симулятор собираются.
+      config.build_settings['VALID_ARCHS[sdk=iphonesimulator*]'] = 'arm64 x86_64'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
     end
   end
 end
