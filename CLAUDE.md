@@ -61,6 +61,9 @@ lib/features/tunnelo/
   tunnelo_setup_overlay.dart   шторка первого запуска (подключена)
   promo_code_page.dart         экран промокода (кнопка «Промокод» на главной)
   tunnelo_status_card.dart     карточка подписки на главной
+  vpn_conflicts.dart           поиск чужих VPN-клиентов (пакеты Android,
+                               реестр и процессы Windows, /Applications)
+  tunnelo_conflict_card.dart   карточка «Мешает другой VPN» на главной
 lib/core/http_client/
   doh_fallback.dart            DohFallbackAdapter: при отказе системного DNS
                                резолв через DoH и запрос по IP с SNI. Через него
