@@ -85,14 +85,14 @@ SUPPORT_PHONE_PRETTY = "+7 903 301-73-83"
 SUPPORT_EMAIL = os.getenv("TUNNELO_EMAIL", "support@tunello.online")
 OFFER_DATE = "1 сентября 2026 года"
 PRICES_TEXT = ("299 ₽ в месяц за одно устройство, 499 ₽ в месяц за два; "
-               "при оплате за год — 1794 ₽ и 2994 ₽ соответственно")
+               "при оплате за год — 2388 ₽ и 3996 ₽ соответственно")
 
-# Цены: помесячно и за год со скидкой 50%.
+# Цены: помесячно и за год на треть дешевле (199 и 333 ₽ в месяц).
 PLANS = {
     "1d-1m":  {"id": "1d-1m",  "devices": 1, "term": "месяц", "price": 299,  "days": 30},
-    "1d-12m": {"id": "1d-12m", "devices": 1, "term": "год",   "price": 1794, "days": 365},
+    "1d-12m": {"id": "1d-12m", "devices": 1, "term": "год",   "price": 2388, "days": 365},
     "2d-1m":  {"id": "2d-1m",  "devices": 2, "term": "месяц", "price": 499,  "days": 30},
-    "2d-12m": {"id": "2d-12m", "devices": 2, "term": "год",   "price": 2994, "days": 365},
+    "2d-12m": {"id": "2d-12m", "devices": 2, "term": "год",   "price": 3996, "days": 365},
 }
 
 # Витрина: два тарифа, у каждого цена за месяц и за год.
@@ -100,13 +100,13 @@ PLAN_CARDS = [
     {
         "devices": "1 устройство",
         "month": {"id": "1d-1m", "price": 299},
-        "year": {"id": "1d-12m", "price": 1794, "per_month": 150},
+        "year": {"id": "1d-12m", "price": 2388, "per_month": 199},
         "best": False,
     },
     {
         "devices": "2 устройства",
         "month": {"id": "2d-1m", "price": 499},
-        "year": {"id": "2d-12m", "price": 2994, "per_month": 250},
+        "year": {"id": "2d-12m", "price": 3996, "per_month": 333},
         "best": True,
     },
 ]

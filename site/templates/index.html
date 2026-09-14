@@ -17,7 +17,8 @@
         <a class="btn btn-primary" href="#plans">Выбрать тариф</a>
         <a class="btn btn-ghost" href="#how">Как это работает</a>
       </div>
-      <div class="hero-note">Первые 30 дней бесплатно. Карта не нужна.</div>
+      <div class="hero-note">Банк, Госуслуги и маркетплейсы работают как обычно.
+           YouTube и Telegram — как будто границ нет. Одновременно.</div>
     </div>
 
     <div class="hero-art">
@@ -94,7 +95,7 @@
   <section id="plans">
     <img class="plan-fox" src="/static/fox/coins.png" alt="">
     <h2>Тарифы</h2>
-    <p class="sub">При оплате за год — половина цены</p>
+    <p class="sub">При оплате за год — на треть дешевле</p>
     <div class="plans">
       {% for p in plans %}
       <div class="plan {% if p.best %}best{% endif %}">
@@ -103,7 +104,7 @@
         <div class="note">или {{ p.year.price }} ₽ за год — это {{ p.year.per_month }} ₽ в месяц</div>
         <div class="plan-buy">
           <a class="btn btn-primary" href="/pay?plan={{ p.year.id }}">
-            На год <span class="save">−50%</span>
+            На год <span class="save">−33%</span>
           </a>
           <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}">На месяц</a>
         </div>

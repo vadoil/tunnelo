@@ -31,8 +31,8 @@ const _monthly = [
 ];
 
 const _yearly = [
-  TunneloPlan(id: '1d-12m', devices: 1, months: 12, price: 1794),
-  TunneloPlan(id: '2d-12m', devices: 2, months: 12, price: 2994),
+  TunneloPlan(id: '1d-12m', devices: 1, months: 12, price: 2388),
+  TunneloPlan(id: '2d-12m', devices: 2, months: 12, price: 3996),
 ];
 
 /// Выбор тарифа.
@@ -146,7 +146,7 @@ class _TermSwitch extends StatelessWidget {
     child: Row(
       children: [
         _seg('На месяц', !yearly, () => onChanged(false)),
-        _seg('На год · −50%', yearly, () => onChanged(true)),
+        _seg('На год · −33%', yearly, () => onChanged(true)),
       ],
     ),
   );

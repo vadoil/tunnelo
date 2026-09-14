@@ -48,7 +48,7 @@
         <div class="note">или {{ p.year.price }} ₽ за год</div>
         <div class="plan-buy">
           <a class="btn btn-primary" href="/pay?plan={{ p.year.id }}&key={{ account.key or '' }}">
-            На год <span class="save">−50%</span></a>
+            На год <span class="save">−33%</span></a>
           <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}&key={{ account.key or '' }}">На месяц</a>
         </div>
       </div>
@@ -89,8 +89,8 @@
                value="{{ email or '' }}" autocomplete="email" autofocus required>
         <button class="btn btn-primary" type="submit">Прислать код</button>
       </form>
-      <p class="note">Ещё не пользовались Tunnelo? Скачайте приложение —
-         первые 30 дней бесплатно, аккаунт заведётся при первой оплате.</p>
+      <p class="note">Ещё не пользовались Tunnelo? Скачайте приложение,
+         войдите по почте и выберите тариф — аккаунт заведётся сам.</p>
     {% endif %}
   {% endif %}
 
