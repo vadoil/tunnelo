@@ -31,7 +31,7 @@
 | Сервис активации | `https://api.amnez.online` | там же, systemd `tunnelo-activation`, файл `/opt/tunnelo/activation-3xui.py`, окружение `/etc/default/tunnelo-activation` |
 | Узел fi-1 | `fi.amnez.online` → `217.177.33.106` | 3x-ui на `:2053` |
 | Подписка | `https://panel.amnez.online/sub/{subId}` | обновление раз в 12 ч |
-| Скачивание сборок | `https://api.amnez.online/dl/<файл>` | nginx, файлы в `/var/www/dl` на том же сервере (`scp` туда) |
+| Скачивание сборок | `https://api.amnez.online/dl/<файл>` | nginx, файлы в `/var/www/dl` на том же сервере; выкладывать `server/publish-release.sh`, он же пишет `latest.json` для проверки обновлений |
 
 Сервис активации: `POST /activate {"code":"PARDAUTO","device":"<hwid>"}` →
 создаёт клиента в панели на 30 дней, возвращает `{key, subscription, daysLeft, servers}`.
@@ -64,6 +64,12 @@ lib/features/tunnelo/
   vpn_conflicts.dart           поиск чужих VPN-клиентов (пакеты Android,
                                реестр и процессы Windows, /Applications)
   tunnelo_conflict_card.dart   карточка «Мешает другой VPN» на главной
+lib/features/app_update/data/app_update_repository.dart
+                               источник версий — https://api.amnez.online/dl/latest.json
+                               (не GitHub Releases); главная зовёт проверку через 4 с
+                               после старта и показывает «Обновить / Позже»
+server/publish-release.sh      выложить сборки CI в /dl/ и обновить latest.json:
+                               zsh server/publish-release.sh 1.0.28 <apk> <win> <mac>
 lib/core/http_client/
   doh_fallback.dart            DohFallbackAdapter: при отказе системного DNS
                                резолв через DoH и запрос по IP с SNI. Через него
