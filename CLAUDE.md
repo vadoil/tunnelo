@@ -129,12 +129,16 @@ Hysteria2 качает 24–27 МБ/с.
    в `tunnelo-apk.yml` есть, секретов нет. Ключ создаёт пользователь
    руками: `zsh android/make-keystore.sh` (ассистенту запись секретов
    запрещена классификатором).
-2. **Windows: «Непредвиденный сбой: failed to start background core»**
-   при нажатии на фонарь (сборка 1.0.24 в UTM). Это gRPC-ошибка вызова
-   Start у ядра, не UNAVAILABLE; текст — в `%APPDATA%\Tunnelo\Tunnelo\app.log`
-   (или «О программе → Открыть рабочую папку»). Гипотеза: виртуалка
-   Windows 11 ARM, а сборка и wintun.dll — x64, драйвер под ARM64-ядро
-   не встаёт. Ждём лог и подтверждение архитектуры.
+2. **Windows: права администратора.** Адаптер wintun создаётся только с
+   правами администратора, иначе ядро отвечает «configure tun interface:
+   Access is denied» и «Непредвиденный сбой». Уровень requireAdministrator
+   задан в `windows/runner/runner.exe.manifest` и компоновщику
+   (`/MANIFESTUAC:level='requireAdministrator'`, только эта форма — составную
+   с uiAccess генератор VS молча игнорирует). Проверять по манифесту готового
+   exe: `grep -a requestedExecutionLevel Tunnelo.exe`. Автозапуск — задача
+   планировщика (schtasks /RL HIGHEST), ярлык в автозагрузке для таких
+   программ Windows не запускает. Починено в 1.0.26 (a219db80), на машине
+   пользователя ещё не подтверждено.
 3. **iOS-сборка в App Store не собиралась**: нужен Apple Developer
    (Team ID в ios/Base.xcconfig, DEVELOPMENT_TEAM пустой). Симулятор
    работает локально, см. память tunnelo-ios-simulator.
