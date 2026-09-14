@@ -31,6 +31,7 @@
 | Сервис активации | `https://api.amnez.online` | там же, systemd `tunnelo-activation`, файл `/opt/tunnelo/activation-3xui.py`, окружение `/etc/default/tunnelo-activation` |
 | Узел fi-1 | `fi.amnez.online` → `217.177.33.106` | 3x-ui на `:2053` |
 | Подписка | `https://panel.amnez.online/sub/{subId}` | обновление раз в 12 ч |
+| Сайт tunello.online | `27.102.139.44`, `/opt/tunnelo-site`, сервис `tunnelo-site.service` | исходники в `site/`; выкат: scp app.py, templates, static/style.css + `systemctl restart tunnelo-site` (бэкап app.py.bak-дата) |
 | Скачивание сборок | `https://api.amnez.online/dl/<файл>` | nginx, файлы в `/var/www/dl` на том же сервере; выкладывать `server/publish-release.sh`, он же пишет `latest.json` для проверки обновлений |
 
 Сервис активации: `POST /activate {"code":"PARDAUTO","device":"<hwid>"}` →
@@ -133,11 +134,10 @@ Hysteria2 качает 24–27 МБ/с.
 
 ## Известные проблемы (в работе)
 
-1. **Подпись APK.** CI подписывает каждую сборку новым debug-ключом:
-   обновление поверх старой версии не ставится. Шаг с release-keystore
-   в `tunnelo-apk.yml` есть, секретов нет. Ключ создаёт пользователь
-   руками: `zsh android/make-keystore.sh` (ассистенту запись секретов
-   запрещена классификатором).
+1. **Подпись APK — решено 14.09.** Release-keystore создан пользователем
+   (`android/make-keystore.sh`), секреты `ANDROID_KEYSTORE_*` в репо, CI
+   подписывает им (SHA-256 345f5ecd…9de9). Ключ лежит в
+   `~/tunnelo-keystore/`, его потеря = невозможность обновлений.
 2. **Windows: права администратора.** Адаптер wintun создаётся только с
    правами администратора, иначе ядро отвечает «configure tun interface:
    Access is denied» и «Непредвиденный сбой». Уровень requireAdministrator
