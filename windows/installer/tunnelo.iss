@@ -77,8 +77,21 @@ Filename: "{app}\{#AppExe}"; Description: "Запустить {#AppName}"; \
   Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
+Filename: "taskkill"; Parameters: "/F /IM {#AppExe}"; \
+  Flags: runhidden; RunOnceId: "TunneloKill"
 Filename: "schtasks"; Parameters: "/Delete /F /TN ""{#AppName}"""; \
   Flags: runhidden; RunOnceId: "TunneloAutostartTask"
+
+[Code]
+// Обновление поверх работающего Tunnelo: старый процесс держит DLL и порт
+// ядра, и первый запуск новой версии падает. Гасим его до копирования файлов.
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  R: Integer;
+begin
+  Exec('taskkill.exe', '/F /IM {#AppExe}', '', SW_HIDE, ewWaitUntilTerminated, R);
+  Result := '';
+end;
 
 [UninstallDelete]
 ; Настройки и журналы приложение держит рядом с собой — убираем за собой.

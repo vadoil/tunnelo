@@ -6,6 +6,7 @@ import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_backdrop.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_conflict_card.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_connect_area.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_server_pill.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
@@ -107,6 +108,8 @@ class HomePage extends HookConsumerWidget {
                             AsyncData(value: final _?) => const TunneloStatusCard(),
                             _ => const SizedBox.shrink(),
                           },
+                          // Чужой VPN на устройстве ломает туннель — просим убрать.
+                          const TunneloConflictCard(),
                           const SliverFillRemaining(
                             hasScrollBody: false,
                             child: Column(
