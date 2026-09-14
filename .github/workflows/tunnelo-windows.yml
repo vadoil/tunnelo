@@ -80,8 +80,17 @@ jobs:
             -o bin/hiddify-core.dll ./platform/desktop
           ls -la bin/
 
+      # Flutter без -v не показывает, почему упала установка CMake (INSTALL.vcxproj,
+      # MSB3073). При падении повторяем установку напрямую — она печатает причину.
       - name: Build Windows app
-        run: flutter build windows --release --target lib/main_prod.dart
+        shell: bash
+        run: |
+          flutter build windows --release --target lib/main_prod.dart || {
+            echo "::group::cmake --install: причина падения"
+            cmake --install build/windows/x64 --config Release 2>&1 | tail -80
+            echo "::endgroup::"
+            exit 1
+          }
 
       - name: Проверить, что ядро наше
         shell: bash
