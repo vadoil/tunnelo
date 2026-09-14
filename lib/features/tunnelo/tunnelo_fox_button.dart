@@ -59,21 +59,30 @@ class TunneloFoxButton extends HookConsumerWidget {
             builder: (context, _) {
               final t = Curves.easeInOut.transform(pulse.value);
               final k = size / 260;
+              // Фонарь — индикатор VPN: выключен, пока туннеля нет; горит и
+              // чуть подрагивает, как живой огонь, когда подключено; пока
+              // поднимаем туннель — слабо дышит.
+              final flame = connected ? _flicker(pulse.value) : 0.0;
               return SizedBox(
                 width: size,
                 height: size,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Свет фонаря. Он же — вся анимация состояния.
-                    Align(
-                      alignment: _lantern,
-                      child: _Glow(
-                        strength: connected ? 0.55 + 0.45 * t : 0.10 + 0.12 * t,
-                        warm: connected,
-                        size: (connected ? 150 + 26 * t : 90 + 10 * t) * k,
+                    if (connected)
+                      Align(
+                        alignment: _lantern,
+                        child: _Glow(
+                          strength: 0.62 + 0.38 * flame,
+                          warm: true,
+                          size: (150 + 30 * flame) * k,
+                        ),
+                      )
+                    else if (busy)
+                      Align(
+                        alignment: _lantern,
+                        child: _Glow(strength: 0.10 + 0.12 * t, warm: false, size: (90 + 10 * t) * k),
                       ),
-                    ),
                     // Лис слегка покачивается — экран перестаёт быть мёртвым.
                     Transform.translate(
                       offset: Offset(0, -3 * math.sin(t * math.pi)),
@@ -83,6 +92,16 @@ class TunneloFoxButton extends HookConsumerWidget {
                         fit: BoxFit.contain,
                       ),
                     ),
+                    // Без туннеля фонарь погашен: на картинке он всегда горит,
+                    // поэтому гасим его тёмным пятном поверх стекла.
+                    if (!connected)
+                      Align(
+                        alignment: _lantern,
+                        child: Transform.translate(
+                          offset: Offset(0, -3 * math.sin(t * math.pi)),
+                          child: _Shade(size: 46 * k),
+                        ),
+                      ),
                   ],
                 ),
               );
@@ -127,6 +146,40 @@ class TunneloFoxButton extends HookConsumerWidget {
         break;
     }
   }
+}
+
+/// Дрожание огня: несколько несовпадающих волн поверх дыхания контроллера,
+/// чтобы свет не пульсировал метрономом, а подрагивал. Возвращает 0…1.
+double _flicker(double v) {
+  final w = v * 2 * math.pi;
+  final x = 0.55 + 0.25 * math.sin(w) + 0.12 * math.sin(3.7 * w + 1.3) + 0.08 * math.sin(9.1 * w + 2.1);
+  return x.clamp(0.0, 1.0);
+}
+
+/// Погашенное стекло фонаря: полупрозрачная тень поверх картинки.
+class _Shade extends StatelessWidget {
+  const _Shade({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            TunneloColors.mistDeep.withValues(alpha: 0.72),
+            TunneloColors.mistDeep.withValues(alpha: 0.55),
+            TunneloColors.mistDeep.withValues(alpha: 0),
+          ],
+          stops: const [0.0, 0.55, 1.0],
+        ),
+      ),
+    ),
+  );
 }
 
 /// Мягкое свечение фонаря.
