@@ -12,6 +12,10 @@ abstract class Constants {
   static const githubUrl = "https://github.com/vadoil/tunnelo";
   static const licenseUrl = "https://github.com/vadoil/tunnelo?tab=License-1-ov-file#readme";
   static const githubReleasesApiUrl = "https://api.github.com/repos/vadoil/tunnelo/releases";
+
+  /// Актуальная версия и ссылки на сборки. Пишется скриптом
+  /// server/publish-release.sh при выкладке в /dl/.
+  static const latestVersionUrl = "https://api.amnez.online/dl/latest.json";
   static const githubLatestReleaseUrl = "https://github.com/vadoil/tunnelo/releases/latest";
   static const appCastUrl = "https://raw.githubusercontent.com/vadoil/tunnelo/main/appcast.xml";
   static const telegramChannelUrl = "https://t.me/hiddify";

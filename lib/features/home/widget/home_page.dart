@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:dartx/dartx.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
+import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
+import 'package:hiddify/features/app_update/notifier/app_update_notifier.dart';
+import 'package:hiddify/features/app_update/notifier/app_update_state.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_backdrop.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_conflict_card.dart';
@@ -29,8 +33,23 @@ class HomePage extends HookConsumerWidget {
     // подтягиваем серверы и включаем RU-маршрутизацию.
     useEffect(() {
       Future.microtask(() => ref.read(tunneloSetupProvider.notifier).runIfNeeded());
-      return null;
+      // Проверка обновлений — чуть позже старта, чтобы не толкаться с
+      // автонастройкой. Нашли новее — просим обновиться (см. listen ниже).
+      final timer = Timer(const Duration(seconds: 4), () => ref.read(appUpdateNotifierProvider.notifier).check());
+      return timer.cancel;
     }, const []);
+
+    // Есть версия новее — диалог «Обновить / Позже». Без «Пропустить»:
+    // старые сборки быстро отстают от сервера и правил маршрутизации.
+    ref.listen(appUpdateNotifierProvider, (_, next) async {
+      if (!context.mounted) return;
+      if (next case AppUpdateStateAvailable(:final versionInfo)) {
+        final appInfo = ref.read(appInfoProvider).requireValue;
+        await ref
+            .read(dialogNotifierProvider.notifier)
+            .showNewVersion(currentVersion: appInfo.presentVersion, newVersion: versionInfo, canIgnore: false);
+      }
+    });
 
     // Градиент обязан быть под всем: стеклянные карточки размывают то, что
     // под ними, а на светлом фоне светлый текст просто пропадает.
