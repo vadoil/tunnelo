@@ -191,13 +191,17 @@ flutter_gen:
   integrations:
     flutter_svg: true
 
+# Заставка при запуске: фонарь на тёмном фоне приложения (TunneloColors.mistDeep).
+# Картинки собраны из иконки app-icon-1024.png со скруглением. Пересобрать
+# ассеты по всем платформам: dart run flutter_native_splash:create
 flutter_native_splash:
-  color: "#ffffff"
-  image: assets/images/source/ic_launcher_splash.png
+  color: "#0C1230"
+  image: assets/images/splash/lantern.png
   android_gravity: center
+  ios_content_mode: center
   android_12:
-    color: "#ffffff"
-    image: assets/images/source/ic_launcher_foreground.png
+    color: "#0C1230"
+    image: assets/images/splash/lantern_android12.png
 
 ffigen:
   name: "HiddifyCoreNativeLibrary"
