@@ -12,8 +12,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 ///
 /// Намеренно НЕ показывает ни ключ, ни ссылку подписки, ни меню профиля:
 /// это данные, по которым чужой клиент может подключиться к нашим узлам.
-/// Человеку нужны три вещи — сколько трафика, сколько дней и сколько
-/// устройств занято.
+///
+/// И не показывает бухгалтерию. Раньше сверху висели три строки цифр —
+/// трафик, срок, устройства, — которые в обычный день не нужны никому.
+/// Теперь одна строка: до какого числа оплачено и сколько устройств занято.
+/// Полоска трафика появляется, только когда потрачено больше пяти процентов,
+/// кнопки «Продлить» и «Промокод» — когда осталось семь дней или подписки
+/// нет. За три дня до конца карточка меняет тон: это последний момент, когда
+/// человека ещё можно предупредить.
 class TunneloStatusCard extends ConsumerWidget {
   const TunneloStatusCard({super.key});
 
@@ -27,8 +33,13 @@ class TunneloStatusCard extends ConsumerWidget {
 
     final devices = ref.watch(tunneloDevicesProvider).valueOrNull;
 
-    // Карточка целиком ведёт на экран подписки: это то, за что платят,
-    // и добираться до него через настройки человек не должен.
+    final days = info.isExpired ? 0 : info.remaining.inDays;
+    final alarming = alarmingFor(info);
+    final needsAction = needsActionFor(info);
+    final showTraffic = showTrafficFor(info);
+
+    final accent = alarming ? TunneloColors.coral : TunneloColors.seaDeep;
+
     return GestureDetector(
       onTap: () => context.pushNamed('subscription'),
       behavior: HitTestBehavior.opaque,
@@ -36,77 +47,126 @@ class TunneloStatusCard extends ConsumerWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
         decoration: BoxDecoration(
-          color: TunneloColors.card,
+          color: alarming ? TunneloColors.alertSurface : TunneloColors.card,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: TunneloColors.line),
+          border: Border.all(
+            color: alarming ? TunneloColors.coral : TunneloColors.line,
+            width: alarming ? 1.4 : 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const _Label('Трафик'),
-                Text(
-                  _traffic(info),
-                  style: const TextStyle(
-                    color: TunneloColors.seaDeep,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    headlineFor(info),
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
+                if (devices != null) ...[
+                  const SizedBox(width: 10),
+                  Text(
+                    '${devices.used} из ${devices.limit}',
+                    style: const TextStyle(color: TunneloColors.muted, fontSize: 14),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: info.total > 0 ? info.ratio : 0,
-                minHeight: 6,
-                backgroundColor: TunneloColors.line,
-                valueColor: const AlwaysStoppedAnimation(TunneloColors.sea),
+            if (alarming) ...[
+              const SizedBox(height: 6),
+              Text(
+                _warning(info, days),
+                style: const TextStyle(
+                  color: TunneloColors.coralSoft,
+                  fontSize: 13.5,
+                  height: 1.35,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const _Label('Осталось'),
-                Text(
-                  _daysLeft(info),
-                  style: const TextStyle(
-                    color: TunneloColors.seaDeep,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            if (devices != null) ...[
+            ],
+            if (showTraffic) ...[
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const _Label('Устройства'),
+                  const _Label('Трафик'),
                   Text(
-                    '${devices.used} из ${devices.limit}',
+                    _traffic(info),
                     style: const TextStyle(
                       color: TunneloColors.core,
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: info.ratio,
+                  minHeight: 6,
+                  backgroundColor: TunneloColors.line,
+                  valueColor: AlwaysStoppedAnimation(accent),
+                ),
+              ),
             ],
-            const SizedBox(height: 16),
-            const _Actions(),
+            if (needsAction) ...[
+              const SizedBox(height: 16),
+              const _Actions(),
+            ],
             const Divider(height: 22, color: TunneloColors.line),
             const _AccountRow(),
           ],
         ),
       ),
     );
+  }
+
+  /// Три дня — последний момент предупредить: дальше подписка просто
+  /// выключится, и человек узнает об этом от неработающего интернета.
+  static bool alarmingFor(SubscriptionInfo info) =>
+      info.isExpired || info.remaining.inDays <= 3;
+
+  /// Семь дней — момент, когда «Продлить» перестаёт быть лишней кнопкой на
+  /// главной. Раньше она висела там всегда и мешала.
+  static bool needsActionFor(SubscriptionInfo info) =>
+      info.isExpired || info.remaining.inDays <= 7;
+
+  /// Полоска трафика до пяти процентов не говорит ничего, кроме «всё хорошо»,
+  /// а место занимает. На безлимите её нет вовсе.
+  static bool showTrafficFor(SubscriptionInfo info) =>
+      info.total > 0 && info.ratio > 0.05;
+
+  /// Одна строка вместо трёх: до какого числа оплачено.
+  static String headlineFor(SubscriptionInfo info) {
+    if (info.isExpired) return 'Подписка закончилась';
+    final days = info.remaining.inDays;
+    if (days < 1) return 'Подписка кончается сегодня';
+    return 'Подписка до ${_date(info.expire)}';
+  }
+
+  static String _warning(SubscriptionInfo info, int days) {
+    if (info.isExpired) {
+      return 'Подключение не работает. Продлите подписку или введите промокод.';
+    }
+    if (days < 1) return 'Осталось меньше суток, потом выключится.';
+    return 'Осталось $days ${_pluralDays(days)}, потом выключится.';
+  }
+
+  static const _months = <String>[
+    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+  ];
+
+  static String _date(DateTime when) {
+    final local = when.toLocal();
+    return '${local.day} ${_months[local.month - 1]}';
   }
 
   static String _traffic(SubscriptionInfo info) {
@@ -119,13 +179,6 @@ class TunneloStatusCard extends ConsumerWidget {
     if (gb >= 100) return '${gb.round()} ГБ';
     if (gb >= 10) return '${gb.toStringAsFixed(1)} ГБ';
     return '${gb.toStringAsFixed(2)} ГБ';
-  }
-
-  static String _daysLeft(SubscriptionInfo info) {
-    if (info.isExpired) return 'Подписка истекла';
-    final days = info.remaining.inDays;
-    if (days < 1) return 'Меньше суток';
-    return '$days ${_pluralDays(days)}';
   }
 
   static String _pluralDays(int n) {

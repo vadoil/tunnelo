@@ -7,6 +7,8 @@ import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
+import 'package:hiddify/features/proxy/active/active_proxy_notifier.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -121,6 +123,10 @@ class TunneloFoxButton extends HookConsumerWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+          // Три слова под фонарём отвечают на три вопроса, с которыми чаще
+          // всего приходят в поддержку: подключено ли, через какую страну и
+          // сколько дней осталось. Раньше здесь было только «Подключено».
+          if (connected) const _ConnectedDetails(),
         ],
       ),
     );
@@ -210,5 +216,48 @@ class _Glow extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Страна и остаток дней под надписью «Подключено».
+class _ConnectedDetails extends ConsumerWidget {
+  const _ConnectedDetails();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final proxy = ref.watch(activeProxyNotifierProvider.select((v) => v.valueOrNull));
+    final sub = ref.watch(tunneloSubscriptionProvider).valueOrNull;
+
+    final parts = <String>[
+      if (_country(proxy?.tag) case final String c) c,
+      if (sub?.daysLeft case final int d when d > 0) '$d ${_pluralDays(d)}',
+    ];
+    if (parts.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        parts.join(' · '),
+        style: const TextStyle(color: TunneloColors.muted, fontSize: 14),
+      ),
+    );
+  }
+
+  /// Из тега узла оставляем страну без номера: номер уже виден в карточке
+  /// сервера, а здесь важнее короткая строка.
+  static String? _country(String? tag) {
+    if (tag == null || tag.trim().isEmpty) return null;
+    if (tag == 'lowest' || tag == 'balance' || tag == 'select') return null;
+    var name = tag.split('§').first.split('·').first.trim();
+    name = name.replaceAll(RegExp(r'[-–]\s*\d+$'), '').trim();
+    return name.isEmpty ? null : name;
+  }
+
+  static String _pluralDays(int n) {
+    final m10 = n % 10;
+    final m100 = n % 100;
+    if (m10 == 1 && m100 != 11) return 'день';
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'дня';
+    return 'дней';
   }
 }

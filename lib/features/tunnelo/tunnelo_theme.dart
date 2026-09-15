@@ -30,6 +30,9 @@ abstract class TunneloColors {
   static const text = Color(0xFFEAF6F1); // основной текст
   static const muted = Color(0xFF93AFA8); // подписи
   static const alert = Color(0xFFFF6B4A); // ошибка
+  // Подложка тревожной карточки: коралл на 10%, чтобы карточка читалась как
+  // предупреждение, но не кричала на тёмном фоне.
+  static const alertSurface = Color(0x1AFF8A6B);
 
   // Старые имена — чтобы не переписывать разом весь код.
   static const abyss = mistDeep;

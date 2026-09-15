@@ -11,6 +11,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// Показывает страну и задержку — то, что человеку понятно. Технические
 /// подробности вроде имени балансировщика и тега узла остаются в логах.
 /// Нажатие открывает выбор сервера.
+///
+/// До подключения здесь было «Сервер не выбран · Нажмите, чтобы выбрать».
+/// Человек читал это как поломку и шёл искать, что выбрать, хотя сервер
+/// подбирается сам. Теперь до подключения пилюля так и говорит, а после
+/// показывает конкретный узел и задержку — «Финляндия-2 · 24 мс».
 class TunneloServerPill extends ConsumerWidget {
   const TunneloServerPill({super.key});
 
@@ -22,8 +27,9 @@ class TunneloServerPill extends ConsumerWidget {
         const Connected();
     final proxy = ref.watch(activeProxyNotifierProvider.select((v) => v.valueOrNull));
 
-    final country = _country(proxy?.tag);
+    final tag = proxy?.tag;
     final delay = proxy?.urlTestDelay ?? 0;
+    final title = connected ? nodeFor(tag) : idleTitleFor(tag);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
@@ -56,7 +62,7 @@ class TunneloServerPill extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        country,
+                        title,
                         style: const TextStyle(
                           color: TunneloColors.seaDeep,
                           fontSize: 15.5,
@@ -65,7 +71,7 @@ class TunneloServerPill extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _subtitle(connected, delay),
+                        subtitleFor(connected, tag, delay),
                         style: const TextStyle(color: TunneloColors.muted, fontSize: 13),
                       ),
                     ],
@@ -80,21 +86,32 @@ class TunneloServerPill extends ConsumerWidget {
     );
   }
 
-  /// Из тега узла («🇫🇮 Финляндия-2 · HY2-2 § 3») оставляем страну.
-  static String _country(String? tag) {
-    if (tag == null || tag.trim().isEmpty) return 'Сервер не выбран';
-    // Служебные имена групп человеку ничего не говорят: «lowest» — это
-    // балансировщик по задержке, «balance» — перебор по кругу.
-    if (tag == 'lowest') return 'Быстрейший сервер';
-    if (tag == 'balance') return 'По очереди';
-    if (tag == 'select') return 'Выбор сервера';
-    var name = tag.split('§').first.split('·').first.trim();
-    name = name.replaceAll(RegExp(r'[-–]\s*\d+$'), '').trim();
-    return name.isEmpty ? 'Сервер не выбран' : name;
+  /// Автоподбор: никакого конкретного узла ещё нет.
+  static bool auto(String? tag) =>
+      tag == null ||
+      tag.trim().isEmpty ||
+      tag == 'lowest' ||
+      tag == 'balance' ||
+      tag == 'select';
+
+  /// Что показать до подключения. Сервера ещё нет — и это нормально.
+  static String idleTitleFor(String? tag) =>
+      auto(tag) ? 'Сервер подберётся сам' : nodeFor(tag);
+
+  /// Из тега узла («🇫🇮 Финляндия-2 · HY2-2 § 3») оставляем имя узла с
+  /// номером: после подключения человеку полезно видеть, куда он попал.
+  static String nodeFor(String? tag) {
+    if (auto(tag)) return 'Быстрейший сервер';
+    final name = tag!.split('§').first.split('·').first.trim();
+    return name.isEmpty ? 'Быстрейший сервер' : name;
   }
 
-  static String _subtitle(bool connected, int delay) {
-    if (!connected) return 'Нажмите, чтобы выбрать';
+  static String subtitleFor(bool connected, String? tag, int delay) {
+    if (!connected) {
+      return auto(tag)
+          ? 'Выберем быстрейший при подключении'
+          : 'Выбран вручную · нажмите, чтобы изменить';
+    }
     if (delay > 0 && delay < 65000) return 'Подключено · $delay мс';
     return 'Подключено';
   }
