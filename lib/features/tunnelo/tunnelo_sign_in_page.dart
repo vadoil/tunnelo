@@ -177,6 +177,22 @@ class TunneloSignInPage extends HookConsumerWidget {
                       style: TextStyle(color: TunneloColors.muted),
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  // Те, кто пользовался приложением до обязательного входа,
+                  // пароля не получали: их подписка лежит на этом телефоне.
+                  // При первом входе она привязывается к аккаунту сама — об
+                  // этом надо сказать прямо, иначе выглядит как потеря доступа.
+                  const Text(
+                    'Пользовались Tunnelo раньше? Заведите аккаунт на сайте — '
+                    'подписка с этого устройства привяжется к нему при входе, '
+                    'оплаченные дни не пропадут.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: TunneloColors.muted,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
                 ],
               ),
             ),
