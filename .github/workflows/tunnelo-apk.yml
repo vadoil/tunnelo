@@ -69,7 +69,9 @@ jobs:
       - name: Go-накладка — vet и тесты
         working-directory: hiddify-core
         run: |
-          TAGS=$(sed -n 's/^TAGS=//p' Makefile | head -1)
+          # with_naive_outbound требует libcronet.a, её на раннере нет — для
+          # vet/test накладки этот тег не нужен.
+          TAGS=$(sed -n 's/^TAGS=//p' Makefile | head -1 | sed 's/,with_naive_outbound//')
           go vet -unreachable=false -tags "$TAGS" ./v2/config/
           go test -count=1 -tags "$TAGS" ./v2/config/
 
