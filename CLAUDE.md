@@ -34,6 +34,16 @@
 | Сайт tunello.online | `27.102.139.44`, `/opt/tunnelo-site`, сервис `tunnelo-site.service` | исходники в `site/`; выкат: scp app.py, templates, static/style.css + `systemctl restart tunnelo-site` (бэкап app.py.bak-дата) |
 | Скачивание сборок | `https://api.amnez.online/dl/<файл>` | nginx, файлы в `/var/www/dl` на том же сервере; выкладывать `server/publish-release.sh`, он же пишет `latest.json` для проверки обновлений |
 
+**Почта.** У хостера сервиса активации закрыт исходящий SMTP, поэтому коды
+входа и письма он отправляет через сайт: `POST https://tunello.online/internal/mail`
+с заголовком `X-Tunnelo-Secret` (MAIL_URL/MAIL_SECRET в
+`/etc/default/tunnelo-activation`, тот же секрет в `.env` сайта). Сайт
+отдаёт письмо локальному postfix, тот пересылает через Resend
+(smtp.resend.com:587, ключ в /etc/postfix/sasl_passwd), домен tunello.online
+в Resend подтверждён. Маршрут `/internal/mail` в site/app.py уже терялся при
+рефакторинге (15.09.2026, люди не получали коды) — не удалять; проверка:
+`journalctl -u tunnelo-activation | grep "письмо не ушло"`.
+
 Сервис активации: `POST /activate {"code":"PARDAUTO","device":"<hwid>"}` →
 создаёт клиента в панели на 30 дней, возвращает `{key, subscription, daysLeft, servers}`.
 Повтор с того же `device` возвращает тот же ключ. Токен панели живёт только
