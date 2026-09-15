@@ -6,6 +6,7 @@
 		"golang.go",
 		"redhat.vscode-yaml",
 		"codeium.codeium",
-		"kangping.protobuf"
+		"kangping.protobuf",
+		"anthropic.claude-code"
 	]
 }
