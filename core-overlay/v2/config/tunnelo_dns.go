@@ -41,7 +41,9 @@ var tunneloRUDomains = []string{
 	"cdnvideo.ru", "cdn-tinkoff.ru", "ftc.ru", "hh.ru", "drom.ru", "auto.ru",
 }
 
-var tunneloRUTLDs = []string{".ru", ".su", ".рф", ".moscow", ".tatar"}
+// .рф в DNS-запросах и SNI идёт как punycode xn--p1ai: sing-box IDN не
+// нормализует, и кириллическая форма не совпадала бы ни с одним доменом.
+var tunneloRUTLDs = []string{".ru", ".su", ".xn--p1ai", ".moscow", ".tatar"}
 
 // Диапазоны Яндекса: страховка для случаев, когда имя резолвится мимо нас.
 var tunneloYandexCIDRs = []string{

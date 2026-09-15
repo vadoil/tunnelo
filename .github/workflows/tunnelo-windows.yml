@@ -13,8 +13,15 @@ on:
       - '.github/workflows/tunnelo-windows.yml'
 
 env:
+  # Если апстрим поднимет go в go.mod до 1.26, setup-go молча скачает его,
+  # а ядро упадёт на старте (psiphon-tls). Пусть падает сборка, громко.
+  GOTOOLCHAIN: local
   FLUTTER_VERSION: '3.38.5'
   GO_VERSION: '1.25'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   windows:

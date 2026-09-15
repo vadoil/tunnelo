@@ -1,0 +1,97 @@
+name: Tunnelo tests
+
+# Анализатор и тесты на каждый push в build и на PR. Сборочные workflow
+# их не гоняют, и правило «flutter analyze должен быть чистым» держалось
+# только на дисциплине. Здесь без ядра и без gomobile — быстро.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, build]
+    paths-ignore: ['**.md', 'docs/**']
+  pull_request:
+    branches: [main, build]
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+  GOTOOLCHAIN: local
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flutter:
+    name: flutter analyze + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Rewrite submodule SSH URLs to HTTPS
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Кодогенерация
+        run: |
+          flutter pub get
+          dart run build_runner build --delete-conflicting-outputs
+          dart run slang
+
+      - name: flutter analyze (ошибки и предупреждения)
+        run: flutter analyze --no-fatal-infos
+
+      - name: flutter test
+        run: flutter test
+
+  python:
+    name: сервис активации и сайт
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Сервис активации
+        run: python3 server/test_activation.py
+
+      - name: Сайт
+        run: |
+          pip install -q -r site/requirements.txt
+          python3 site/test_site.py
+
+  go-overlay:
+    name: Go-накладка на ядро
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Rewrite submodule SSH URLs to HTTPS
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: hiddify-core/go.sum
+
+      - name: vet и тесты
+        working-directory: hiddify-core
+        run: |
+          cp ../core-overlay/v2/config/*.go v2/config/
+          TAGS=$(sed -n 's/^TAGS=//p' Makefile | head -1)
+          go vet -unreachable=false -tags "$TAGS" ./v2/config/
+          go test -count=1 -tags "$TAGS" ./v2/config/

@@ -332,6 +332,11 @@ func setOutbounds(options *option.Options, input *option.Options, opt *HiddifyOp
 			InterruptExistConnections: false,
 		},
 	}
+	// Фильтр выше выбрасывает vless/vmess: если панель отдала только их,
+	// узлов не останется, и tags[0] уронил бы ядро паникой вместо ответа.
+	if len(tags) == 0 {
+		return fmt.Errorf("в подписке нет узлов hysteria2: другие протоколы sing-box в этом приложении не умеет")
+	}
 	defaultSelect := tags[0]
 
 	for _, tag := range tags {
