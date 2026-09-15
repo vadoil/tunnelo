@@ -79,3 +79,6 @@ tunnelo.command
 android/key.properties
 *.jks
 *.keystore
+
+# Локальные разрешения Claude Code — у каждого свои
+.claude/settings.local.json
