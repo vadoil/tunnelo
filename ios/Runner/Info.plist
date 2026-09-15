@@ -29,18 +29,12 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>hiddify</string>
-				<string>v2ray</string>
-				<string>v2rayn</string>
-				<string>v2rayng</string>
-				<string>clash</string>
-				<string>clashmeta</string>
-				<string>sing-box</string>
+				<string>tunnelo</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.hiddify.ios</string>
+			<string>app.tunnelo.com</string>
 		</dict>
 	</array>
 	<key>FlutterDeepLinkingEnabled</key>
