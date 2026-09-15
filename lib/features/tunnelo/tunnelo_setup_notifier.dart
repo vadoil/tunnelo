@@ -103,7 +103,24 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
         return;
       }
 
-      await activate(null, silent: true);
+      // Бесплатного месяца нет (решение от 16.09.2026). Подписка приходит
+      // с аккаунта: оплатили или ввели промокод — она есть, нет — приложению
+      // не к чему подключаться, и об этом надо сказать, а не молча выдать
+      // себе тридцать дней, как было раньше.
+      final acc = await _api.account();
+      final sub = acc?['subscription'] as String?;
+      if (sub == null || sub.isEmpty) {
+        state = const SetupFailed(
+          'На аккаунте нет активной подписки. Оплатите тариф или введите промокод.',
+        );
+        return;
+      }
+      state = const SetupRunning('Загружаем серверы…');
+      await _addProfile(sub);
+      _ref
+        ..invalidate(tunneloSubscriptionProvider)
+        ..invalidate(tunneloDevicesProvider);
+      state = const SetupDone();
     } catch (e) {
       loggy.error('автонастройка не удалась: $e');
       state = const SetupFailed('Не удалось настроить подключение');

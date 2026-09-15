@@ -21,7 +21,6 @@ abstract class TunneloConfig {
   static const forgotUrl = 'https://tunello.online/cabinet/forgot';
   static const signUpUrl = 'https://tunello.online/cabinet';
   static const meUrl = 'https://api.amnez.online/me';
-  static const defaultPromo = 'PARDAUTO';
 
   /// Оплата идёт на сайте, во внешнем браузере. Внутри приложения
   /// банковское подтверждение часто ломается, и магазины к такому
@@ -176,7 +175,7 @@ class TunneloActivation {
       final resp = await _request(
         Uri.parse(TunneloConfig.activateUrl),
         body: {
-          'code': (code ?? TunneloConfig.defaultPromo).trim().toUpperCase(),
+          'code': (code ?? '').trim().toUpperCase(),
           'device': device,
         },
         options: Options(
@@ -323,6 +322,27 @@ class TunneloActivation {
       await _save(ActivationResult(key: key, subscription: sub));
     }
     return token;
+  }
+
+  /// Что известно про аккаунт по сохранённой сессии.
+  ///
+  /// Единственный законный источник подписки с 16.09.2026: приложение больше
+  /// не выдаёт себе бесплатный месяц само. Нет оплаты и нет промокода —
+  /// подписки нет, и подключаться не к чему.
+  Future<Map<String, dynamic>?> account() async {
+    final token = await savedToken();
+    if (token == null || token.isEmpty) return null;
+    final resp = await _request(
+      Uri.parse(TunneloConfig.meUrl),
+      options: Options(
+        method: 'GET',
+        headers: {'Authorization': 'Bearer $token'},
+        receiveTimeout: const Duration(seconds: 20),
+        validateStatus: (s) => s != null && s < 500,
+      ),
+    );
+    if (resp.statusCode != 200) return null;
+    return _json(resp.data);
   }
 
   static const _kToken = 'tunnelo_token';

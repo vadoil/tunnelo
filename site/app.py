@@ -489,37 +489,6 @@ async def pay_callback(request: Request):
     return {"ok": True}
 
 
-@app.post("/register", response_class=HTMLResponse)
-async def register(request: Request, email: str = Form(""), agree: str = Form("")):
-    """
-    Регистрация: почта — и сразу ключ. Пароля нет намеренно: он ничего
-    не защищает в нашем случае и только отпугивает.
-    """
-    email = email.strip().lower()
-    if not email or "@" not in email or not agree:
-        return templates.TemplateResponse("cabinet.html", _ctx(
-            request, reg_error="Укажите почту и подтвердите согласие с условиями."))
-
-    # Идентификатор устройства выводим из почты: повторная регистрация
-    # с той же почтой вернёт тот же ключ, а не заведёт второй.
-    device = "web-" + hashlib.sha256(email.encode()).hexdigest()[:24]
-    try:
-        async with httpx.AsyncClient(timeout=25) as client:
-            r = await client.post(f"{ACTIVATION_URL}/activate",
-                                  json={"code": "PARDAUTO", "device": device})
-        data = r.json() if r.status_code < 500 else {}
-        key = data.get("key")
-    except Exception:
-        key = None
-
-    if not key:
-        return templates.TemplateResponse("cabinet.html", _ctx(
-            request, reg_error="Не удалось создать доступ. Напишите в поддержку, поможем."))
-
-    return templates.TemplateResponse("cabinet.html", _ctx(
-        request, new_key=key, key=key))
-
-
 @app.get("/offer", response_class=HTMLResponse)
 async def offer(request: Request):
     return templates.TemplateResponse("offer.html", _ctx(request))

@@ -15,20 +15,20 @@ fails = []
 
 # --- код приглашения ходит в обе стороны ------------------------------------
 con = m.db()
-con.execute("INSERT INTO activations VALUES('devA','PARDAUTO','abc123def4567890','e@a','now')")
+con.execute("INSERT INTO activations VALUES('devA','ROMAN1','abc123def4567890','e@a','now')")
 con.commit()
 code = m.referral_code("abc123def4567890")
 ok(code == "TUNABC123", f"код приглашения выводится из ключа: {code}")
 ok(m.sub_by_referral(con, code) == "abc123def4567890", "по коду находится ключ")
 ok(m.sub_by_referral(con, "TUNZZZZZZ") is None, "чужой код не находится")
-ok(m.sub_by_referral(con, "PARDAUTO") is None, "промокод не путается с реферальным")
+ok(m.sub_by_referral(con, "ROMAN1") is None, "промокод не путается с реферальным")
 
 # --- лимит устройств ---------------------------------------------------------
 ok(m.device_limit_of(con, "abc123def4567890") == 1, "по умолчанию одно устройство")
 m.set_device_limit(con, "abc123def4567890", 2); con.commit()
 ok(m.device_limit_of(con, "abc123def4567890") == 2, "купленный лимит сохраняется")
 ok(m.devices_used(con, "abc123def4567890") == 1, "занято одно устройство")
-con.execute("INSERT INTO activations VALUES('devB','PARDAUTO','abc123def4567890','e@a','now')")
+con.execute("INSERT INTO activations VALUES('devB','ROMAN1','abc123def4567890','e@a','now')")
 con.commit()
 ok(m.devices_used(con, "abc123def4567890") == 2, "второе устройство посчиталось")
 con.close()
@@ -122,8 +122,10 @@ ok(b.get("referralCode") == "TUNABC123", "в кабинете есть код п
 
 # --- промокоды живут в базе, не в коде ---------------------------------------
 con = m.db()
-ok(m.promo_get(con, "PARDAUTO") == {"days": 30, "limit": 0, "note": "первый месяц бесплатно"},
+ok(m.promo_get(con, "ROMAN1") == {"days": 30, "limit": 1, "note": "Роман, приглашение"},
    "коды из словаря засеяны в базу при старте")
+ok(m.promo_get(con, "PARDAUTO") is None,
+   "общий бесплатный код в посеве не появляется")
 ok(m.promo_get(con, "NEMA") is None, "неизвестного кода в базе нет")
 m.promo_add(con, "zed42", 10, 1, "тест"); con.commit()
 ok(m.promo_get(con, "ZED42") == {"days": 10, "limit": 1, "note": "тест"},
@@ -134,7 +136,8 @@ except ValueError:
     bad = True
 ok(bad, "код короче 4 символов не добавляется")
 lst = {p["code"]: p for p in m.promo_list(con)}
-ok("ZED42" in lst and lst["PARDAUTO"]["used"] == 2, "в списке есть добавленный код и счётчик использований")
+ok("ZED42" in lst and lst["ROMAN1"]["used"] == 2,
+   "в списке есть добавленный код и счётчик использований")
 ok(m.promo_cli(["add", "cli1", "5", "2", "из", "консоли"]) == 0
    and m.promo_get(con, "CLI1") == {"days": 5, "limit": 2, "note": "из консоли"},
    "консольная команда добавляет код")

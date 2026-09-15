@@ -17,6 +17,7 @@ import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_sign_in_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_status_card.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_tunnel_sites.dart';
 import 'package:hiddify/gen/assets.gen.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -155,6 +156,13 @@ class HomePage extends HookConsumerWidget {
                           },
                           // Чужой VPN на устройстве ломает туннель — просим убрать.
                           const TunneloConflictCard(),
+                          // Российское идёт мимо VPN, но часть российских
+                          // сервисов заблокирована. Плюсом человек отправляет
+                          // такой адрес через туннель сам.
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: TunneloTunnelSitesCard(),
+                          ),
                           const SliverFillRemaining(
                             hasScrollBody: false,
                             child: Column(
