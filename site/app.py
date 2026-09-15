@@ -159,11 +159,31 @@ async def index(request: Request):
     ))
 
 
+def _set_session(resp, token):
+    """Печенье живёт год, только по HTTPS и недоступно скриптам:
+    это ключ от подписки, красть его нельзя."""
+    resp.set_cookie("tunnelo_session", token, max_age=31536000,
+                    httponly=True, secure=True, samesite="lax")
+    return resp
+
+
+async def _activation(method, path, **kw):
+    """Один поход в сервис аккаунтов. -> (код, тело) или (0, {}) если молчит."""
+    try:
+        async with httpx.AsyncClient(timeout=25) as client:
+            r = await client.request(method, f"{ACTIVATION_URL}{path}", **kw)
+        return r.status_code, r.json()
+    except Exception:
+        LOG.warning("сервис аккаунтов не ответил: %s %s", method, path)
+        return 0, {}
+
+
 @app.get("/cabinet", response_class=HTMLResponse)
 async def cabinet(request: Request, paid: str = ""):
     """
-    Личный кабинет. Вход по коду из письма — пароля нет намеренно:
-    его забывают и крадут, а восстанавливать пришлось бы через ту же почту.
+    Личный кабинет. Вход — логин и пароль; пару человек получает письмом
+    при оплате или при первом входе по почте. Пароль забыт — присылаем
+    ссылку на смену (16.09.2026; до этого вход был только кодом из письма).
     """
     token = request.cookies.get("tunnelo_session", "")
     account = None
@@ -203,7 +223,7 @@ async def cabinet_code(request: Request, email: str = Form("")):
             request, error=data.get("message") or "Не удалось отправить код",
             email=email, plans=PLAN_CARDS))
     return templates.TemplateResponse("cabinet.html", _ctx(
-        request, email=email, code_sent=True, plans=PLAN_CARDS))
+        request, form_email=email, code_sent=True, plans=PLAN_CARDS))
 
 
 @app.post("/cabinet/enter", response_class=HTMLResponse)
@@ -218,18 +238,101 @@ async def cabinet_enter(request: Request, email: str = Form(""), code: str = For
     except Exception:
         return templates.TemplateResponse("cabinet.html", _ctx(
             request, error="Сервис недоступен. Попробуйте через минуту.",
-            email=email, code_sent=True, plans=PLAN_CARDS))
+            form_email=email, code_sent=True, plans=PLAN_CARDS))
     if r.status_code != 200 or not data.get("token"):
         return templates.TemplateResponse("cabinet.html", _ctx(
             request, error=data.get("message") or "Код не подошёл",
             email=email, code_sent=True, plans=PLAN_CARDS))
 
-    resp = RedirectResponse("/cabinet", status_code=303)
-    # Печенье живёт год, только по HTTPS и недоступно скриптам:
-    # это ключ от подписки, красть его нельзя.
-    resp.set_cookie("tunnelo_session", data["token"], max_age=31536000,
-                    httponly=True, secure=True, samesite="lax")
-    return resp
+    if data.get("newPassword"):
+        # Первый вход: сервис только что завёл пару логин/пароль. Показываем её
+        # один раз здесь — письмо с ней тоже ушло, но экран человек видит сразу.
+        page = templates.TemplateResponse("cabinet.html", _ctx(
+            request, account=data, plans=PLAN_CARDS,
+            new_login=data["newLogin"], new_password=data["newPassword"]))
+        return _set_session(page, data["token"])
+    return _set_session(RedirectResponse("/cabinet", status_code=303), data["token"])
+
+
+@app.post("/cabinet/login", response_class=HTMLResponse)
+async def cabinet_login(request: Request, login: str = Form(""), password: str = Form("")):
+    """Вход парой логин/пароль. Логином работает и адрес почты."""
+    login = login.strip().lower()
+    st, data = await _activation("POST", "/auth/login",
+                                 json={"login": login, "password": password})
+    if st == 0:
+        return templates.TemplateResponse("cabinet.html", _ctx(
+            request, error="Сервис недоступен. Попробуйте через минуту.",
+            login=login, plans=PLAN_CARDS))
+    if st != 200 or not data.get("token"):
+        return templates.TemplateResponse("cabinet.html", _ctx(
+            request, error=data.get("message") or "Логин или пароль не подошли",
+            login=login, plans=PLAN_CARDS))
+    return _set_session(RedirectResponse("/cabinet", status_code=303), data["token"])
+
+
+@app.get("/cabinet/forgot", response_class=HTMLResponse)
+async def cabinet_forgot_form(request: Request):
+    return templates.TemplateResponse("forgot.html", _ctx(request))
+
+
+@app.post("/cabinet/forgot", response_class=HTMLResponse)
+async def cabinet_forgot(request: Request, email: str = Form("")):
+    """Выслать ссылку на смену пароля. Ответ одинаковый для любого адреса."""
+    email = email.strip().lower()
+    st, data = await _activation("POST", "/auth/forgot", json={"email": email})
+    if st == 0:
+        return templates.TemplateResponse("forgot.html", _ctx(
+            request, error="Сервис недоступен. Попробуйте через минуту.", form_email=email))
+    if st != 200:
+        return templates.TemplateResponse("forgot.html", _ctx(
+            request, error=data.get("message") or "Не удалось отправить письмо",
+            email=email))
+    return templates.TemplateResponse("forgot.html", _ctx(request, sent=True, form_email=email))
+
+
+@app.get("/cabinet/reset", response_class=HTMLResponse)
+async def cabinet_reset_form(request: Request, token: str = ""):
+    return templates.TemplateResponse("reset.html", _ctx(request, token=token.strip()))
+
+
+@app.post("/cabinet/reset", response_class=HTMLResponse)
+async def cabinet_reset(request: Request, token: str = Form(""),
+                        password: str = Form(""), password2: str = Form("")):
+    """Задать новый пароль по ссылке из письма."""
+    token = token.strip()
+    if password != password2:
+        return templates.TemplateResponse("reset.html", _ctx(
+            request, token=token, error="Пароли не совпали — введите одинаковые."))
+    st, data = await _activation("POST", "/auth/reset",
+                                 json={"token": token, "password": password})
+    if st == 0:
+        return templates.TemplateResponse("reset.html", _ctx(
+            request, token=token, error="Сервис недоступен. Попробуйте через минуту."))
+    if st != 200 or not data.get("token"):
+        return templates.TemplateResponse("reset.html", _ctx(
+            request, token=token,
+            error=data.get("message") or "Не удалось сменить пароль"))
+    # Пароль сменили — сразу впускаем, повторно логиниться незачем.
+    return _set_session(RedirectResponse("/cabinet", status_code=303), data["token"])
+
+
+@app.post("/cabinet/password", response_class=HTMLResponse)
+async def cabinet_password(request: Request, current: str = Form(""),
+                           password: str = Form(""), password2: str = Form("")):
+    """Смена пароля из кабинета."""
+    token = request.cookies.get("tunnelo_session", "")
+    if not token:
+        return RedirectResponse("/cabinet", status_code=303)
+    if password != password2:
+        return RedirectResponse("/cabinet?pw=mismatch", status_code=303)
+    st, data = await _activation(
+        "POST", "/auth/password",
+        json={"current": current, "password": password},
+        headers={"Authorization": "Bearer " + token})
+    if st == 200:
+        return RedirectResponse("/cabinet?pw=ok", status_code=303)
+    return RedirectResponse("/cabinet?pw=fail", status_code=303)
 
 
 @app.get("/cabinet/exit")

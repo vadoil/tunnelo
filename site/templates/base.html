@@ -17,8 +17,17 @@
     </a>
     <nav>
       <a href="/#plans">Тарифы</a>
-      <a href="/cabinet">Кабинет</a>
       <a href="/contacts" class="hide-sm">Контакты</a>
+      <!-- Кабинет — иконкой и справа: в него заходят с любой страницы,
+           и он должен быть на виду, а не теряться среди разделов. -->
+      <a href="/cabinet" class="cab-link" title="Личный кабинет">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M4.5 20c.9-3.7 3.9-5.6 7.5-5.6s6.6 1.9 7.5 5.6"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span>Кабинет</span>
+      </a>
     </nav>
   </div>
 </header>

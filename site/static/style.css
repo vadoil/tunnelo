@@ -373,3 +373,34 @@ input, textarea, select { background: var(--card-solid) !important; color: var(-
 }
 .doc-btn:hover { border-color: var(--sea); color: var(--deep); }
 .rev-code { margin-left: 10px; opacity: .5; }
+
+/* Кабинет в шапке — иконкой: в него заходят с любой страницы. */
+.cab-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px 7px 11px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--card);
+  color: var(--text); text-decoration: none; font-weight: 600;
+  transition: border-color .12s, color .12s;
+}
+.cab-link:hover { border-color: var(--sea); color: var(--deep); }
+.cab-link svg { flex: none; }
+@media (max-width: 560px) { .cab-link span { display: none; }
+                            .cab-link { padding: 7px 9px; } }
+
+/* Разделитель между входом по паролю и входом по почте. */
+.or {
+  display: flex; align-items: center; gap: 14px;
+  margin: 26px 0 18px; color: var(--muted); font-size: 14px;
+}
+.or::before, .or::after {
+  content: ""; flex: 1; height: 1px; background: var(--line);
+}
+.creds .keybox { letter-spacing: 1px; font-size: 17px; }
+.creds .keybox + .keybox { margin-top: 8px; }
+
+/* Ссылки внутри пояснений: тем же цветом, что и остальной акцент,
+   иначе браузер рисует их синими с подчёркиванием. */
+.sub a, .note a, .msg a { color: var(--sea); text-decoration: none;
+                          border-bottom: 1px solid rgba(255,255,255,.22); }
+.sub a:hover, .note a:hover, .msg a:hover { color: var(--deep);
+                          border-bottom-color: currentColor; }

@@ -42,6 +42,7 @@ Tunnelo Activation Service (3x-ui edition)
   SUB_URI='https://host:2096/sub/' python3 activation-3xui.py
 """
 import base64
+import hashlib
 import json
 import os
 import re
@@ -106,6 +107,17 @@ CODE_RE = re.compile(r"^[A-Z0-9\-]{4,32}$")
 KEY_RE = re.compile(r"^[a-z0-9]{16}$")
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s.]+(\.[^@\s.]+)+$")
 TOKEN_RE = re.compile(r"^[A-Za-z0-9_\-]{32,128}$")
+LOGIN_RE = re.compile(r"^[a-z0-9][a-z0-9._\-]{2,31}$")
+
+# Логин и пароль (решение от 16.09.2026). Подписка живёт на аккаунте, а не на
+# устройстве: сменил телефон — вошёл и продолжил. Пароль храним только хешем.
+SITE_URL = os.environ.get("SITE_URL", "https://tunello.online").rstrip("/")
+PBKDF2_ROUNDS = int(os.environ.get("PBKDF2_ROUNDS", "240000"))
+PASSWORD_MIN = 8
+# Ссылка на смену пароля живёт час: письмо могло уйти не в те руки.
+RESET_TTL = int(os.environ.get("RESET_TTL", "3600"))
+# Не чаще одного письма со ссылкой в пять минут на адрес.
+RESET_COOLDOWN = int(os.environ.get("RESET_COOLDOWN", "300"))
 
 def require_env():
     for name, val in (("PANEL_URL", PANEL_URL), ("PANEL_TOKEN", PANEL_TOKEN), ("SUB_URI", SUB_URI)):
@@ -179,6 +191,24 @@ def init_db():
         user_id INTEGER PRIMARY KEY,
         sub_id  TEXT NOT NULL)""")
     c.execute("CREATE INDEX IF NOT EXISTS idx_usub ON user_subs(sub_id)")
+    # Логин и пароль добавлены 16.09.2026 поверх живой базы: у тех, кто уже
+    # заходил по почте, колонки пустые — пара выдаётся при первом входе.
+    for col in ("login TEXT", "pass_hash TEXT", "pass_set TEXT"):
+        try:
+            c.execute(f"ALTER TABLE users ADD COLUMN {col}")
+        except sqlite3.OperationalError:
+            pass  # колонка уже есть
+    c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_login ON users(login)")
+    # Ссылки на смену пароля. Одноразовые: использованную помечаем, а не удаляем,
+    # чтобы на повторный переход ответить «ссылка уже использована», а не «нет такой».
+    c.execute("""CREATE TABLE IF NOT EXISTS reset_tokens(
+        token   TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        expires REAL NOT NULL,
+        used    INTEGER NOT NULL DEFAULT 0,
+        sent    REAL NOT NULL,
+        created TEXT NOT NULL)""")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_reset_user ON reset_tokens(user_id)")
     c.execute("""CREATE TABLE IF NOT EXISTS payments(
         order_id TEXT PRIMARY KEY,
         user_id  INTEGER,
@@ -500,6 +530,87 @@ def ensure_user(con, email):
     return con.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()[0]
 
 
+# ---------- логин и пароль ---------------------------------------------------
+# Пароль храним только как PBKDF2-хеш. Восстановление — по ссылке из письма:
+# так человеку не нужно помнить ещё и код, а ссылка живёт час.
+def hash_password(password):
+    salt = secrets.token_bytes(16)
+    dk = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, PBKDF2_ROUNDS)
+    return f"pbkdf2_sha256${PBKDF2_ROUNDS}${salt.hex()}${dk.hex()}"
+
+
+def check_password(stored, password):
+    if not stored or not password:
+        return False
+    try:
+        algo, rounds, salt, want = stored.split("$")
+        if algo != "pbkdf2_sha256":
+            return False
+        got = hashlib.pbkdf2_hmac("sha256", password.encode(),
+                                  bytes.fromhex(salt), int(rounds))
+    except Exception:
+        return False
+    return secrets.compare_digest(got.hex(), want)
+
+
+def gen_password(n=12):
+    """Пароль, который не стыдно продиктовать по телефону: без 0/O и 1/l/I."""
+    alphabet = "abcdefghijkmnpqrstuvwxyzACDEFGHJKLMNPQRSTUVWXYZ23456789"
+    return "".join(secrets.choice(alphabet) for _ in range(n))
+
+
+def unique_login(con, email):
+    """Логин из адреса почты: petrov@mail.ru -> petrov, занят -> petrov2."""
+    base = re.sub(r"[^a-z0-9]+", "", email.split("@", 1)[0].lower())[:24]
+    if len(base) < 3:
+        base = "user"
+    if not con.execute("SELECT 1 FROM users WHERE login=?", (base,)).fetchone():
+        return base
+    for _ in range(50):
+        cand = f"{base}{secrets.randbelow(9000) + 1000}"
+        if not con.execute("SELECT 1 FROM users WHERE login=?", (cand,)).fetchone():
+            return cand
+    return "u" + secrets.token_hex(6)
+
+
+def set_password(con, user_id, password):
+    con.execute("UPDATE users SET pass_hash=?, pass_set=? WHERE id=?",
+                (hash_password(password), datetime.now(timezone.utc).isoformat(), user_id))
+
+
+def issue_credentials(con, user_id, email):
+    """Выдать логин и пароль, если их ещё нет. -> (логин, пароль) или None.
+
+    Зовём после оплаты и после первого входа по почте. Готовую пару не трогаем:
+    иначе оплата второго месяца молча сменила бы человеку пароль.
+    """
+    row = con.execute("SELECT login, pass_hash FROM users WHERE id=?", (user_id,)).fetchone()
+    if not row:
+        return None
+    login, pass_hash = row
+    if pass_hash:
+        return None
+    if not login:
+        login = unique_login(con, email)
+        con.execute("UPDATE users SET login=? WHERE id=?", (login, user_id))
+    password = gen_password()
+    set_password(con, user_id, password)
+    return login, password
+
+
+def mail_credentials(email, login, password):
+    send_mail(
+        email, "Логин и пароль для входа в Tunnelo",
+        f"Логин: {login}\n"
+        f"Пароль: {password}\n\n"
+        "Этой парой вы входите в приложение и в личный кабинет на "
+        f"{SITE_URL}/cabinet — подписка живёт на аккаунте, а не на телефоне: "
+        "сменили устройство, вошли и продолжили.\n\n"
+        f"Пароль можно поменять в кабинете. Забыли — {SITE_URL}/cabinet/forgot, "
+        "пришлём ссылку на эту же почту.",
+    )
+
+
 def new_session(con, user_id):
     token = secrets.token_urlsafe(48)
     con.execute("INSERT INTO sessions(token,user_id,created) VALUES(?,?,?)",
@@ -538,7 +649,10 @@ def bind_sub(con, user_id, sub_id):
 def account_state(con, user_id, email):
     """Всё, что человек видит про свой аккаунт: и в кабинете, и в приложении."""
     sub_id = sub_of_user(con, user_id)
-    out = {"email": email, "key": sub_id, "subscription": SUB_URI + sub_id if sub_id else None}
+    cred = con.execute("SELECT login, pass_hash FROM users WHERE id=?", (user_id,)).fetchone()
+    out = {"email": email, "key": sub_id, "subscription": SUB_URI + sub_id if sub_id else None,
+           "login": cred[0] if cred else None,
+           "hasPassword": bool(cred and cred[1])}
     if not sub_id:
         return out
     row = con.execute(
@@ -801,7 +915,9 @@ class H(BaseHTTPRequestHandler):
 
     def _post(self):
         if self.path not in ("/activate", "/extend", "/redeem",
-                             "/auth/request", "/auth/verify"):
+                             "/auth/request", "/auth/verify",
+                             "/auth/login", "/auth/forgot", "/auth/reset",
+                             "/auth/password"):
             return self._send(404, {"error": "no route"})
         try:
             n = int(self.headers.get("Content-Length", "0") or 0)
@@ -824,6 +940,14 @@ class H(BaseHTTPRequestHandler):
             return self.do_auth_request(body)
         if self.path == "/auth/verify":
             return self.do_auth_verify(body)
+        if self.path == "/auth/login":
+            return self.do_auth_login(body)
+        if self.path == "/auth/forgot":
+            return self.do_auth_forgot(body)
+        if self.path == "/auth/reset":
+            return self.do_auth_reset(body)
+        if self.path == "/auth/password":
+            return self.do_auth_password(body)
 
         return self.do_activate(body)
 
@@ -908,6 +1032,7 @@ class H(BaseHTTPRequestHandler):
         if not KEY_RE.match(key) or not 1 <= days <= 732:
             return self._send(400, {"error": "bad request"})
 
+        new_creds, owner_email = None, ""
         con = db()
         try:
             row = con.execute(
@@ -946,12 +1071,25 @@ class H(BaseHTTPRequestHandler):
                      float(body.get("amount") or 0), str(body.get("plan") or ""),
                      days, devices if isinstance(devices, int) else None,
                      "paid", datetime.now(timezone.utc).isoformat()))
+                # Оплатил — получает логин и пароль письмом, если их ещё нет.
+                if owner:
+                    who = con.execute("SELECT email FROM users WHERE id=?",
+                                      (owner[0],)).fetchone()
+                    if who:
+                        owner_email = who[0]
+                        new_creds = issue_credentials(con, owner[0], owner_email)
                 con.commit()
         except Exception as e:
             sys.stderr.write(f"ВНИМАНИЕ: оплата прошла, продлить не удалось {short(key)}: {e}\n")
             return self._send(502, {"error": "panel error"})
         finally:
             con.close()
+
+        if new_creds:
+            try:
+                mail_credentials(owner_email, *new_creds)
+            except Exception as e:
+                sys.stderr.write(f"письмо с паролем не ушло на {owner_email}: {e}\n")
 
         st = status_or_empty(email)
         expiry = st.get("expiryTime", 0)
@@ -1048,6 +1186,69 @@ class H(BaseHTTPRequestHandler):
                 if r and bind_sub(con, user_id, r[0]):
                     mine = r[0]
 
+            # Первый вход по почте — момент, когда человек получает пару
+            # логин/пароль: дальше приложение спрашивает именно её.
+            creds = issue_credentials(con, user_id, email)
+            token = new_session(con, user_id)
+            state = account_state(con, user_id, email)
+            con.commit()
+        finally:
+            con.close()
+
+        if creds:
+            login, password = creds
+            # Пароль показываем один раз тому, кто только что подтвердил почту,
+            # и дублируем письмом: экран закроют, письмо останется.
+            state["newLogin"], state["newPassword"] = login, password
+            try:
+                mail_credentials(email, login, password)
+            except Exception as e:
+                sys.stderr.write(f"письмо с паролем не ушло на {email}: {e}\n")
+
+        state["token"] = token
+        sys.stderr.write(f"вход {email}\n")
+        return self._send(200, state)
+
+    # ---------- вход по логину и паролю -------------------------------------
+    def _bind_on_login(self, con, user_id, device, key):
+        """Подвязать подписку, если человек уже пользовался приложением.
+
+        Тот же приём, что и при входе по почте: ключ лежит на устройстве, и
+        заводить рядом вторую подписку человеку незачем.
+        """
+        mine = sub_of_user(con, user_id)
+        if not mine and KEY_RE.match(key or ""):
+            if con.execute("SELECT 1 FROM activations WHERE sub_id=?",
+                           (key,)).fetchone() and bind_sub(con, user_id, key):
+                mine = key
+        if not mine and DEVICE_RE.match(device or ""):
+            r = con.execute("SELECT sub_id FROM activations WHERE device=? LIMIT 1",
+                            (device,)).fetchone()
+            if r:
+                bind_sub(con, user_id, r[0])
+
+    def do_auth_login(self, body):
+        """Вход парой логин/пароль. Логином может быть и адрес почты."""
+        login = str(body.get("login", "")).strip().lower()
+        password = str(body.get("password", ""))
+        device = str(body.get("device", "")).strip()
+        key = str(body.get("key", "")).strip().lower()
+        if not login or not password:
+            return self._send(400, {"error": "bad request",
+                                    "message": "Введите логин и пароль."})
+
+        con = db()
+        try:
+            field = "email" if "@" in login else "login"
+            row = con.execute(
+                f"SELECT id, email, pass_hash FROM users WHERE {field}=?", (login,)).fetchone()
+            # Одинаковый ответ и на неизвестный логин, и на неверный пароль:
+            # иначе перебором можно узнать, кто у нас зарегистрирован.
+            if not row or not check_password(row[2], password):
+                return self._send(403, {"error": "bad credentials",
+                                        "message": "Логин или пароль не подошли."})
+            user_id, email = row[0], row[1]
+            self._bind_on_login(con, user_id, device, key)
             token = new_session(con, user_id)
             state = account_state(con, user_id, email)
             con.commit()
@@ -1055,7 +1256,140 @@ class H(BaseHTTPRequestHandler):
             con.close()
 
         state["token"] = token
-        sys.stderr.write(f"вход {email}\n")
+        sys.stderr.write(f"вход по паролю {email}\n")
+        return self._send(200, state)
+
+    def do_auth_forgot(self, body):
+        """Выслать ссылку на смену пароля.
+
+        Ответ всегда одинаковый: по нему нельзя узнать, есть ли у нас такой
+        адрес. Кто есть — получит письмо, кого нет — ничего не получит.
+        """
+        who = str(body.get("email", "")).strip().lower()
+        ok = {"ok": True,
+              "message": "Если такой адрес у нас есть, письмо со ссылкой уже ушло."}
+        if not who:
+            return self._send(400, {"error": "bad request",
+                                    "message": "Укажите адрес почты или логин."})
+
+        now = time.time()
+        con = db()
+        try:
+            field = "email" if "@" in who else "login"
+            row = con.execute(
+                f"SELECT id, email FROM users WHERE {field}=?", (who,)).fetchone()
+            if not row:
+                return self._send(200, ok)
+            user_id, email = row
+            last = con.execute(
+                "SELECT MAX(sent) FROM reset_tokens WHERE user_id=?", (user_id,)).fetchone()
+            if last and last[0] and now - last[0] < RESET_COOLDOWN:
+                return self._send(200, ok)
+            token = secrets.token_urlsafe(32)
+            con.execute(
+                "INSERT INTO reset_tokens(token,user_id,expires,used,sent,created) "
+                "VALUES(?,?,?,0,?,?)",
+                (token, user_id, now + RESET_TTL, now,
+                 datetime.now(timezone.utc).isoformat()))
+            con.commit()
+        finally:
+            con.close()
+
+        link = f"{SITE_URL}/cabinet/reset?token={token}"
+        try:
+            send_mail(
+                email, "Смена пароля в Tunnelo",
+                f"Чтобы задать новый пароль, откройте ссылку:\n{link}\n\n"
+                f"Ссылка действует {RESET_TTL // 60} минут и работает один раз.\n"
+                "Если пароль меняли не вы, просто не открывайте ссылку — "
+                "старый пароль продолжит работать.",
+            )
+        except Exception as e:
+            sys.stderr.write(f"письмо со ссылкой не ушло на {email}: {e}\n")
+            return self._send(502, {"error": "mail failed",
+                                    "message": "Не удалось отправить письмо. Попробуйте позже."})
+        return self._send(200, ok)
+
+    def do_auth_reset(self, body):
+        """Задать новый пароль по ссылке из письма."""
+        token = str(body.get("token", "")).strip()
+        password = str(body.get("password", ""))
+        if not TOKEN_RE.match(token):
+            return self._send(400, {"error": "bad token",
+                                    "message": "Ссылка неполная. Откройте её из письма целиком."})
+        if len(password) < PASSWORD_MIN:
+            return self._send(400, {
+                "error": "weak password",
+                "message": f"Пароль короче {PASSWORD_MIN} знаков — придумайте длиннее.",
+            })
+
+        con = db()
+        try:
+            row = con.execute(
+                "SELECT user_id, expires, used FROM reset_tokens WHERE token=?",
+                (token,)).fetchone()
+            if not row:
+                return self._send(404, {"error": "unknown token",
+                                        "message": "Такой ссылки нет. Запросите новую."})
+            user_id, expires, used = row
+            if used:
+                return self._send(409, {"error": "used",
+                                        "message": "Ссылка уже использована. Запросите новую."})
+            if time.time() > expires:
+                return self._send(410, {"error": "expired",
+                                        "message": "Ссылка устарела. Запросите новую."})
+            set_password(con, user_id, password)
+            con.execute("UPDATE reset_tokens SET used=1 WHERE token=?", (token,))
+            # Пароль сменили — старые входы больше не действуют: если ссылку
+            # запрашивали из-за чужого доступа, чужая сессия должна оборваться.
+            con.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
+            urow = con.execute("SELECT email, login FROM users WHERE id=?",
+                               (user_id,)).fetchone()
+            email, login = urow if urow else ("", None)
+            if not login:
+                login = unique_login(con, email)
+                con.execute("UPDATE users SET login=? WHERE id=?", (login, user_id))
+            token_new = new_session(con, user_id)
+            state = account_state(con, user_id, email)
+            con.commit()
+        finally:
+            con.close()
+
+        state["token"] = token_new
+        sys.stderr.write(f"пароль сменён {email}\n")
+        return self._send(200, state)
+
+    def do_auth_password(self, body):
+        """Смена пароля из кабинета: нужен текущий пароль и сессия."""
+        tok = self.headers.get("Authorization", "")
+        tok = tok[7:].strip() if tok.startswith("Bearer ") else tok.strip()
+        current = str(body.get("current", ""))
+        password = str(body.get("password", ""))
+        if len(password) < PASSWORD_MIN:
+            return self._send(400, {
+                "error": "weak password",
+                "message": f"Пароль короче {PASSWORD_MIN} знаков — придумайте длиннее.",
+            })
+
+        con = db()
+        try:
+            who = user_by_token(con, tok)
+            if not who:
+                return self._send(401, {"error": "unauthorized"})
+            user_id, email = who
+            row = con.execute("SELECT pass_hash FROM users WHERE id=?", (user_id,)).fetchone()
+            if row and row[0] and not check_password(row[0], current):
+                return self._send(403, {"error": "bad credentials",
+                                        "message": "Текущий пароль не подошёл."})
+            set_password(con, user_id, password)
+            # Остальные входы обрываем, свой оставляем.
+            con.execute("DELETE FROM sessions WHERE user_id=? AND token<>?", (user_id, tok))
+            state = account_state(con, user_id, email)
+            con.commit()
+        finally:
+            con.close()
+
+        sys.stderr.write(f"пароль изменён {email}\n")
         return self._send(200, state)
 
     # ---------- один вход для всех кодов ------------------------------------

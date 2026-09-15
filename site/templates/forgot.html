@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Забыли пароль — Tunnelo{% endblock %}
+{% block body %}
+<div class="wrap wrap-narrow">
+  <img class="cab-fox" src="/static/fox/lantern.png" alt="">
+
+  {% if sent %}
+    <h1>Письмо отправлено</h1>
+    <p class="sub">Если такой адрес у нас есть, письмо со ссылкой уже пришло на
+       {{ form_email }}. Ссылка работает один раз и живёт час.</p>
+    <p class="note">Не пришло за пару минут — загляните в «Спам»
+       или <a href="/cabinet/forgot">попробуйте другой адрес</a>.</p>
+    <p class="note"><a href="/cabinet">Вернуться ко входу</a></p>
+  {% else %}
+    <h1>Забыли пароль</h1>
+    <p class="sub">Укажите почту, на которую заведён аккаунт. Пришлём ссылку —
+       по ней зададите новый пароль.</p>
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+    <form method="post" action="/cabinet/forgot" class="cab-form">
+      <input class="field" name="email" type="email" placeholder="you@example.com"
+             value="{{ form_email or '' }}" autocomplete="email" autofocus required>
+      <button class="btn btn-primary" type="submit">Прислать ссылку</button>
+    </form>
+    <p class="note"><a href="/cabinet">Вспомнили пароль? Войти</a></p>
+  {% endif %}
+</div>
+{% endblock %}

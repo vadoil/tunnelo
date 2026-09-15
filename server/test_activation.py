@@ -148,6 +148,77 @@ st, b = post("/redeem", {"code": "zed42", "device": "device0003"})
 ok(st == 409 and "больше не действует" in b.get("message", ""),
    f"/redeem узнаёт код из базы и держит лимит ({st})")
 
+# --- логин и пароль ----------------------------------------------------------
+# Почту наружу не пускаем: подменяем отправку и смотрим, что ушло.
+sent = []
+m.send_mail = lambda to, subject, text: sent.append((to, subject, text))
+
+ok(m.check_password(m.hash_password("parol12345"), "parol12345"), "пароль сходится со своим хешем")
+ok(not m.check_password(m.hash_password("parol12345"), "parol1234"), "чужой пароль не подходит")
+ok(not m.check_password("", "parol12345"), "пустой хеш никого не пускает")
+ok(not m.check_password("мусор", "parol12345"), "испорченный хеш не ломает вход")
+
+con = m.db()
+uid = m.ensure_user(con, "petrov@mail.ru")
+login1 = m.unique_login(con, "petrov@mail.ru")
+ok(login1 == "petrov", f"логин выводится из адреса: {login1}")
+con.execute("UPDATE users SET login=? WHERE id=?", ("petrov", uid))
+uid2 = m.ensure_user(con, "petrov@bk.ru")
+login2 = m.unique_login(con, "petrov@bk.ru")
+ok(login2 != "petrov" and login2.startswith("petrov"), f"занятый логин получает номер: {login2}")
+creds = m.issue_credentials(con, uid2, "petrov@bk.ru")
+ok(creds is not None and len(creds[1]) >= 8, "пара логин/пароль выдаётся")
+ok(m.issue_credentials(con, uid2, "petrov@bk.ru") is None,
+   "готовую пару повторная выдача не трогает")
+con.commit()
+their_login, their_password = creds
+con.close()
+
+st, b = post("/auth/login", {"login": their_login, "password": their_password})
+ok(st == 200 and b.get("token"), f"вход по логину и паролю ({st})")
+ok(b.get("login") == their_login and b.get("hasPassword") is True,
+   "кабинет знает логин и что пароль задан")
+st, b = post("/auth/login", {"login": their_login, "password": "не тот"})
+ok(st == 403, f"неверный пароль не пускает ({st})")
+st, b = post("/auth/login", {"login": "никого-нет", "password": their_password})
+ok(st == 403 and "Логин или пароль" in b.get("message", ""),
+   "неизвестный логин отвечает так же, как неверный пароль")
+st, b = post("/auth/login", {"login": "petrov@bk.ru", "password": their_password})
+ok(st == 200, f"войти можно и адресом почты ({st})")
+
+sent.clear()
+st, b = post("/auth/forgot", {"email": "petrov@bk.ru"})
+ok(st == 200 and len(sent) == 1, f"ссылка на смену пароля уходит письмом ({st})")
+link_token = sent[0][2].split("token=")[1].split()[0] if sent else ""
+ok("/cabinet/reset?token=" in sent[0][2], "в письме ссылка на смену пароля")
+st, b = post("/auth/forgot", {"email": "petrov@bk.ru"})
+ok(st == 200 and len(sent) == 1, "второе письмо подряд не шлём")
+sent.clear()
+st, b = post("/auth/forgot", {"email": "никого@нет.рф"})
+ok(st == 200 and not sent, "про чужой адрес отвечаем так же и письма не шлём")
+
+st, b = post("/auth/reset", {"token": link_token, "password": "корот"})
+ok(st == 400, f"короткий пароль не принимается ({st})")
+st, b = post("/auth/reset", {"token": link_token, "password": "новыйпароль1"})
+ok(st == 200 and b.get("token"), f"пароль меняется по ссылке ({st})")
+st, b = post("/auth/reset", {"token": link_token, "password": "ещёодин123"})
+ok(st == 409, f"ссылка одноразовая ({st})")
+st, b = post("/auth/login", {"login": their_login, "password": "новыйпароль1"})
+ok(st == 200, f"вход новым паролем ({st})")
+new_token = b.get("token")
+st, b = post("/auth/login", {"login": their_login, "password": their_password})
+ok(st == 403, "старый пароль больше не работает")
+
+st, b = post("/auth/password", {"current": "новыйпароль1", "password": "третийпароль1"},
+             {"Authorization": "Bearer " + new_token})
+ok(st == 200, f"пароль меняется из кабинета ({st})")
+st, b = post("/auth/password", {"current": "мимо", "password": "четвёртый1234"},
+             {"Authorization": "Bearer " + new_token})
+ok(st == 403, f"без текущего пароля смена не проходит ({st})")
+st, b = post("/auth/password", {"current": "третийпароль1", "password": "пятый12345"},
+             {"Authorization": "Bearer " + "z" * 48})
+ok(st == 401, f"без сессии смена пароля не проходит ({st})")
+
 srv.shutdown()
 
 print()
