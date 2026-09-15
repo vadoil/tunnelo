@@ -105,7 +105,8 @@
       "sortOptions": {
         "unsorted": "默认",
         "name": "按名称",
-        "delay": "按延迟"
+        "delay": "按延迟",
+        "usage": "按用量"
       },
       "ipInfo": {
         "address": "IP 地址",
@@ -587,7 +588,9 @@
       "asn": "ASN：",
       "organization": "组织：",
       "location": "位置：",
-      "postalCode": "邮政编码："
+      "postalCode": "邮政编码：",
+      "download": "下载：",
+      "upload": "上传："
     },
     "windowClosing": {
       "askEachTime": "每次询问",

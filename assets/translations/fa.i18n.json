@@ -105,7 +105,8 @@
       "sortOptions": {
         "unsorted": "پیش‌فرض",
         "name": "بر اساس نام",
-        "delay": "بر اساس تأخیر"
+        "delay": "بر اساس تأخیر",
+        "usage": "بر اساس مصرف"
       },
       "ipInfo": {
         "address": "آدرس IP",
@@ -587,7 +588,9 @@
       "asn": "ASN:",
       "organization": "سازمان:",
       "location": "مکان:",
-      "postalCode": "کد پستی:"
+      "postalCode": "کد پستی:",
+      "download": "دانلود:",
+      "upload": "آپلود:"
     },
     "windowClosing": {
       "askEachTime": "هر بار بپرس",

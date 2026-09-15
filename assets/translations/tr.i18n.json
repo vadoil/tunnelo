@@ -105,7 +105,8 @@
       "sortOptions": {
         "unsorted": "Varsayılan",
         "name": "Alfabetik",
-        "delay": "Gecikmeye göre"
+        "delay": "Gecikmeye göre",
+        "usage": "Kullanıma göre"
       },
       "ipInfo": {
         "address": "IP adresi",
@@ -587,7 +588,9 @@
       "asn": "ASN:",
       "organization": "Kuruluş:",
       "location": "Konum:",
-      "postalCode": "Posta kodu:"
+      "postalCode": "Posta kodu:",
+      "download": "İndirme:",
+      "upload": "Yükleme:"
     },
     "windowClosing": {
       "askEachTime": "Her seferinde sor",

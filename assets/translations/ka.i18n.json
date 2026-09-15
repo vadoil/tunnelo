@@ -1,0 +1,646 @@
+{
+  "common": {
+    "appTitle": "Tunnelo",
+    "start": "დაწყება",
+    "version": "ვერსია",
+    "ok": "კარგი",
+    "cancel": "გაუქმება",
+    "kContinue": "გაგრძელება",
+    "showMore": "მეტის ჩვენება",
+    "showLess": "ნაკლების ჩვენება",
+    "filter": "ფილტრი",
+    "all": "ყველა",
+    "pause": "პაუზა",
+    "resume": "გაგრძელება",
+    "clear": "გასუფთავება",
+    "close": "დახურვა",
+    "auto": "ავტო",
+    "manually": "ხელით",
+    "name": "სახელი",
+    "url": "URL",
+    "add": "დამატება",
+    "clipboard": "ბუფერი",
+    "addToClipboard": "ბუფერში დამატება",
+    "scanQr": "QR-ის სკანირება",
+    "free": "უფასო",
+    "warp": "WARP",
+    "fragment": "ფრაგმენტი",
+    "help": "დახმარება",
+    "save": "შენახვა",
+    "update": "განახლება",
+    "share": "გაზიარება",
+    "edit": "რედაქტირება",
+    "delete": "წაშლა",
+    "discard": "ცვლილებების მოცილება",
+    "import": "იმპორტი",
+    "export": "ექსპორტი",
+    "later": "მოგვიანებით",
+    "ignore": "იგნორირება",
+    "quit": "დახურვა",
+    "notSet": "არ არის მითითებული",
+    "hide": "დამალვა",
+    "exit": "გამოსვლა",
+    "reset": "განულება",
+    "done": "მზადაა",
+    "search": "ძებნა",
+    "decline": "არ ვეთანხმები",
+    "agree": "ვეთანხმები",
+    "empty": "ცარიელია",
+    "unknown": "უცნობი",
+    "hidden": "დამალული",
+    "timeout": "დროის ამოწურვა",
+    "sort": "დახარისხება",
+    "dashboard": "პანელი",
+    "interval": {
+      "day": {
+        "zero": "",
+        "one": "$n დღე",
+        "other": "$n დღე"
+      },
+      "hour": {
+        "zero": "",
+        "one": "$n საათი",
+        "other": "$n საათი"
+      }
+    },
+    "msg": {
+      "permission": {
+        "denied": "წვდომა უარყოფილია"
+      },
+      "export": {
+        "clipboard": {
+          "success": "წარმატებით დაემატა ბუფერში",
+          "failure": "ბუფერში კოპირება ვერ მოხერხდა",
+          "contentTooLarge": "შიგთავსი ძალიან დიდია. გამოიყენეთ ფაილში ექსპორტი"
+        },
+        "file": {
+          "success": "JSON-ფაილი წარმატებით შეიქმნა",
+          "failure": "ფაილის შექმნა ვერ მოხერხდა"
+        }
+      },
+      "import": {
+        "confirm": "იმპორტის დადასტურება",
+        "success": "წარმატებით დაიმპორტდა",
+        "failure": "იმპორტი ვერ მოხერხდა"
+      }
+    }
+  },
+  "intro": {
+    "banner": "ყველაფერი, რაც შეზღუდვების გარეშე ინტერნეტისთვის გჭირდებათ",
+    "termsAndPolicyCaution(rich)": "გაგრძელებით თქვენ ეთანხმებით ${tap(@:pages.about.termsAndConditions)}",
+    "info(rich)": "შექმნილია ❤️-ით Tunnelo-ს მიერ - ${tap_source(ღია კოდი)} (${tap_license(ლიცენზია)})"
+  },
+  "pages": {
+    "home": {
+      "title": "მთავარი",
+      "quickSettings": "სწრაფი პარამეტრები"
+    },
+    "proxies": {
+      "title": "პროქსები",
+      "sort": "პროქსების დახარისხება",
+      "testDelay": "დაყოვნების შემოწმება",
+      "empty": "ხელმისაწვდომი პროქსი არ არის",
+      "activeProxy": "აქტიური პროქსი",
+      "unknownIp": "უცნობი IP",
+      "sortOptions": {
+        "unsorted": "ნაგულისხმევი",
+        "name": "ანბანურად",
+        "delay": "დაყოვნებით",
+        "usage": "ხარჯვით"
+      },
+      "ipInfo": {
+        "address": "IP-მისამართი",
+        "country": "ქვეყანა",
+        "organization": "ორგანიზაცია"
+      },
+      "delay": {
+        "result": "დაყოვნება: ${delay} მწმ",
+        "timeout": "დაყოვნების ტესტის დრო ამოიწურა",
+        "testing": "დაყოვნება: მოწმდება..."
+      }
+    },
+    "profiles": {
+      "title": "პროფილები",
+      "add": "პროფილის დამატება",
+      "update": "პროფილის განახლება",
+      "viewAllProfiles": "ყველა პროფილის ნახვა",
+      "activeProfileName": "აქტიური პროფილის სახელი: \"${name}\".",
+      "nonActiveProfileName": "აირჩიეთ \"${name}\" აქტიურ პროფილად",
+      "freeSubNotFound": "უფასო გამოწერა ვერ მოიძებნა",
+      "freeSubNotFoundForRegion": "უფასო გამოწერა რეგიონისთვის \"${region}\" ვერ მოიძებნა.",
+      "failedToLoad": "ჩატვირთვა ვერ მოხერხდა",
+      "updateSubscriptions": "გამოწერების განახლება",
+      "share": {
+        "urlToClipboard": "URL ბუფერში",
+        "showUrlQr": "URL-ის QR-კოდის ჩვენება",
+        "jsonToClipboard": "JSON ბუფერში"
+      },
+      "msg": {
+        "save": {
+          "success": "პროფილი წარმატებით შეინახა"
+        },
+        "invalidUrl": "არასწორი URL",
+        "add": {
+          "failure": "პროფილის დამატება ვერ მოხერხდა"
+        },
+        "update": {
+          "success": "პროფილი წარმატებით განახლდა",
+          "successNamed": "\"${name}\" წარმატებით განახლდა",
+          "failure": "პროფილის განახლება ვერ მოხერხდა",
+          "failureNamed": "\"${name}\"-ის განახლება ვერ მოხერხდა"
+        },
+        "delete": {
+          "success": "პროფილი წარმატებით წაიშალა"
+        }
+      }
+    },
+    "profileDetails": {
+      "title": "პროფილი",
+      "lastUpdate": "ბოლო განახლება",
+      "form": {
+        "nameHint": "პროფილის სახელი",
+        "emptyName": "სახელის მითითება სავალდებულოა",
+        "invalidUrl": "არასწორი URL",
+        "urlHint": "კონფიგურაციის სრული URL",
+        "disableAutoUpdate": "ავტოგანახლების გამორთვა",
+        "autoUpdateInterval": "ავტოგანახლების ინტერვალი",
+        "loading": "პროფილი ემატება..."
+      }
+    },
+    "logs": {
+      "title": "ლოგები",
+      "shareCoreLogs": "ბირთვის ლოგების გაზიარება",
+      "shareAppLogs": "აპლიკაციის ლოგების გაზიარება"
+    },
+    "about": {
+      "title": "პროგრამის შესახებ",
+      "notAvailableMsg": "უკვე იყენებთ უახლეს ვერსიას",
+      "checkForUpdate": "განახლების შემოწმება",
+      "openWorkingDir": "სამუშაო საქაღალდის გახსნა",
+      "sourceCode": "წყაროს კოდი",
+      "telegramChannel": "Telegram-არხი",
+      "termsAndConditions": "მოხმარების წესები",
+      "privacyPolicy": "კონფიდენციალურობის პოლიტიკა"
+    },
+    "settings": {
+      "title": "პარამეტრები",
+      "resetTunnel": "VPN-პროფილის განულება",
+      "options": {
+        "import": {
+          "clipboard": "პარამეტრების იმპორტი ბუფერიდან",
+          "file": "პარამეტრების იმპორტი ფაილიდან"
+        },
+        "export": {
+          "anonymousToClipboard": "ანონიმური პარამეტრების კოპირება ბუფერში",
+          "anonymousToFile": "ანონიმური პარამეტრების ექსპორტი ფაილში",
+          "allToClipboard": "ყველა პარამეტრის კოპირება ბუფერში",
+          "allToFile": "ყველა პარამეტრის ექსპორტი ფაილში"
+        },
+        "reset": "პარამეტრების განულება"
+      },
+      "general": {
+        "title": "ზოგადი",
+        "locale": "ენა",
+        "themeMode": "გაფორმების თემა",
+        "themeModes": {
+          "system": "სისტემური",
+          "dark": "მუქი",
+          "light": "ღია",
+          "black": "შავი"
+        },
+        "enableAnalytics": "ანალიტიკის ჩართვა",
+        "enableAnalyticsMsg": "დართეთ ნება ანალიტიკის შეგროვებასა და შეცდომების ანგარიშების გაგზავნაზე, რომ აპლიკაცია გავაუმჯობესოთ",
+        "autoIpCheck": "კავშირის IP-ის ავტომატური შემოწმება",
+        "dynamicNotification": "სიჩქარის ჩვენება შეტყობინებაში",
+        "hapticFeedback": "ვიბრაციით პასუხი",
+        "actionAtClosing": "მოქმედება დახურვისას",
+        "autoStart": "გაშვება სისტემაში შესვლისას",
+        "silentStart": "გაშვება ჩაკეცილად",
+        "ignoreBatteryOptimizations": "ბატარეის ოპტიმიზაციის გამორთვა",
+        "ignoreBatteryOptimizationsMsg": "მოხსენით შეზღუდვები VPN-ის სტაბილური მუშაობისთვის",
+        "memoryLimit": "მეხსიერების ლიმიტი",
+        "memoryLimitMsg": "ჩართეთ, თუ მეხსიერების ნაკლებობის შეცდომებს ხვდებით ან აპლიკაცია ხშირად ითიშება",
+        "debugMode": "გამართვის რეჟიმი",
+        "debugModeMsg": "ცვლილების ასამოქმედებლად გადატვირთეთ აპლიკაცია",
+        "logLevel": "ლოგირების დონე",
+        "connectionTestUrl": "კავშირის ტესტის URL",
+        "urlTestInterval": "URL-ტესტის ინტერვალი",
+        "clashApiPort": "Clash API-ის პორტი",
+        "useXrayCoreWhenPossible": "xray-core-ის გამოყენება, როცა შესაძლებელია",
+        "useXrayCoreWhenPossibleMsg": "xray-core-ის გამოყენება გამოწერის ბმულების დამუშავებისას. ამ პარამეტრის ჩასართავად ბმული ხელახლა უნდა დაიმპორტოთ."
+      },
+      "routing": {
+        "title": "მარშრუტიზაცია",
+        "perAppProxy": {
+          "title": "პროქსი აპლიკაციებისთვის",
+          "hideSysApps": "სისტემური აპლიკაციების დამალვა",
+          "options": {
+            "import": {
+              "clipboard": "არჩევანის იმპორტი ბუფერიდან",
+              "file": "არჩევანის იმპორტი ფაილიდან",
+              "msg": "იმპორტი ჩაანაცვლებს თქვენს ამჟამინდელ არჩევანს. გსურთ გაგრძელება?"
+            },
+            "export": {
+              "clipboard": "არჩევანის კოპირება ბუფერში",
+              "file": "არჩევანის ექსპორტი ფაილში"
+            },
+            "shareToAll": "ყველასთვის გაზიარება",
+            "clearAllSelections": "მთელი არჩევანის გასუფთავება"
+          },
+          "modes": {
+            "all": "ყველა",
+            "proxy": "პროქსი",
+            "bypass": "გვერდის ავლით",
+            "allMsg": "ყველა აპლიკაცია პროქსით",
+            "proxyMsg": "პროქსით მხოლოდ არჩეული აპლიკაციები",
+            "bypassMsg": "არჩეული აპლიკაციები პროქსის გარეშე"
+          },
+          "autoSelection": {
+            "title": "ავტოარჩევა",
+            "performNow": "შესრულება ახლავე",
+            "resetToDefault": "ნაგულისხმევზე დაბრუნება",
+            "autoUpdateInterval": "ავტოგანახლების ინტერვალი",
+            "toast": {
+              "success": "აპლიკაციების ავტოარჩევა წარმატებით დასრულდა",
+              "failure": "ავტოარჩევა ვერ მოხერხდა",
+              "regionNotFound": "ავტოარჩევა რეგიონისთვის \"${region}\" ვერ მოიძებნა",
+              "alreadyInAuto": "თქვენი არჩევანი უკვე ავტოსიაშია"
+            },
+            "dialog": {
+              "title": "აპლიკაციების ავტოარჩევა",
+              "msg": "აპლიკაციების პროქსის ავტოარჩევა გამოირთო რეგიონის \"${region}\"-ზე შეცვლის გამო"
+            }
+          }
+        },
+        "region": "რეგიონი",
+        "regions": {
+          "ir": "ირანი (ir)",
+          "cn": "ჩინეთი (cn)",
+          "ru": "რუსეთი (ru)",
+          "af": "ავღანეთი (af)",
+          "id": "ინდონეზია (id)",
+          "tr": "თურქეთი (tr)",
+          "br": "ბრაზილია (br)",
+          "other": "სხვა"
+        },
+        "balancerStrategy": {
+          "title": "ბალანსერის სტრატეგია",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "blockAds": "რეკლამის ბლოკირება",
+        "bypassLan": "LAN-ის გვერდის ავლა",
+        "resolveDestination": "დანიშნულების მისამართის დადგენა",
+        "ipv6Route": "IPv6-მარშრუტი",
+        "ipv6Modes": {
+          "disable": "გამორთვა",
+          "enable": "ჩართვა",
+          "prefer": "სასურველი",
+          "only": "მხოლოდ IPv6"
+        },
+        "routeRule": {
+          "title": "მარშრუტიზაციის წესები",
+          "options": {
+            "import": {
+              "clipboard": "წესების იმპორტი ბუფერიდან",
+              "file": "წესების იმპორტი ფაილიდან"
+            },
+            "export": {
+              "clipboard": "წესების კოპირება ბუფერში",
+              "file": "წესების შენახვა ფაილში"
+            },
+            "reset": "წესების განულება"
+          },
+          "deleteRule": "წესის წაშლა",
+          "createRule": "ახალი წესის შექმნა",
+          "rule": {
+            "title": "წესი",
+            "ruleChanged": "წესი შეიცვალა",
+            "ruleChangedMsg": "გსურთ ცვლილებების შენახვა?",
+            "onlyTunMode": "ხელმისაწვდომია მხოლოდ TUN-რეჟიმში",
+            "notAvailabeInThisPlatform": "ამ პლატფორმაზე მიუწვდომელია",
+            "canNotBeEmpty": "ველი ცარიელი ვერ იქნება",
+            "validUrlEx": "https://example.com",
+            "validUrl": "სწორი \"URL\", მაგალითად\n@:pages.settings.routing.routeRule.rule.validUrlEx",
+            "validProcessNameEx": "Chrome.exe ან google chrome ან chrome",
+            "validProcessName": "სწორი \"პროცესის სახელი\", მაგალითად\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
+            "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
+            "validProcessPath": "სწორი \"პროცესის გზა\", მაგალითად\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
+            "validPortRangeEx": "80 ან 1-65000",
+            "validPortRange": "სწორი \"პორტი\" ან \"პორტების დიაპაზონი\", მაგალითად\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
+            "validIpCidrEx": "8.8.8.8 ან 10.0.0.0/24",
+            "validIpCidr": "სწორი IP CIDR, მაგალითად\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
+            "validDomainEx": "Google.com ან dl.google.com",
+            "validDomain": "სწორი \"დომენი\", მაგალითად\n@:pages.settings.routing.routeRule.rule.validDomainEx",
+            "validDomainSuffixEx": ".com ან .ge",
+            "validDomainSuffix": "სწორი \"დომენის სუფიქსი\", მაგალითად\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
+            "tileTitle(map)": {
+              "name": "სახელი",
+              "outbound": "გამავალი დამთხვევისას",
+              "rule_set": "წესების ნაკრების URL",
+              "package_name": "პაკეტების სახელები",
+              "process_name": "პროცესების სახელები",
+              "process_path": "პროცესების გზები",
+              "network": "ქსელები",
+              "port_range": "დანიშნულების პორტები",
+              "source_port_range": "წყაროს პორტები",
+              "protocol": "პროტოკოლი",
+              "ip_cidr": "დანიშნულების IP CIDR",
+              "source_ip_cidr": "წყაროს IP CIDR",
+              "domain": "დომენი",
+              "domain_suffixe": "დომენის სუფიქსი",
+              "domain_keyword": "დომენის საკვანძო სიტყვა",
+              "domain_regex": "დომენის რეგულარული გამოსახულება"
+            },
+            "outbound(map)": {
+              "proxy": "პროქსი",
+              "direct": "პირდაპირ",
+              "direct_with_fragment": "პირდაპირ, ფრაგმენტით",
+              "block": "ბლოკირება"
+            },
+            "network(map)": {
+              "all": "ყველა",
+              "tcp": "TCP",
+              "udp": "UDP"
+            },
+            "protocol(map)": {
+              "": "ყველა",
+              "tls": "TLS",
+              "http": "HTTP",
+              "quic": "QUIC",
+              "stun": "STUN",
+              "dns": "DNS",
+              "bittorrent": "BitTorrent"
+            }
+          },
+          "genericList": {
+            "addNew": "ახალი მნიშვნელობის დამატება",
+            "update": "მნიშვნელობის განახლება",
+            "clearList": "სიის გასუფთავება",
+            "clearListMsg": "ყველა ელემენტი წაიშალა"
+          },
+          "androidApps": {
+            "pageTitle": "Android-აპლიკაციები",
+            "showSystemApps": "სისტემური აპლიკაციების ჩვენება",
+            "hideSystemApps": "სისტემური აპლიკაციების დამალვა",
+            "clearSelection": "არჩევანის გასუფთავება",
+            "uninstalled": "წაშლილია"
+          }
+        }
+      },
+      "dns": {
+        "title": "DNS",
+        "remoteDns": "დაშორებული DNS",
+        "remoteDnsDomainStrategy": "დაშორებული DNS-ის დომენის სტრატეგია",
+        "directDns": "გამავალი სერვერის რესოლვერი (პირდაპირ)",
+        "directDnsDomainStrategy": "გამავალი დომენის სტრატეგია",
+        "enableDnsRouting": "DNS-მარშრუტიზაციის ჩართვა",
+        "enableFakeDns": "ყალბი DNS-ის ჩართვა",
+        "domainStrategy": {
+          "auto": "ავტო",
+          "preferIpv6": "უპირატესად IPv6",
+          "preferIpv4": "უპირატესად IPv4",
+          "ipv4Only": "მხოლოდ IPv4",
+          "ipv6Only": "მხოლოდ IPv6"
+        }
+      },
+      "inbound": {
+        "title": "შემომავალი",
+        "serviceMode": "სერვისის რეჟიმი",
+        "serviceModes": {
+          "proxy": "მხოლოდ პროქსი-სერვისი",
+          "systemProxy": "სისტემური პროქსის დაყენება",
+          "tun": "VPN",
+          "tunService": "VPN-სერვისი"
+        },
+        "shortServiceModes": {
+          "proxy": "პროქსი",
+          "systemProxy": "სისტემური პროქსი",
+          "tun": "VPN",
+          "tunService": "VPN-სერვისი"
+        },
+        "strictRoute": "მკაცრი მარშრუტიზაცია",
+        "tunImplementation": "TUN-ის რეალიზაცია",
+        "tunImplementations": {
+          "mixed": "შერეული",
+          "system": "სისტემური",
+          "gvisor": "gVisor"
+        },
+        "mixedPort": "შერეული პორტი",
+        "tproxyPort": "გამჭვირვალე პროქსის პორტი",
+        "directPort": "პირდაპირი პორტი",
+        "redirectPort": "გადამისამართების პორტი",
+        "allowConnectionFromLan": "VPN-ის გაზიარება ლოკალურ ქსელში"
+      },
+      "tlsTricks": {
+        "title": "TLS-ხრიკები",
+        "enable": "ფრაგმენტაციის ჩართვა",
+        "packets": "ფრაგმენტაციის პაკეტები",
+        "packetsTlsHello": "TLS Hello",
+        "packets1_1": "1-1",
+        "packets1_2": "1-2",
+        "packets1_3": "1-3",
+        "packets1_4": "1-4",
+        "packets1_5": "1-5",
+        "size": "ფრაგმენტის ზომა",
+        "sleep": "ფრაგმენტის დაყოვნება",
+        "mixedSniCase": {
+          "enable": "SNI-ის შერეული რეგისტრის ჩართვა"
+        },
+        "padding": {
+          "enable": "შევსების ჩართვა",
+          "size": "შევსების ზომა"
+        }
+      },
+      "warp": {
+        "title": "WARP",
+        "enable": "WARP-ის ჩართვა",
+        "generateConfig": "WARP-კონფიგურაციის გენერირება",
+        "configGenerated": "Warp-კონფიგურაცია დაგენერირდა",
+        "missingConfig": "WARP-კონფიგურაცია არ არის",
+        "detourMode": "შემოვლის რეჟიმი",
+        "detourModes": {
+          "proxyOverWarp": "პროქსების გატარება WARP-ით",
+          "warpOverProxy": "WARP-ის გატარება პროქსებით",
+          "proxyOverWarpExplain": "პროქსების განბლოკვა WARP-ით",
+          "warpOverProxyExplain": "დამატებითი უსაფრთხოება WARP-ით"
+        },
+        "licenseKey": "ლიცენზიის გასაღები",
+        "cleanIp": "სუფთა IP",
+        "port": "პორტი",
+        "noise": {
+          "count": "ხმაურის რაოდენობა",
+          "mode": "ხმაურის რეჟიმი",
+          "size": "ხმაურის ზომა",
+          "delay": "ხმაურის დაყოვნება"
+        }
+      }
+    }
+  },
+  "components": {
+    "stats": {
+      "connection": "კავშირი",
+      "traffic": "ტრაფიკი",
+      "trafficLive": "მიმდინარე ტრაფიკი",
+      "trafficTotal": "სულ ტრაფიკი",
+      "uplink": "გაგზავნა",
+      "downlink": "მიღება",
+      "speed": "სიჩქარე",
+      "totalTransferred": "სულ გადაცემული"
+    },
+    "subscriptionInfo": {
+      "upload": "გაგზავნილი",
+      "download": "მიღებული",
+      "total": "სულ ტრაფიკი",
+      "expireDate": "ვადის გასვლის თარიღი",
+      "expired": "ვადა გავიდა",
+      "noTraffic": "ლიმიტი ამოიწურა",
+      "remainingTime": "დარჩენილი დრო",
+      "remainingDuration": "დარჩა ${duration} დღე",
+      "remainingDurationNew": "${duration} დღე",
+      "remainingTrafficSemanticLabel": "დახარჯულია ${consumed} ${total}-დან",
+      "remainingTraffic": "დარჩენილი ტრაფიკი",
+      "remainingUsage": "დარჩა",
+      "profileSite": "პროვაიდერი",
+      "profileSupport": "მხარდაჭერა"
+    }
+  },
+  "dialogs": {
+    "sortProfiles": {
+      "title": "დახარისხება",
+      "sort": {
+        "name": "ანბანურად",
+        "lastUpdate": "ბოლოს განახლებულები"
+      }
+    },
+    "warpLicense": {
+      "title": "Cloudflare WARP-ის თანხმობა",
+      "description(rich)": "Cloudflare WARP არის უფასო WireGuard VPN-პროვაიდერი. ამ პარამეტრის ჩართვით თქვენ ეთანხმებით Cloudflare WARP-ის ${tos(მომსახურების პირობებს)} და ${privacy(კონფიდენციალურობის პოლიტიკას)}."
+    },
+    "newVersion": {
+      "title": "ხელმისაწვდომია განახლება",
+      "msg": "ხელმისაწვდომია @:common.appTitle-ის ახალი ვერსია. გსურთ ახლავე განახლება?",
+      "currentVersion": "მიმდინარე ვერსია: ",
+      "newVersion": "ახალი ვერსია: ",
+      "updateNow": "განახლება ახლავე"
+    },
+    "confirmation": {
+      "settings": {
+        "import": {
+          "msg": "ეს გადააწერს კონფიგურაციის ყველა პარამეტრს მოწოდებული მნიშვნელობებით. დარწმუნებული ხართ?"
+        }
+      },
+      "profile": {
+        "delete": {
+          "title": "პროფილის წაშლა",
+          "msg": "ნამდვილად გსურთ ამ პროფილის სამუდამოდ წაშლა?"
+        }
+      },
+      "perAppProxy": {
+        "shareOnGithub": {
+          "title": "ავტოარჩევის გაუმჯობესება",
+          "msg": "არჩეული აპლიკაციების გაზიარებით თქვენ ეხმარებით \"ავტოარჩევის\" სიის შევსებას"
+        },
+        "import": {
+          "msg": "ეს ჩაანაცვლებს აპლიკაციების პროქსის ყველა ამჟამინდელ არჩევანს. გსურთ გაგრძელება?"
+        }
+      },
+      "routeRule": {
+        "delete": {
+          "title": "წესის წაშლა",
+          "msg": "ნამდვილად გსურთ წესის \"$rulename\" წაშლა?"
+        }
+      }
+    },
+    "experimentalNotice": {
+      "title": "გამოიყენება ექსპერიმენტული ფუნქციები",
+      "msg": "თქვენ ჩართეთ ექსპერიმენტული ფუნქციები, რომლებმაც შეიძლება იმოქმედოს კავშირის ხარისხზე და გამოიწვიოს მოულოდნელი შეცდომები. ამ პარამეტრების შეცვლა ან განულება ნებისმიერ დროს შეგიძლიათ პარამეტრების გვერდიდან.",
+      "disable": "აღარ მაჩვენო"
+    },
+    "noActiveProfile": {
+      "title": "აირჩიეთ პროფილი",
+      "msg": "დავიწყოთ კავშირის პროფილის დამატებით, რომელშიც თქვენი VPN-კავშირის მონაცემებია.\n\nჯერ არ გაქვთ VPN-სერვერი? არაუშავს — მიჰყევით ქვემოთ მოცემულ ინსტრუქციას და სწრაფად, უფასოდ დააყენებთ.",
+      "helpBtn": {
+        "label": "მაჩვენეთ, როგორ",
+        "url": "https://tunello.online"
+      }
+    },
+    "unknownDomainsWarning": {
+      "title": "გაფრთხილება გარე ბმულზე",
+      "youAreAboutToVisit": "თქვენ გადადიხართ საიტზე:",
+      "thisWebsiteIsNotInOurTrustedList": "ეს საიტი არ არის ჩვენს სანდო სიაში. გთხოვთ, სიფრთხილით გააგრძელოთ."
+    },
+    "proxyInfo": {
+      "fullTag": "სრული ტეგი:",
+      "type": "ტიპი:",
+      "testTime": "ტესტის დრო:",
+      "testDelay": "ტესტის დაყოვნება:",
+      "isSelected": "არჩეულია:",
+      "isGroup": "ეს არის ჯგუფი",
+      "isSecure": "დაცულია:",
+      "port": "პორტი:",
+      "host": "ჰოსტი:",
+      "ip": "IP:",
+      "countryCode": "ქვეყნის კოდი:",
+      "region": "რეგიონი:",
+      "city": "ქალაქი:",
+      "asn": "ASN:",
+      "organization": "ორგანიზაცია:",
+      "location": "მდებარეობა:",
+      "postalCode": "საფოსტო ინდექსი:",
+      "download": "ჩამოტვირთული:",
+      "upload": "ატვირთული:"
+    },
+    "windowClosing": {
+      "askEachTime": "ყოველ ჯერზე კითხვა",
+      "alertMessage": "დავმალოთ თუ დავხუროთ აპლიკაცია?",
+      "remember": "დაიმახსოვრე ჩემი არჩევანი"
+    }
+  },
+  "connection": {
+    "tapToConnect": "შეეხეთ დასაკავშირებლად",
+    "connect": "დაკავშირება",
+    "connecting": "მიმდინარეობს დაკავშირება...",
+    "connected": "დაკავშირებულია",
+    "disconnect": "გათიშვა",
+    "disconnecting": "მიმდინარეობს გათიშვა...",
+    "reconnect": "ხელახლა დაკავშირება",
+    "reconnectMsg": "ხელახლა ვუკავშირდებით, რომ ცვლილებები გაითვალისწინოს...",
+    "secure": "დაცულია WARP-ით"
+  },
+  "errors": {
+    "unexpected": "მოულოდნელი შეცდომა",
+    "connection": {
+      "unexpected": "კავშირის მოულოდნელი შეცდომა",
+      "timeout": "კავშირის დრო ამოიწურა",
+      "badResponse": "არასწორი პასუხი",
+      "connectionError": "კავშირის შეცდომა",
+      "badCertificate": "არასწორი სერტიფიკატი"
+    },
+    "profiles": {
+      "unexpected": "მოულოდნელი შეცდომა",
+      "notFound": "პროფილი ვერ მოიძებნა",
+      "invalidConfig": "არასწორი კონფიგურაცია",
+      "invalidUrl": "არასწორი URL",
+      "canceledByUser": "გაუქმებულია მომხმარებლის მიერ"
+    },
+    "connectivity": {
+      "unexpected": "მოულოდნელი შეფერხება",
+      "missingVpnPermission": "VPN-ის ნებართვა არ არის მოცემული",
+      "missingNotificationPermission": "შეტყობინებების ნებართვა არ არის მოცემული",
+      "core": "ბირთვის შეცდომა"
+    },
+    "singbox": {
+      "serviceNotRunning": "სერვისი გაშვებული არ არის",
+      "missingPrivilege": "არ არის საკმარისი უფლებები",
+      "missingPrivilegeMsg": "VPN-რეჟიმს ადმინისტრატორის უფლებები სჭირდება. გადატვირთეთ აპლიკაცია ადმინისტრატორის სახელით ან შეცვალეთ სერვისის რეჟიმი.",
+      "invalidConfigOptions": "კონფიგურაციის არასწორი პარამეტრები",
+      "invalidConfig": "არასწორი კონფიგურაცია"
+    },
+    "warp": {
+      "missingLicense": "Warp-ის ლიცენზია",
+      "missingLicenseMsg": "არჩეული პროფილი იყენებს WARP-ს; ამ ფუნქციის გამოსაყენებლად საჭიროა WARP-ის ლიცენზიაზე დათანხმება."
+    }
+  }
+}

@@ -1,0 +1,646 @@
+{
+  "common": {
+    "appTitle": "Tunnelo",
+    "start": "Boshlash",
+    "version": "Versiya",
+    "ok": "OK",
+    "cancel": "Bekor qilish",
+    "kContinue": "Davom etish",
+    "showMore": "Koʻproq koʻrsatish",
+    "showLess": "Kamroq koʻrsatish",
+    "filter": "Filtr",
+    "all": "Barchasi",
+    "pause": "Pauza",
+    "resume": "Davom ettirish",
+    "clear": "Tozalash",
+    "close": "Yopish",
+    "auto": "Avto",
+    "manually": "Qoʻlda",
+    "name": "Nomi",
+    "url": "URL",
+    "add": "Qoʻshish",
+    "clipboard": "Almashish buferi",
+    "addToClipboard": "Almashish buferiga qoʻshish",
+    "scanQr": "QR kodni skanerlash",
+    "free": "Bepul",
+    "warp": "WARP",
+    "fragment": "Fragment",
+    "help": "Yordam",
+    "save": "Saqlash",
+    "update": "Yangilash",
+    "share": "Ulashish",
+    "edit": "Tahrirlash",
+    "delete": "Oʻchirish",
+    "discard": "Tashlab yuborish",
+    "import": "Import",
+    "export": "Eksport",
+    "later": "Keyinroq",
+    "ignore": "Eʼtiborsiz qoldirish",
+    "quit": "Chiqish",
+    "notSet": "Belgilanmagan",
+    "hide": "Yashirish",
+    "exit": "Chiqish",
+    "reset": "Tiklash",
+    "done": "Tayyor",
+    "search": "Qidirish",
+    "decline": "Rad etish",
+    "agree": "Roziman",
+    "empty": "Boʻsh",
+    "unknown": "Nomaʼlum",
+    "hidden": "Yashirilgan",
+    "timeout": "Vaqt tugadi",
+    "sort": "Saralash",
+    "dashboard": "Boshqaruv paneli",
+    "interval": {
+      "day": {
+        "zero": "",
+        "one": "$n kun",
+        "other": "$n kun"
+      },
+      "hour": {
+        "zero": "",
+        "one": "$n soat",
+        "other": "$n soat"
+      }
+    },
+    "msg": {
+      "permission": {
+        "denied": "Ruxsat berilmadi"
+      },
+      "export": {
+        "clipboard": {
+          "success": "Almashish buferiga nusxalandi",
+          "failure": "Almashish buferiga nusxalab boʻlmadi",
+          "contentTooLarge": "Maʼlumot juda katta. Uning oʻrniga faylga eksport qiling"
+        },
+        "file": {
+          "success": "JSON fayl yaratildi",
+          "failure": "Faylni yaratib boʻlmadi"
+        }
+      },
+      "import": {
+        "confirm": "Importni tasdiqlang",
+        "success": "Import qilindi",
+        "failure": "Import qilib boʻlmadi"
+      }
+    }
+  },
+  "intro": {
+    "banner": "Cheklovlarsiz internet uchun kerak boʻlgan hammasi",
+    "termsAndPolicyCaution(rich)": "Davom etar ekansiz, siz ${tap(@:pages.about.termsAndConditions)}ga rozilik bildirasiz",
+    "info(rich)": "Tunnelo tomonidan ❤️ bilan yaratilgan - ${tap_source(Ochiq kod)} (${tap_license(Litsenziya)})"
+  },
+  "pages": {
+    "home": {
+      "title": "Bosh sahifa",
+      "quickSettings": "Tezkor sozlamalar"
+    },
+    "proxies": {
+      "title": "Proksilar",
+      "sort": "Proksilarni saralash",
+      "testDelay": "Kechikishni tekshirish",
+      "empty": "Mavjud proksilar yoʻq",
+      "activeProxy": "Faol proksi",
+      "unknownIp": "Nomaʼlum IP",
+      "sortOptions": {
+        "unsorted": "Standart",
+        "name": "Alifbo boʻyicha",
+        "delay": "Kechikish boʻyicha",
+        "usage": "Sarf boʻyicha"
+      },
+      "ipInfo": {
+        "address": "IP manzil",
+        "country": "Mamlakat",
+        "organization": "Tashkilot"
+      },
+      "delay": {
+        "result": "Kechikish: ${delay} ms",
+        "timeout": "Kechikish testi vaqti tugadi",
+        "testing": "Kechikish: tekshirilmoqda..."
+      }
+    },
+    "profiles": {
+      "title": "Profillar",
+      "add": "Profil qoʻshish",
+      "update": "Profilni yangilash",
+      "viewAllProfiles": "Barcha profillarni koʻrish",
+      "activeProfileName": "Faol profil nomi: \"${name}\".",
+      "nonActiveProfileName": "\"${name}\" profilini faol qilib tanlash",
+      "freeSubNotFound": "Bepul obuna topilmadi",
+      "freeSubNotFoundForRegion": "\"${region}\" mintaqasi uchun bepul obuna topilmadi.",
+      "failedToLoad": "Yuklab boʻlmadi",
+      "updateSubscriptions": "Obunalarni yangilash",
+      "share": {
+        "urlToClipboard": "URL manzilni buferga nusxalash",
+        "showUrlQr": "URL manzilning QR kodini koʻrsatish",
+        "jsonToClipboard": "JSON ni buferga nusxalash"
+      },
+      "msg": {
+        "save": {
+          "success": "Profil saqlandi"
+        },
+        "invalidUrl": "Notoʻgʻri URL",
+        "add": {
+          "failure": "Profilni qoʻshib boʻlmadi"
+        },
+        "update": {
+          "success": "Profil yangilandi",
+          "successNamed": "\"${name}\" yangilandi",
+          "failure": "Profilni yangilab boʻlmadi",
+          "failureNamed": "\"${name}\" yangilanmadi"
+        },
+        "delete": {
+          "success": "Profil oʻchirildi"
+        }
+      }
+    },
+    "profileDetails": {
+      "title": "Profil",
+      "lastUpdate": "Oxirgi yangilanish",
+      "form": {
+        "nameHint": "Profil nomi",
+        "emptyName": "Nomi kiritilishi shart",
+        "invalidUrl": "Notoʻgʻri URL",
+        "urlHint": "Konfiguratsiyaning toʻliq URL manzili",
+        "disableAutoUpdate": "Avtoyangilanishni oʻchirish",
+        "autoUpdateInterval": "Avtoyangilanish oraligʻi",
+        "loading": "Profil qoʻshilmoqda..."
+      }
+    },
+    "logs": {
+      "title": "Jurnal",
+      "shareCoreLogs": "Yadro jurnalini ulashish",
+      "shareAppLogs": "Ilova jurnalini ulashish"
+    },
+    "about": {
+      "title": "Ilova haqida",
+      "notAvailableMsg": "Sizda eng soʻnggi versiya oʻrnatilgan",
+      "checkForUpdate": "Yangilanishni tekshirish",
+      "openWorkingDir": "Ish papkasini ochish",
+      "sourceCode": "Manba kodi",
+      "telegramChannel": "Telegram kanali",
+      "termsAndConditions": "Foydalanish shartlari",
+      "privacyPolicy": "Maxfiylik siyosati"
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "resetTunnel": "VPN profilini tiklash",
+      "options": {
+        "import": {
+          "clipboard": "Sozlamalarni almashish buferidan import qilish",
+          "file": "Sozlamalarni fayldan import qilish"
+        },
+        "export": {
+          "anonymousToClipboard": "Anonim sozlamalarni buferga nusxalash",
+          "anonymousToFile": "Anonim sozlamalarni faylga eksport qilish",
+          "allToClipboard": "Barcha sozlamalarni buferga nusxalash",
+          "allToFile": "Barcha sozlamalarni faylga eksport qilish"
+        },
+        "reset": "Sozlamalarni tiklash"
+      },
+      "general": {
+        "title": "Umumiy",
+        "locale": "Til",
+        "themeMode": "Mavzu rejimi",
+        "themeModes": {
+          "system": "Tizim boʻyicha",
+          "dark": "Qorongʻi rejim",
+          "light": "Yorugʻ rejim",
+          "black": "Qora rejim"
+        },
+        "enableAnalytics": "Analitikani yoqish",
+        "enableAnalyticsMsg": "Ilovani yaxshilash uchun analitika toʻplash va nosozlik hisobotlarini yuborishga ruxsat bering",
+        "autoIpCheck": "Ulanish IP manzilini avtomatik tekshirish",
+        "dynamicNotification": "Tezlikni bildirishnomada koʻrsatish",
+        "hapticFeedback": "Tebranishli javob",
+        "actionAtClosing": "Yopishdagi amal",
+        "autoStart": "Tizimga kirganda ishga tushirish",
+        "silentStart": "Yigʻilgan holda ishga tushirish",
+        "ignoreBatteryOptimizations": "Batareya optimallashtirishini oʻchirish",
+        "ignoreBatteryOptimizationsMsg": "VPN barqaror ishlashi uchun cheklovlarni olib tashlang",
+        "memoryLimit": "Xotira cheklovi",
+        "memoryLimitMsg": "Xotira yetishmasligi xatolari yoki ilova tez-tez yopilishi kuzatilsa, yoqing",
+        "debugMode": "Nosozliklarni tuzatish rejimi",
+        "debugModeMsg": "Oʻzgarish kuchga kirishi uchun ilovani qayta ishga tushiring",
+        "logLevel": "Jurnal darajasi",
+        "connectionTestUrl": "Ulanishni tekshirish URL manzili",
+        "urlTestInterval": "URL tekshiruvi oraligʻi",
+        "clashApiPort": "Clash API porti",
+        "useXrayCoreWhenPossible": "Imkon boʻlsa, xray-core ishlatilsin",
+        "useXrayCoreWhenPossibleMsg": "Obuna havolalarini oʻqishda xray-core ishlatiladi. Bu sozlama ishlashi uchun obuna havolasini qaytadan import qiling."
+      },
+      "routing": {
+        "title": "Marshrutlash",
+        "perAppProxy": {
+          "title": "Ilovalar uchun proksi",
+          "hideSysApps": "Tizim ilovalarini yashirish",
+          "options": {
+            "import": {
+              "clipboard": "Tanlovni almashish buferidan import qilish",
+              "file": "Tanlovni fayldan import qilish",
+              "msg": "Import joriy tanlovingizni almashtiradi. Davom etasizmi?"
+            },
+            "export": {
+              "clipboard": "Tanlovni buferga nusxalash",
+              "file": "Tanlovni faylga eksport qilish"
+            },
+            "shareToAll": "Hamma bilan ulashish",
+            "clearAllSelections": "Barcha tanlovni tozalash"
+          },
+          "modes": {
+            "all": "Barchasi",
+            "proxy": "Proksi",
+            "bypass": "Chetlab oʻtish",
+            "allMsg": "Barcha ilovalar proksi orqali",
+            "proxyMsg": "Faqat tanlangan ilovalar proksi orqali",
+            "bypassMsg": "Tanlangan ilovalar proksi orqali oʻtmasin"
+          },
+          "autoSelection": {
+            "title": "Avtotanlov",
+            "performNow": "Hozir bajarish",
+            "resetToDefault": "Standart holatga qaytarish",
+            "autoUpdateInterval": "Avtoyangilanish oraligʻi",
+            "toast": {
+              "success": "Ilovalar avtotanlovi yakunlandi",
+              "failure": "Avtotanlov amalga oshmadi",
+              "regionNotFound": "\"${region}\" mintaqasi uchun avtotanlov topilmadi",
+              "alreadyInAuto": "Tanlovingiz allaqachon avtotanlov roʻyxatida"
+            },
+            "dialog": {
+              "title": "Ilovalarni avtotanlash",
+              "msg": "Mintaqa \"${region}\" ga oʻzgargani uchun ilovalar proksisidagi avtotanlov oʻchirildi"
+            }
+          }
+        },
+        "region": "Mintaqa",
+        "regions": {
+          "ir": "Eron (ir)",
+          "cn": "Xitoy (cn)",
+          "ru": "Rossiya (ru)",
+          "af": "Afgʻoniston (af)",
+          "id": "Indoneziya (id)",
+          "tr": "Turkiya (tr)",
+          "br": "Braziliya (br)",
+          "other": "Boshqa"
+        },
+        "balancerStrategy": {
+          "title": "Balanslash strategiyasi",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "blockAds": "Reklamani bloklash",
+        "bypassLan": "LAN ni chetlab oʻtish",
+        "resolveDestination": "Manzilni aniqlash",
+        "ipv6Route": "IPv6 marshruti",
+        "ipv6Modes": {
+          "disable": "Oʻchirish",
+          "enable": "Yoqish",
+          "prefer": "Afzal koʻrilsin",
+          "only": "Faqat IPv6"
+        },
+        "routeRule": {
+          "title": "Marshrutlash qoidalari",
+          "options": {
+            "import": {
+              "clipboard": "Qoidalarni almashish buferidan import qilish",
+              "file": "Qoidalarni fayldan import qilish"
+            },
+            "export": {
+              "clipboard": "Qoidalarni buferga nusxalash",
+              "file": "Qoidalarni faylga saqlash"
+            },
+            "reset": "Qoidalarni tiklash"
+          },
+          "deleteRule": "Qoidani oʻchirish",
+          "createRule": "Yangi qoida yaratish",
+          "rule": {
+            "title": "Qoida",
+            "ruleChanged": "Qoida oʻzgardi",
+            "ruleChangedMsg": "Oʻzgarishlarni saqlaysizmi?",
+            "onlyTunMode": "Faqat TUN rejimida mavjud",
+            "notAvailabeInThisPlatform": "Bu platformada mavjud emas",
+            "canNotBeEmpty": "Boʻsh boʻlishi mumkin emas",
+            "validUrlEx": "https://example.com",
+            "validUrl": "Toʻgʻri \"URL\", masalan\n@:pages.settings.routing.routeRule.rule.validUrlEx",
+            "validProcessNameEx": "Chrome.exe yoki google chrome yoki chrome",
+            "validProcessName": "Toʻgʻri \"Jarayon nomi\", masalan\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
+            "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
+            "validProcessPath": "Toʻgʻri \"Jarayon yoʻli\", masalan\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
+            "validPortRangeEx": "80 yoki 1-65000",
+            "validPortRange": "Toʻgʻri \"Port\" yoki \"Portlar oraligʻi\", masalan\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
+            "validIpCidrEx": "8.8.8.8 yoki 10.0.0.0/24",
+            "validIpCidr": "Toʻgʻri IP CIDR, masalan\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
+            "validDomainEx": "Google.com yoki dl.google.com",
+            "validDomain": "Toʻgʻri \"Domen\", masalan\n@:pages.settings.routing.routeRule.rule.validDomainEx",
+            "validDomainSuffixEx": ".com yoki .uz",
+            "validDomainSuffix": "Toʻgʻri \"Domen suffiksi\", masalan\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
+            "tileTitle(map)": {
+              "name": "Nomi",
+              "outbound": "Mos kelganda chiquvchi",
+              "rule_set": "Qoidalar toʻplami URL manzili",
+              "package_name": "Paket nomlari",
+              "process_name": "Jarayon nomlari",
+              "process_path": "Jarayon yoʻllari",
+              "network": "Tarmoqlar",
+              "port_range": "Manzil portlari",
+              "source_port_range": "Manba portlari",
+              "protocol": "Protokol",
+              "ip_cidr": "Manzil IP CIDR",
+              "source_ip_cidr": "Manba IP CIDR",
+              "domain": "Domen",
+              "domain_suffixe": "Domen suffiksi",
+              "domain_keyword": "Domendagi kalit soʻz",
+              "domain_regex": "Domen uchun regulyar ifoda"
+            },
+            "outbound(map)": {
+              "proxy": "Proksi",
+              "direct": "Toʻgʻridan-toʻgʻri",
+              "direct_with_fragment": "Toʻgʻridan-toʻgʻri, fragment bilan",
+              "block": "Bloklash"
+            },
+            "network(map)": {
+              "all": "Barchasi",
+              "tcp": "TCP",
+              "udp": "UDP"
+            },
+            "protocol(map)": {
+              "": "Barchasi",
+              "tls": "TLS",
+              "http": "HTTP",
+              "quic": "QUIC",
+              "stun": "STUN",
+              "dns": "DNS",
+              "bittorrent": "BitTorrent"
+            }
+          },
+          "genericList": {
+            "addNew": "Yangi qiymat qoʻshish",
+            "update": "Qiymatni yangilash",
+            "clearList": "Roʻyxatni tozalash",
+            "clearListMsg": "Barcha elementlar oʻchirildi"
+          },
+          "androidApps": {
+            "pageTitle": "Android ilovalari",
+            "showSystemApps": "Tizim ilovalarini koʻrsatish",
+            "hideSystemApps": "Tizim ilovalarini yashirish",
+            "clearSelection": "Tanlovni tozalash",
+            "uninstalled": "Oʻchirilgan"
+          }
+        }
+      },
+      "dns": {
+        "title": "DNS",
+        "remoteDns": "Masofaviy DNS",
+        "remoteDnsDomainStrategy": "Masofaviy DNS domen strategiyasi",
+        "directDns": "Chiquvchi server resolveri (toʻgʻridan-toʻgʻri)",
+        "directDnsDomainStrategy": "Chiquvchi domen strategiyasi",
+        "enableDnsRouting": "DNS marshrutlashni yoqish",
+        "enableFakeDns": "Soxta DNS ni yoqish",
+        "domainStrategy": {
+          "auto": "Avto",
+          "preferIpv6": "IPv6 afzal",
+          "preferIpv4": "IPv4 afzal",
+          "ipv4Only": "Faqat IPv4",
+          "ipv6Only": "Faqat IPv6"
+        }
+      },
+      "inbound": {
+        "title": "Kiruvchi",
+        "serviceMode": "Xizmat rejimi",
+        "serviceModes": {
+          "proxy": "Faqat proksi xizmati",
+          "systemProxy": "Tizim proksisini oʻrnatish",
+          "tun": "VPN",
+          "tunService": "VPN xizmati"
+        },
+        "shortServiceModes": {
+          "proxy": "Proksi",
+          "systemProxy": "Tizim proksisi",
+          "tun": "VPN",
+          "tunService": "VPN xizmati"
+        },
+        "strictRoute": "Qatʼiy marshrutlash",
+        "tunImplementation": "TUN amalga oshirilishi",
+        "tunImplementations": {
+          "mixed": "Aralash",
+          "system": "Tizim",
+          "gvisor": "gVisor"
+        },
+        "mixedPort": "Aralash port",
+        "tproxyPort": "Shaffof proksi porti",
+        "directPort": "Toʻgʻridan-toʻgʻri port",
+        "redirectPort": "Yoʻnaltirish porti",
+        "allowConnectionFromLan": "VPN ni mahalliy tarmoqda ulashish"
+      },
+      "tlsTricks": {
+        "title": "TLS hiylalari",
+        "enable": "Fragmentatsiyani yoqish",
+        "packets": "Fragmentatsiya paketlari",
+        "packetsTlsHello": "TLS Hello",
+        "packets1_1": "1-1",
+        "packets1_2": "1-2",
+        "packets1_3": "1-3",
+        "packets1_4": "1-4",
+        "packets1_5": "1-5",
+        "size": "Fragment oʻlchami",
+        "sleep": "Fragment kechikishi",
+        "mixedSniCase": {
+          "enable": "Aralash SNI registrini yoqish"
+        },
+        "padding": {
+          "enable": "Toʻldirishni yoqish",
+          "size": "Toʻldirish oʻlchami"
+        }
+      },
+      "warp": {
+        "title": "WARP",
+        "enable": "WARP ni yoqish",
+        "generateConfig": "WARP konfiguratsiyasini yaratish",
+        "configGenerated": "WARP konfiguratsiyasi yaratildi",
+        "missingConfig": "WARP konfiguratsiyasi yoʻq",
+        "detourMode": "Aylanma yoʻl rejimi",
+        "detourModes": {
+          "proxyOverWarp": "Proksilarni WARP orqali yuborish",
+          "warpOverProxy": "WARP ni proksilar orqali yuborish",
+          "proxyOverWarpExplain": "WARP yordamida proksilarni blokdan chiqarish",
+          "warpOverProxyExplain": "WARP bilan qoʻshimcha xavfsizlik"
+        },
+        "licenseKey": "Litsenziya kaliti",
+        "cleanIp": "Toza IP",
+        "port": "Port",
+        "noise": {
+          "count": "Shovqin soni",
+          "mode": "Shovqin rejimi",
+          "size": "Shovqin oʻlchami",
+          "delay": "Shovqin kechikishi"
+        }
+      }
+    }
+  },
+  "components": {
+    "stats": {
+      "connection": "Ulanish",
+      "traffic": "Trafik",
+      "trafficLive": "Joriy trafik",
+      "trafficTotal": "Umumiy trafik",
+      "uplink": "Yuborish",
+      "downlink": "Qabul qilish",
+      "speed": "Tezlik",
+      "totalTransferred": "Jami uzatilgan"
+    },
+    "subscriptionInfo": {
+      "upload": "Yuborildi",
+      "download": "Qabul qilindi",
+      "total": "Umumiy trafik",
+      "expireDate": "Tugash sanasi",
+      "expired": "Muddati tugagan",
+      "noTraffic": "Limit tugadi",
+      "remainingTime": "Qolgan vaqt",
+      "remainingDuration": "${duration} kun qoldi",
+      "remainingDurationNew": "${duration} kun",
+      "remainingTrafficSemanticLabel": "${total} trafikdan ${consumed} sarflandi",
+      "remainingTraffic": "Qolgan trafik",
+      "remainingUsage": "Qoldi",
+      "profileSite": "Provayder",
+      "profileSupport": "Yordam xizmati"
+    }
+  },
+  "dialogs": {
+    "sortProfiles": {
+      "title": "Saralash mezoni",
+      "sort": {
+        "name": "Alifbo boʻyicha",
+        "lastUpdate": "Oxirgi yangilangani boʻyicha"
+      }
+    },
+    "warpLicense": {
+      "title": "Cloudflare WARP roziligi",
+      "description(rich)": "Cloudflare WARP - bepul WireGuard VPN provayderi. Bu sozlamani yoqish orqali siz Cloudflare WARP ning ${tos(Foydalanish shartlari)} va ${privacy(Maxfiylik siyosati)}ga rozilik bildirasiz."
+    },
+    "newVersion": {
+      "title": "Yangilanish mavjud",
+      "msg": "@:common.appTitle ning yangi versiyasi chiqdi. Hozir yangilaysizmi?",
+      "currentVersion": "Joriy versiya: ",
+      "newVersion": "Yangi versiya: ",
+      "updateNow": "Hozir yangilash"
+    },
+    "confirmation": {
+      "settings": {
+        "import": {
+          "msg": "Bu barcha konfiguratsiya sozlamalarini berilgan qiymatlar bilan almashtiradi. Davom etasizmi?"
+        }
+      },
+      "profile": {
+        "delete": {
+          "title": "Profilni oʻchirish",
+          "msg": "Bu profil butunlay oʻchirilsinmi?"
+        }
+      },
+      "perAppProxy": {
+        "shareOnGithub": {
+          "title": "Avtotanlovni yaxshilash",
+          "msg": "Tanlangan ilovalarni ulashib, \"avtotanlov\" roʻyxatini toʻldirishga yordam berasiz"
+        },
+        "import": {
+          "msg": "Bu ilovalar uchun proksining barcha joriy tanlovlarini almashtiradi. Davom etasizmi?"
+        }
+      },
+      "routeRule": {
+        "delete": {
+          "title": "Qoidani oʻchirish",
+          "msg": "\"$rulename\" qoidasi oʻchirilsinmi?"
+        }
+      }
+    },
+    "experimentalNotice": {
+      "title": "Tajriba funksiyalari yoqilgan",
+      "msg": "Siz ulanish sifatiga taʼsir qilishi va kutilmagan xatolarga olib kelishi mumkin boʻlgan tajriba funksiyalarini yoqdingiz. Ularni sozlamalar sahifasida istalgan vaqtda oʻzgartirishingiz yoki tiklashingiz mumkin.",
+      "disable": "Boshqa koʻrsatilmasin"
+    },
+    "noActiveProfile": {
+      "title": "Profil tanlang",
+      "msg": "VPN ulanishingiz maʼlumotlari saqlanadigan ulanish profilini qoʻshishdan boshlaymiz.\n\nVPN serveringiz yoʻqmi? Xavotir olmang — quyidagi qoʻllanmaga amal qilib, uni tez va bepul sozlab olasiz.",
+      "helpBtn": {
+        "label": "Qanday qilishni koʻrsating",
+        "url": "https://tunello.online"
+      }
+    },
+    "unknownDomainsWarning": {
+      "title": "Tashqi havola haqida ogohlantirish",
+      "youAreAboutToVisit": "Siz quyidagi saytga oʻtmoqchisiz:",
+      "thisWebsiteIsNotInOurTrustedList": "Bu sayt bizning ishonchli roʻyxatimizda yoʻq. Ehtiyot boʻling."
+    },
+    "proxyInfo": {
+      "fullTag": "Toʻliq teg:",
+      "type": "Turi:",
+      "testTime": "Test vaqti:",
+      "testDelay": "Test kechikishi:",
+      "isSelected": "Tanlangan:",
+      "isGroup": "Bu guruh",
+      "isSecure": "Himoyalangan:",
+      "port": "Port:",
+      "host": "Xost:",
+      "ip": "IP:",
+      "countryCode": "Mamlakat kodi:",
+      "region": "Mintaqa:",
+      "city": "Shahar:",
+      "asn": "ASN:",
+      "organization": "Tashkilot:",
+      "location": "Joylashuv:",
+      "postalCode": "Pochta indeksi:",
+      "download": "Qabul qilindi:",
+      "upload": "Yuborildi:"
+    },
+    "windowClosing": {
+      "askEachTime": "Har safar soʻralsin",
+      "alertMessage": "Ilova yashirilsinmi yoki yopilsinmi?",
+      "remember": "Tanlovim eslab qolinsin"
+    }
+  },
+  "connection": {
+    "tapToConnect": "Ulanish uchun bosing",
+    "connect": "Ulanish",
+    "connecting": "Ulanmoqda...",
+    "connected": "Ulandi",
+    "disconnect": "Uzish",
+    "disconnecting": "Uzilmoqda...",
+    "reconnect": "Qayta ulanish",
+    "reconnectMsg": "Oʻzgarishlarni hisobga olish uchun qayta ulanmoqda...",
+    "secure": "WARP bilan himoyalangan"
+  },
+  "errors": {
+    "unexpected": "Kutilmagan xato",
+    "connection": {
+      "unexpected": "Kutilmagan ulanish xatosi",
+      "timeout": "Ulanish vaqti tugadi",
+      "badResponse": "Notoʻgʻri javob",
+      "connectionError": "Ulanish xatosi",
+      "badCertificate": "Yaroqsiz sertifikat"
+    },
+    "profiles": {
+      "unexpected": "Kutilmagan xato",
+      "notFound": "Profil topilmadi",
+      "invalidConfig": "Notoʻgʻri konfiguratsiya",
+      "invalidUrl": "Notoʻgʻri URL",
+      "canceledByUser": "Foydalanuvchi bekor qildi"
+    },
+    "connectivity": {
+      "unexpected": "Kutilmagan nosozlik",
+      "missingVpnPermission": "VPN uchun ruxsat yoʻq",
+      "missingNotificationPermission": "Bildirishnomalar uchun ruxsat yoʻq",
+      "core": "Yadro xatosi"
+    },
+    "singbox": {
+      "serviceNotRunning": "Xizmat ishga tushmagan",
+      "missingPrivilege": "Huquqlar yetarli emas",
+      "missingPrivilegeMsg": "VPN rejimi administrator huquqlarini talab qiladi. Ilovani administrator nomidan qayta ishga tushiring yoki xizmat rejimini oʻzgartiring.",
+      "invalidConfigOptions": "Notoʻgʻri konfiguratsiya sozlamalari",
+      "invalidConfig": "Notoʻgʻri konfiguratsiya"
+    },
+    "warp": {
+      "missingLicense": "WARP litsenziyasi",
+      "missingLicenseMsg": "Tanlangan profil WARP funksiyasidan foydalanadi; bu funksiya ishlashi uchun WARP litsenziyasiga rozilik bildirish kerak."
+    }
+  }
+}

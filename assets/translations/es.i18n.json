@@ -105,7 +105,8 @@
       "sortOptions": {
         "unsorted": "Por defecto",
         "name": "Alfabéticamente",
-        "delay": "Por latencia"
+        "delay": "Por latencia",
+        "usage": "Por uso"
       },
       "ipInfo": {
         "address": "Dirección IP",
@@ -587,7 +588,9 @@
       "asn": "ASN:",
       "organization": "Organización:",
       "location": "Ubicación:",
-      "postalCode": "Código postal:"
+      "postalCode": "Código postal:",
+      "download": "Descarga:",
+      "upload": "Subida:"
     },
     "windowClosing": {
       "askEachTime": "Preguntar cada vez",

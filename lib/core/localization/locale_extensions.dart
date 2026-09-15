@@ -10,12 +10,21 @@ extension AppLocaleX on AppLocale {
 
   String get localeName => switch (flutterLocale.toString()) {
     "ar" => "العربية",
+    // Языки России и СНГ добавлены 16.09.2026: приложением пользуются не
+    // только по-русски, а «Unknown» в списке выглядит как поломка.
+    "az" => "Azərbaycan dili",
     "en" => "English",
-    "es" => "Spanish",
+    "hy" => "Հայերեն",
+    "ka" => "ქართული",
+    "kk" => "Қазақша",
+    "ky" => "Кыргызча",
+    "tg" => "Тоҷикӣ",
+    "uz" => "Oʻzbekcha",
+    "es" => "Español",
     "fa" => "فارسی",
     "fr" => "Français",
-    "id" => "Indonesian",
-    "pt_BR" => "Portuguese (Brazil)",
+    "id" => "Bahasa Indonesia",
+    "pt_BR" => "Português (Brasil)",
     "ru" => "Русский",
     "tr" => "Türkçe",
     "zh" || "zh_CN" => "中文 (中国)",

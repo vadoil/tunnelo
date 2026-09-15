@@ -1,0 +1,646 @@
+{
+  "common": {
+    "appTitle": "Tunnelo",
+    "start": "Баштоо",
+    "version": "Версия",
+    "ok": "OK",
+    "cancel": "Жокко чыгаруу",
+    "kContinue": "Улантуу",
+    "showMore": "Көбүрөөк көрсөтүү",
+    "showLess": "Азыраак көрсөтүү",
+    "filter": "Чыпка",
+    "all": "Баары",
+    "pause": "Тыныгуу",
+    "resume": "Улантуу",
+    "clear": "Тазалоо",
+    "close": "Жабуу",
+    "auto": "Авто",
+    "manually": "Кол менен",
+    "name": "Аты",
+    "url": "URL",
+    "add": "Кошуу",
+    "clipboard": "Алмашуу буфери",
+    "addToClipboard": "Алмашуу буферине кошуу",
+    "scanQr": "QR кодду сканерлөө",
+    "free": "Акысыз",
+    "warp": "WARP",
+    "fragment": "Фрагмент",
+    "help": "Жардам",
+    "save": "Сактоо",
+    "update": "Жаңыртуу",
+    "share": "Бөлүшүү",
+    "edit": "Өзгөртүү",
+    "delete": "Өчүрүү",
+    "discard": "Сактабоо",
+    "import": "Импорт",
+    "export": "Экспорт",
+    "later": "Кийинчерээк",
+    "ignore": "Көңүл бурбоо",
+    "quit": "Чыгуу",
+    "notSet": "Коюлган эмес",
+    "hide": "Жашыруу",
+    "exit": "Чыгуу",
+    "reset": "Баштапкы абалга",
+    "done": "Даяр",
+    "search": "Издөө",
+    "decline": "Четке кагуу",
+    "agree": "Макулмун",
+    "empty": "Бош",
+    "unknown": "Белгисиз",
+    "hidden": "Жашырылган",
+    "timeout": "Убакыт бүттү",
+    "sort": "Иреттөө",
+    "dashboard": "Башкаруу панели",
+    "interval": {
+      "day": {
+        "zero": "",
+        "one": "$n күн",
+        "other": "$n күн"
+      },
+      "hour": {
+        "zero": "",
+        "one": "$n саат",
+        "other": "$n саат"
+      }
+    },
+    "msg": {
+      "permission": {
+        "denied": "Уруксат берилген жок"
+      },
+      "export": {
+        "clipboard": {
+          "success": "Алмашуу буферине көчүрүлдү",
+          "failure": "Алмашуу буферине көчүрүлгөн жок",
+          "contentTooLarge": "Мазмун өтө чоң. Файлга экспорттоп көрүңүз"
+        },
+        "file": {
+          "success": "JSON файлы түзүлдү",
+          "failure": "Файл түзүлгөн жок"
+        }
+      },
+      "import": {
+        "confirm": "Импортту ырастоо",
+        "success": "Импорттолду",
+        "failure": "Импорттолгон жок"
+      }
+    }
+  },
+  "intro": {
+    "banner": "Чектөөсүз интернет үчүн керектүүнүн баары",
+    "termsAndPolicyCaution(rich)": "Улантсаңыз, ${tap(@:pages.about.termsAndConditions)} кабыл алган болосуз",
+    "info(rich)": "Tunnelo ❤️ менен жасады - ${tap_source(Ачык баштапкы код)} (${tap_license(Лицензия)})"
+  },
+  "pages": {
+    "home": {
+      "title": "Башкы бет",
+      "quickSettings": "Тез жөндөөлөр"
+    },
+    "proxies": {
+      "title": "Проксилер",
+      "sort": "Проксилерди иреттөө",
+      "testDelay": "Кечигүүнү текшерүү",
+      "empty": "Жеткиликтүү прокси жок",
+      "activeProxy": "Активдүү прокси",
+      "unknownIp": "Белгисиз IP",
+      "sortOptions": {
+        "unsorted": "Демейки",
+        "name": "Алфавит боюнча",
+        "delay": "Кечигүү боюнча",
+        "usage": "Колдонуу боюнча"
+      },
+      "ipInfo": {
+        "address": "IP дареги",
+        "country": "Өлкө",
+        "organization": "Уюм"
+      },
+      "delay": {
+        "result": "Кечигүү: ${delay} мс",
+        "timeout": "Кечигүү текшерүүсүнүн убактысы бүттү",
+        "testing": "Кечигүү: текшерилүүдө..."
+      }
+    },
+    "profiles": {
+      "title": "Профилдер",
+      "add": "Профиль кошуу",
+      "update": "Профилди жаңыртуу",
+      "viewAllProfiles": "Бардык профилдерди көрүү",
+      "activeProfileName": "Активдүү профилдин аты: \"${name}\".",
+      "nonActiveProfileName": "\"${name}\" профилин активдүү кылуу",
+      "freeSubNotFound": "Акысыз жазылуу табылган жок",
+      "freeSubNotFoundForRegion": "\"${region}\" аймагы үчүн акысыз жазылуу табылган жок.",
+      "failedToLoad": "Жүктөлгөн жок",
+      "updateSubscriptions": "Жазылууларды жаңыртуу",
+      "share": {
+        "urlToClipboard": "URL'ди алмашуу буферине",
+        "showUrlQr": "URL'дин QR кодун көрсөтүү",
+        "jsonToClipboard": "JSON'ду алмашуу буферине"
+      },
+      "msg": {
+        "save": {
+          "success": "Профиль сакталды"
+        },
+        "invalidUrl": "Туура эмес URL",
+        "add": {
+          "failure": "Профиль кошулган жок"
+        },
+        "update": {
+          "success": "Профиль жаңыртылды",
+          "successNamed": "\"${name}\" жаңыртылды",
+          "failure": "Профиль жаңыртылган жок",
+          "failureNamed": "\"${name}\" жаңыртылган жок"
+        },
+        "delete": {
+          "success": "Профиль өчүрүлдү"
+        }
+      }
+    },
+    "profileDetails": {
+      "title": "Профиль",
+      "lastUpdate": "Акыркы жаңыртуу",
+      "form": {
+        "nameHint": "Профилдин аты",
+        "emptyName": "Атын жазыңыз",
+        "invalidUrl": "Туура эмес URL",
+        "urlHint": "Конфигурациянын толук URL'и",
+        "disableAutoUpdate": "Автожаңыртууну өчүрүү",
+        "autoUpdateInterval": "Автожаңыртуу аралыгы",
+        "loading": "Профиль кошулууда..."
+      }
+    },
+    "logs": {
+      "title": "Логдор",
+      "shareCoreLogs": "Ядронун логдорун бөлүшүү",
+      "shareAppLogs": "Тиркеменин логдорун бөлүшүү"
+    },
+    "about": {
+      "title": "Программа жөнүндө",
+      "notAvailableMsg": "Акыркы версия орнотулган",
+      "checkForUpdate": "Жаңыртууну текшерүү",
+      "openWorkingDir": "Жумушчу папканы ачуу",
+      "sourceCode": "Баштапкы код",
+      "telegramChannel": "Telegram каналы",
+      "termsAndConditions": "Колдонуу шарттары",
+      "privacyPolicy": "Купуялык саясаты"
+    },
+    "settings": {
+      "title": "Жөндөөлөр",
+      "resetTunnel": "VPN профилин баштапкы абалга келтирүү",
+      "options": {
+        "import": {
+          "clipboard": "Жөндөөлөрдү алмашуу буферинен импорттоо",
+          "file": "Жөндөөлөрдү файлдан импорттоо"
+        },
+        "export": {
+          "anonymousToClipboard": "Анонимдүү жөндөөлөрдү буферге көчүрүү",
+          "anonymousToFile": "Анонимдүү жөндөөлөрдү файлга экспорттоо",
+          "allToClipboard": "Бардык жөндөөлөрдү буферге көчүрүү",
+          "allToFile": "Бардык жөндөөлөрдү файлга экспорттоо"
+        },
+        "reset": "Жөндөөлөрдү баштапкы абалга келтирүү"
+      },
+      "general": {
+        "title": "Жалпы",
+        "locale": "Тил",
+        "themeMode": "Тема",
+        "themeModes": {
+          "system": "Системанын темасы",
+          "dark": "Караңгы",
+          "light": "Жарык",
+          "black": "Кара"
+        },
+        "enableAnalytics": "Аналитиканы иштетүү",
+        "enableAnalyticsMsg": "Тиркемени жакшыртуу үчүн аналитика чогултууга жана каталар жөнүндө отчет жөнөтүүгө уруксат бериңиз",
+        "autoIpCheck": "Туташуунун IP дарегин автоматтык текшерүү",
+        "dynamicNotification": "Ылдамдыкты билдирмеде көрсөтүү",
+        "hapticFeedback": "Титирөө менен жооп берүү",
+        "actionAtClosing": "Жабылганда аткарылуучу иш",
+        "autoStart": "Системага киргенде иштетүү",
+        "silentStart": "Жыйналган түрдө иштетүү",
+        "ignoreBatteryOptimizations": "Батареяны оптималдаштырууну өчүрүү",
+        "ignoreBatteryOptimizationsMsg": "VPN туура иштеши үчүн чектөөлөрдү алып салыңыз",
+        "memoryLimit": "Эстутум чеги",
+        "memoryLimitMsg": "Эстутум жетишпей калса же тиркеме көп жабылса, күйгүзүңүз",
+        "debugMode": "Мүчүлүштүктөрдү оңдоо режими",
+        "debugModeMsg": "Өзгөрүү күчүнө кириши үчүн тиркемени кайра иштетиңиз",
+        "logLevel": "Лог деңгээли",
+        "connectionTestUrl": "Туташууну текшерүү URL'и",
+        "urlTestInterval": "URL текшерүү аралыгы",
+        "clashApiPort": "Clash API порту",
+        "useXrayCoreWhenPossible": "Мүмкүн болсо xray-core колдонуу",
+        "useXrayCoreWhenPossibleMsg": "Жазылуу шилтемелерин иштетүүдө xray-core колдонулат. Бул жөндөө иштеши үчүн шилтемени кайра импорттоңуз."
+      },
+      "routing": {
+        "title": "Маршруттоо",
+        "perAppProxy": {
+          "title": "Тиркемелер боюнча прокси",
+          "hideSysApps": "Системалык тиркемелерди жашыруу",
+          "options": {
+            "import": {
+              "clipboard": "Тандоону алмашуу буферинен импорттоо",
+              "file": "Тандоону файлдан импорттоо",
+              "msg": "Импорт учурдагы тандооңузду алмаштырат. Улантасызбы?"
+            },
+            "export": {
+              "clipboard": "Тандоону алмашуу буферине көчүрүү",
+              "file": "Тандоону файлга экспорттоо"
+            },
+            "shareToAll": "Баары менен бөлүшүү",
+            "clearAllSelections": "Бардык тандоолорду тазалоо"
+          },
+          "modes": {
+            "all": "Баары",
+            "proxy": "Прокси",
+            "bypass": "Айланып өтүү",
+            "allMsg": "Бардык тиркемелер прокси аркылуу",
+            "proxyMsg": "Тандалган тиркемелер гана прокси аркылуу",
+            "bypassMsg": "Тандалган тиркемелер прокси аркылуу өтпөйт"
+          },
+          "autoSelection": {
+            "title": "Автотандоо",
+            "performNow": "Азыр аткаруу",
+            "resetToDefault": "Демейкиге кайтаруу",
+            "autoUpdateInterval": "Автожаңыртуу аралыгы",
+            "toast": {
+              "success": "Тиркемелердин автотандоосу аякталды",
+              "failure": "Автотандоо болбоду",
+              "regionNotFound": "\"${region}\" аймагы үчүн автотандоо табылган жок",
+              "alreadyInAuto": "Тандооңуз автотизмеде мурунтан бар"
+            },
+            "dialog": {
+              "title": "Тиркемелерди автотандоо",
+              "msg": "Аймак \"${region}\" деп өзгөргөндүктөн, тиркемелер боюнча прокси үчүн автотандоо өчүрүлдү"
+            }
+          }
+        },
+        "region": "Аймак",
+        "regions": {
+          "ir": "Иран (ir)",
+          "cn": "Кытай (cn)",
+          "ru": "Россия (ru)",
+          "af": "Ооганстан (af)",
+          "id": "Индонезия (id)",
+          "tr": "Түркия (tr)",
+          "br": "Бразилия (br)",
+          "other": "Башка"
+        },
+        "balancerStrategy": {
+          "title": "Balancer стратегиясы",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "blockAds": "Жарнаманы бөгөттөө",
+        "bypassLan": "LAN'ды айланып өтүү",
+        "resolveDestination": "Багыттын дарегин аныктоо",
+        "ipv6Route": "IPv6 маршруту",
+        "ipv6Modes": {
+          "disable": "Өчүрүү",
+          "enable": "Күйгүзүү",
+          "prefer": "Артыкчылыктуу",
+          "only": "Гана IPv6"
+        },
+        "routeRule": {
+          "title": "Маршруттоо эрежелери",
+          "options": {
+            "import": {
+              "clipboard": "Эрежелерди алмашуу буферинен импорттоо",
+              "file": "Эрежелерди файлдан импорттоо"
+            },
+            "export": {
+              "clipboard": "Эрежелерди алмашуу буферине көчүрүү",
+              "file": "Эрежелерди файлга сактоо"
+            },
+            "reset": "Эрежелерди баштапкы абалга келтирүү"
+          },
+          "deleteRule": "Эрежени өчүрүү",
+          "createRule": "Жаңы эреже түзүү",
+          "rule": {
+            "title": "Эреже",
+            "ruleChanged": "Эреже өзгөрдү",
+            "ruleChangedMsg": "Өзгөрүүлөрдү сактайсызбы?",
+            "onlyTunMode": "TUN режиминде гана жеткиликтүү",
+            "notAvailabeInThisPlatform": "Бул платформада жеткиликсиз",
+            "canNotBeEmpty": "Бош болбошу керек",
+            "validUrlEx": "https://example.com",
+            "validUrl": "Туура \"URL\", мисалы\n@:pages.settings.routing.routeRule.rule.validUrlEx",
+            "validProcessNameEx": "Chrome.exe же google chrome же chrome",
+            "validProcessName": "Туура \"Процесстин аты\", мисалы\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
+            "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
+            "validProcessPath": "Туура \"Процесстин жолу\", мисалы\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
+            "validPortRangeEx": "80 же 1-65000",
+            "validPortRange": "Туура \"Порт\" же \"Порттордун диапазону\", мисалы\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
+            "validIpCidrEx": "8.8.8.8 же 10.0.0.0/24",
+            "validIpCidr": "Туура IP CIDR, мисалы\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
+            "validDomainEx": "Google.com же dl.google.com",
+            "validDomain": "Туура \"Домен\", мисалы\n@:pages.settings.routing.routeRule.rule.validDomainEx",
+            "validDomainSuffixEx": ".com же .kg",
+            "validDomainSuffix": "Туура \"Домендин суффикси\", мисалы\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
+            "tileTitle(map)": {
+              "name": "Аты",
+              "outbound": "Дал келгенде чыгуучу",
+              "rule_set": "Эрежелер топтомунун URL'и",
+              "package_name": "Пакеттердин аттары",
+              "process_name": "Процесстердин аттары",
+              "process_path": "Процесстердин жолдору",
+              "network": "Тармактар",
+              "port_range": "Багыттын порттору",
+              "source_port_range": "Булактын порттору",
+              "protocol": "Протокол",
+              "ip_cidr": "Багыттын IP CIDR",
+              "source_ip_cidr": "Булактын IP CIDR",
+              "domain": "Домен",
+              "domain_suffixe": "Домендин суффикси",
+              "domain_keyword": "Домендин ачкыч сөзү",
+              "domain_regex": "Домендин регулярдык туюнтмасы"
+            },
+            "outbound(map)": {
+              "proxy": "Прокси",
+              "direct": "Түз",
+              "direct_with_fragment": "Түз, фрагмент менен",
+              "block": "Бөгөттөө"
+            },
+            "network(map)": {
+              "all": "Баары",
+              "tcp": "TCP",
+              "udp": "UDP"
+            },
+            "protocol(map)": {
+              "": "Баары",
+              "tls": "TLS",
+              "http": "HTTP",
+              "quic": "QUIC",
+              "stun": "STUN",
+              "dns": "DNS",
+              "bittorrent": "BitTorrent"
+            }
+          },
+          "genericList": {
+            "addNew": "Жаңы маани кошуу",
+            "update": "Маанини жаңыртуу",
+            "clearList": "Тизмени тазалоо",
+            "clearListMsg": "Бардык элементтер өчүрүлдү"
+          },
+          "androidApps": {
+            "pageTitle": "Android тиркемелери",
+            "showSystemApps": "Системалык тиркемелерди көрсөтүү",
+            "hideSystemApps": "Системалык тиркемелерди жашыруу",
+            "clearSelection": "Тандоону тазалоо",
+            "uninstalled": "Өчүрүлгөн"
+          }
+        }
+      },
+      "dns": {
+        "title": "DNS",
+        "remoteDns": "Алыскы DNS",
+        "remoteDnsDomainStrategy": "Алыскы DNS'тин домен стратегиясы",
+        "directDns": "Чыгуучу сервердин чечүүчүсү (түз)",
+        "directDnsDomainStrategy": "Чыгуучу домендин стратегиясы",
+        "enableDnsRouting": "DNS маршруттоону иштетүү",
+        "enableFakeDns": "Жасалма DNS'ти иштетүү",
+        "domainStrategy": {
+          "auto": "Авто",
+          "preferIpv6": "IPv6 артыкчылыктуу",
+          "preferIpv4": "IPv4 артыкчылыктуу",
+          "ipv4Only": "IPv4 гана",
+          "ipv6Only": "IPv6 гана"
+        }
+      },
+      "inbound": {
+        "title": "Кирүүчү",
+        "serviceMode": "Кызмат режими",
+        "serviceModes": {
+          "proxy": "Прокси кызматы гана",
+          "systemProxy": "Системалык прокси коюу",
+          "tun": "VPN",
+          "tunService": "VPN кызматы"
+        },
+        "shortServiceModes": {
+          "proxy": "Прокси",
+          "systemProxy": "Системалык прокси",
+          "tun": "VPN",
+          "tunService": "VPN кызматы"
+        },
+        "strictRoute": "Катуу маршруттоо",
+        "tunImplementation": "TUN ишке ашыруусу",
+        "tunImplementations": {
+          "mixed": "Аралаш",
+          "system": "Системалык",
+          "gvisor": "gVisor"
+        },
+        "mixedPort": "Аралаш порт",
+        "tproxyPort": "Тунук проксинин порту",
+        "directPort": "Түз порт",
+        "redirectPort": "Багыттоо порту",
+        "allowConnectionFromLan": "VPN'ди жергиликтүү тармакта бөлүшүү"
+      },
+      "tlsTricks": {
+        "title": "TLS ыкмалары",
+        "enable": "Фрагментацияны иштетүү",
+        "packets": "Фрагментация пакеттери",
+        "packetsTlsHello": "TLS Hello",
+        "packets1_1": "1-1",
+        "packets1_2": "1-2",
+        "packets1_3": "1-3",
+        "packets1_4": "1-4",
+        "packets1_5": "1-5",
+        "size": "Фрагменттин өлчөмү",
+        "sleep": "Фрагменттин кечигүүсү",
+        "mixedSniCase": {
+          "enable": "SNI аралаш регистрин иштетүү"
+        },
+        "padding": {
+          "enable": "Толтурууну иштетүү",
+          "size": "Толтуруунун өлчөмү"
+        }
+      },
+      "warp": {
+        "title": "WARP",
+        "enable": "WARP'ты иштетүү",
+        "generateConfig": "WARP конфигурациясын түзүү",
+        "configGenerated": "Warp конфигурациясы түзүлдү",
+        "missingConfig": "WARP конфигурациясы жок",
+        "detourMode": "Айланма режими",
+        "detourModes": {
+          "proxyOverWarp": "Проксилерди WARP аркылуу багыттоо",
+          "warpOverProxy": "WARP'ты проксилер аркылуу багыттоо",
+          "proxyOverWarpExplain": "WARP проксилерди бөгөттөн чыгарат",
+          "warpOverProxyExplain": "WARP кошумча коопсуздук берет"
+        },
+        "licenseKey": "Лицензия ачкычы",
+        "cleanIp": "Таза IP",
+        "port": "Порт",
+        "noise": {
+          "count": "Шум пакеттеринин саны",
+          "mode": "Шум режими",
+          "size": "Шумдун өлчөмү",
+          "delay": "Шумдун кечигүүсү"
+        }
+      }
+    }
+  },
+  "components": {
+    "stats": {
+      "connection": "Туташуу",
+      "traffic": "Трафик",
+      "trafficLive": "Учурдагы трафик",
+      "trafficTotal": "Жалпы трафик",
+      "uplink": "Жөнөтүү",
+      "downlink": "Кабыл алуу",
+      "speed": "Ылдамдык",
+      "totalTransferred": "Жалпы өткөрүлдү"
+    },
+    "subscriptionInfo": {
+      "upload": "Жөнөтүлдү",
+      "download": "Алынды",
+      "total": "Жалпы трафик",
+      "expireDate": "Бүтүү күнү",
+      "expired": "Мөөнөтү бүттү",
+      "noTraffic": "Квота түгөндү",
+      "remainingTime": "Калган убакыт",
+      "remainingDuration": "${duration} күн калды",
+      "remainingDurationNew": "${duration} күн",
+      "remainingTrafficSemanticLabel": "${total} трафиктин ${consumed} колдонулду",
+      "remainingTraffic": "Калган трафик",
+      "remainingUsage": "Калды",
+      "profileSite": "Провайдер",
+      "profileSupport": "Колдоо"
+    }
+  },
+  "dialogs": {
+    "sortProfiles": {
+      "title": "Иреттөө тартиби",
+      "sort": {
+        "name": "Алфавит боюнча",
+        "lastUpdate": "Акыркы жаңыртуу боюнча"
+      }
+    },
+    "warpLicense": {
+      "title": "Cloudflare WARP макулдугу",
+      "description(rich)": "Cloudflare WARP - бул акысыз WireGuard VPN провайдери. Бул жөндөөнү иштетүү менен сиз Cloudflare WARP'тын ${tos(Кызмат көрсөтүү шарттарына)} жана ${privacy(Купуялык саясатына)} макул болосуз."
+    },
+    "newVersion": {
+      "title": "Жаңыртуу бар",
+      "msg": "@:common.appTitle тиркемесинин жаңы версиясы чыкты. Азыр жаңыртасызбы?",
+      "currentVersion": "Учурдагы версия: ",
+      "newVersion": "Жаңы версия: ",
+      "updateNow": "Азыр жаңыртуу"
+    },
+    "confirmation": {
+      "settings": {
+        "import": {
+          "msg": "Бул бардык конфигурация жөндөөлөрүн берилген маанилер менен алмаштырат. Улантасызбы?"
+        }
+      },
+      "profile": {
+        "delete": {
+          "title": "Профилди өчүрүү",
+          "msg": "Бул профилди биротоло өчүрөсүзбү?"
+        }
+      },
+      "perAppProxy": {
+        "shareOnGithub": {
+          "title": "Автотандоону жакшыртуу",
+          "msg": "Тандалган тиркемелер менен бөлүшүп, \"автотандоо\" тизмесин толуктоого жардам бересиз"
+        },
+        "import": {
+          "msg": "Бул тиркемелер боюнча проксинин бардык учурдагы тандоолорун алмаштырат. Улантасызбы?"
+        }
+      },
+      "routeRule": {
+        "delete": {
+          "title": "Эрежени өчүрүү",
+          "msg": "\"$rulename\" эрежесин өчүрөсүзбү?"
+        }
+      }
+    },
+    "experimentalNotice": {
+      "title": "Эксперименталдык функциялар колдонулууда",
+      "msg": "Сиз туташуунун сапатына таасир этип, күтүлбөгөн каталарды жаратышы мүмкүн болгон кээ бир эксперименталдык функцияларды күйгүздүңүз. Бул жөндөөлөрдү жөндөөлөр бетинде каалаган убакта өзгөртүп же баштапкы абалга келтире аласыз.",
+      "disable": "Экинчи көрсөтпөө"
+    },
+    "noActiveProfile": {
+      "title": "Профиль тандаңыз",
+      "msg": "VPN туташууңуздун маалыматтары камтылган профилди кошуудан баштайлы.\n\nVPN серверлериңиз жокпу? Кабатыр болбоңуз — төмөнкү колдонмону аткарып, аны тез жана акысыз орнотуп алыңыз.",
+      "helpBtn": {
+        "label": "Кантип экенин көрсөтүңүз",
+        "url": "https://tunello.online"
+      }
+    },
+    "unknownDomainsWarning": {
+      "title": "Тышкы шилтеме жөнүндө эскертүү",
+      "youAreAboutToVisit": "Сиз бул сайтка өтөсүз:",
+      "thisWebsiteIsNotInOurTrustedList": "Бул сайт ишенимдүү тизмебизде жок. Сак болуңуз."
+    },
+    "proxyInfo": {
+      "fullTag": "Толук тег:",
+      "type": "Түрү:",
+      "testTime": "Текшерүү убактысы:",
+      "testDelay": "Текшерүүнүн кечигүүсү:",
+      "isSelected": "Тандалган:",
+      "isGroup": "Бул топ",
+      "isSecure": "Корголгон:",
+      "port": "Порт:",
+      "host": "Хост:",
+      "ip": "IP:",
+      "countryCode": "Өлкөнүн коду:",
+      "region": "Аймак:",
+      "city": "Шаар:",
+      "asn": "ASN:",
+      "organization": "Уюм:",
+      "location": "Жайгашкан жери:",
+      "postalCode": "Почта индекси:",
+      "download": "Алынды:",
+      "upload": "Жөнөтүлдү:"
+    },
+    "windowClosing": {
+      "askEachTime": "Ар дайым суроо",
+      "alertMessage": "Тиркемени жашырасызбы же жабасызбы?",
+      "remember": "Тандоомду эстеп калуу"
+    }
+  },
+  "connection": {
+    "tapToConnect": "Туташуу үчүн басыңыз",
+    "connect": "Туташуу",
+    "connecting": "Туташууда...",
+    "connected": "Туташты",
+    "disconnect": "Ажыратуу",
+    "disconnecting": "Ажыратылууда...",
+    "reconnect": "Кайра туташуу",
+    "reconnectMsg": "Өзгөрүүлөрдү эске алуу үчүн кайра туташууда...",
+    "secure": "WARP менен корголгон"
+  },
+  "errors": {
+    "unexpected": "Күтүлбөгөн ката",
+    "connection": {
+      "unexpected": "Күтүлбөгөн туташуу катасы",
+      "timeout": "Туташуунун убактысы бүттү",
+      "badResponse": "Туура эмес жооп",
+      "connectionError": "Туташуу катасы",
+      "badCertificate": "Жараксыз сертификат"
+    },
+    "profiles": {
+      "unexpected": "Күтүлбөгөн ката",
+      "notFound": "Профиль табылган жок",
+      "invalidConfig": "Туура эмес конфигурация",
+      "invalidUrl": "Туура эмес URL",
+      "canceledByUser": "Колдонуучу жокко чыгарды"
+    },
+    "connectivity": {
+      "unexpected": "Күтүлбөгөн каталык",
+      "missingVpnPermission": "VPN'ге уруксат жок",
+      "missingNotificationPermission": "Билдирмелерге уруксат жок",
+      "core": "Ядронун катасы"
+    },
+    "singbox": {
+      "serviceNotRunning": "Кызмат иштеген жок",
+      "missingPrivilege": "Укуктар жетишсиз",
+      "missingPrivilegeMsg": "VPN режими администратордун укуктарын талап кылат. Тиркемени администратордун атынан кайра иштетиңиз же кызмат режимин өзгөртүңүз.",
+      "invalidConfigOptions": "Конфигурациянын жөндөөлөрү туура эмес",
+      "invalidConfig": "Туура эмес конфигурация"
+    },
+    "warp": {
+      "missingLicense": "Warp лицензиясы жок",
+      "missingLicenseMsg": "Тандалган профиль WARP функциясын колдонот; аны колдонуу үчүн WARP лицензиясын кабыл алуу керек."
+    }
+  }
+}

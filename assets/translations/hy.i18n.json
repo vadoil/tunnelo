@@ -1,0 +1,646 @@
+{
+  "common": {
+    "appTitle": "Tunnelo",
+    "start": "Սկսել",
+    "version": "Տարբերակ",
+    "ok": "Լավ",
+    "cancel": "Չեղարկել",
+    "kContinue": "Շարունակել",
+    "showMore": "Ցույց տալ ավելին",
+    "showLess": "Ցույց տալ ավելի քիչ",
+    "filter": "Զտիչ",
+    "all": "Բոլորը",
+    "pause": "Դադար",
+    "resume": "Շարունակել",
+    "clear": "Մաքրել",
+    "close": "Փակել",
+    "auto": "Ավտո",
+    "manually": "Ձեռքով",
+    "name": "Անուն",
+    "url": "URL",
+    "add": "Ավելացնել",
+    "clipboard": "Փոխանակման բուֆեր",
+    "addToClipboard": "Պատճենել փոխանակման բուֆեր",
+    "scanQr": "Սկանավորել QR",
+    "free": "Անվճար",
+    "warp": "WARP",
+    "fragment": "Ֆրագմենտ",
+    "help": "Օգնություն",
+    "save": "Պահպանել",
+    "update": "Թարմացնել",
+    "share": "Կիսվել",
+    "edit": "Խմբագրել",
+    "delete": "Ջնջել",
+    "discard": "Հրաժարվել",
+    "import": "Ներմուծել",
+    "export": "Արտահանել",
+    "later": "Ավելի ուշ",
+    "ignore": "Անտեսել",
+    "quit": "Դուրս գալ",
+    "notSet": "Նշված չէ",
+    "hide": "Թաքցնել",
+    "exit": "Ելք",
+    "reset": "Վերականգնել",
+    "done": "Պատրաստ է",
+    "search": "Որոնում",
+    "decline": "Մերժել",
+    "agree": "Համաձայն եմ",
+    "empty": "Դատարկ",
+    "unknown": "Անհայտ",
+    "hidden": "Թաքցված",
+    "timeout": "Ժամանակը սպառվեց",
+    "sort": "Դասավորել",
+    "dashboard": "Վահանակ",
+    "interval": {
+      "day": {
+        "zero": "",
+        "one": "$n օր",
+        "other": "$n օր"
+      },
+      "hour": {
+        "zero": "",
+        "one": "$n ժամ",
+        "other": "$n ժամ"
+      }
+    },
+    "msg": {
+      "permission": {
+        "denied": "Թույլտվությունը մերժված է"
+      },
+      "export": {
+        "clipboard": {
+          "success": "Պատճենվեց փոխանակման բուֆեր",
+          "failure": "Չհաջողվեց պատճենել փոխանակման բուֆեր",
+          "contentTooLarge": "Բովանդակությունը չափազանց մեծ է։ Արտահանեք ֆայլով"
+        },
+        "file": {
+          "success": "JSON ֆայլը ստեղծվեց",
+          "failure": "Չհաջողվեց ստեղծել ֆայլը"
+        }
+      },
+      "import": {
+        "confirm": "Հաստատել ներմուծումը",
+        "success": "Ներմուծվեց հաջողությամբ",
+        "failure": "Չհաջողվեց ներմուծել"
+      }
+    }
+  },
+  "intro": {
+    "banner": "Այն ամենը, ինչ պետք է անսահմանափակ ինտերնետի համար",
+    "termsAndPolicyCaution(rich)": "Շարունակելով՝ դուք համաձայնվում եք ${tap(@:pages.about.termsAndConditions)}",
+    "info(rich)": "Ստեղծվել է ❤️-ով Tunnelo-ի կողմից - ${tap_source(Բաց կոդ)} (${tap_license(Լիցենզիա)})"
+  },
+  "pages": {
+    "home": {
+      "title": "Գլխավոր",
+      "quickSettings": "Արագ կարգավորումներ"
+    },
+    "proxies": {
+      "title": "Պրոքսիներ",
+      "sort": "Դասավորել պրոքսիները",
+      "testDelay": "Ստուգել ուշացումը",
+      "empty": "Հասանելի պրոքսի չկա",
+      "activeProxy": "Ակտիվ պրոքսի",
+      "unknownIp": "Անհայտ IP",
+      "sortOptions": {
+        "unsorted": "Ըստ լռելյայնի",
+        "name": "Այբբենական",
+        "delay": "Ըստ ուշացման",
+        "usage": "Ըստ օգտագործման"
+      },
+      "ipInfo": {
+        "address": "IP հասցե",
+        "country": "Երկիր",
+        "organization": "Կազմակերպություն"
+      },
+      "delay": {
+        "result": "Ուշացում՝ ${delay} մվ",
+        "timeout": "Ուշացման ստուգման ժամկետը սպառվեց",
+        "testing": "Ուշացում՝ ստուգվում է..."
+      }
+    },
+    "profiles": {
+      "title": "Պրոֆիլներ",
+      "add": "Ավելացնել պրոֆիլ",
+      "update": "Թարմացնել պրոֆիլը",
+      "viewAllProfiles": "Դիտել բոլոր պրոֆիլները",
+      "activeProfileName": "Ակտիվ պրոֆիլի անունը՝ \"${name}\"։",
+      "nonActiveProfileName": "Ընտրել \"${name}\"-ը որպես ակտիվ պրոֆիլ",
+      "freeSubNotFound": "Անվճար բաժանորդագրություն չգտնվեց",
+      "freeSubNotFoundForRegion": "\"${region}\" տարածաշրջանի համար անվճար բաժանորդագրություն չգտնվեց։",
+      "failedToLoad": "Չհաջողվեց բեռնել",
+      "updateSubscriptions": "Թարմացնել բաժանորդագրությունները",
+      "share": {
+        "urlToClipboard": "URL-ը փոխանակման բուֆեր",
+        "showUrlQr": "Ցույց տալ URL-ի QR-ը",
+        "jsonToClipboard": "JSON-ը փոխանակման բուֆեր"
+      },
+      "msg": {
+        "save": {
+          "success": "Պրոֆիլը պահպանվեց"
+        },
+        "invalidUrl": "Սխալ URL",
+        "add": {
+          "failure": "Չհաջողվեց ավելացնել պրոֆիլը"
+        },
+        "update": {
+          "success": "Պրոֆիլը թարմացվեց",
+          "successNamed": "\"${name}\"-ը թարմացվեց",
+          "failure": "Չհաջողվեց թարմացնել պրոֆիլը",
+          "failureNamed": "Չհաջողվեց թարմացնել \"${name}\"-ը"
+        },
+        "delete": {
+          "success": "Պրոֆիլը ջնջվեց"
+        }
+      }
+    },
+    "profileDetails": {
+      "title": "Պրոֆիլ",
+      "lastUpdate": "Վերջին թարմացումը",
+      "form": {
+        "nameHint": "Պրոֆիլի անունը",
+        "emptyName": "Անունը պարտադիր է",
+        "invalidUrl": "Սխալ URL",
+        "urlHint": "Կոնֆիգուրացիայի ամբողջական URL",
+        "disableAutoUpdate": "Անջատել ավտոթարմացումը",
+        "autoUpdateInterval": "Ավտոթարմացման միջակայքը",
+        "loading": "Պրոֆիլն ավելացվում է..."
+      }
+    },
+    "logs": {
+      "title": "Մատյան",
+      "shareCoreLogs": "Կիսվել միջուկի մատյանով",
+      "shareAppLogs": "Կիսվել հավելվածի մատյանով"
+    },
+    "about": {
+      "title": "Հավելվածի մասին",
+      "notAvailableMsg": "Արդեն օգտագործվում է վերջին տարբերակը",
+      "checkForUpdate": "Ստուգել թարմացումները",
+      "openWorkingDir": "Բացել աշխատանքային պանակը",
+      "sourceCode": "Ելակետային կոդ",
+      "telegramChannel": "Telegram-ալիք",
+      "termsAndConditions": "Օգտագործման պայմաններ",
+      "privacyPolicy": "Գաղտնիության քաղաքականություն"
+    },
+    "settings": {
+      "title": "Կարգավորումներ",
+      "resetTunnel": "Վերականգնել VPN-պրոֆիլը",
+      "options": {
+        "import": {
+          "clipboard": "Ներմուծել կարգավորումները փոխանակման բուֆերից",
+          "file": "Ներմուծել կարգավորումները ֆայլից"
+        },
+        "export": {
+          "anonymousToClipboard": "Պատճենել անանուն կարգավորումները բուֆեր",
+          "anonymousToFile": "Արտահանել անանուն կարգավորումները ֆայլ",
+          "allToClipboard": "Պատճենել բոլոր կարգավորումները բուֆեր",
+          "allToFile": "Արտահանել բոլոր կարգավորումները ֆայլ"
+        },
+        "reset": "Վերականգնել կարգավորումները"
+      },
+      "general": {
+        "title": "Ընդհանուր",
+        "locale": "Լեզու",
+        "themeMode": "Ձևավորման ռեժիմ",
+        "themeModes": {
+          "system": "Ինչպես համակարգում",
+          "dark": "Մուգ ռեժիմ",
+          "light": "Բաց ռեժիմ",
+          "black": "Սև ռեժիմ"
+        },
+        "enableAnalytics": "Միացնել վիճակագրությունը",
+        "enableAnalyticsMsg": "Թույլ տալ հավաքել վիճակագրություն և ուղարկել վթարների հաշվետվություններ՝ հավելվածը բարելավելու համար",
+        "autoIpCheck": "Ավտոմատ ստուգել միացման IP-ն",
+        "dynamicNotification": "Ցույց տալ արագությունը ծանուցման մեջ",
+        "hapticFeedback": "Հպման արձագանք",
+        "actionAtClosing": "Գործողությունը փակելիս",
+        "autoStart": "Գործարկել համակարգի մուտքի ժամանակ",
+        "silentStart": "Գործարկել ծալված վիճակում",
+        "ignoreBatteryOptimizations": "Անջատել մարտկոցի օպտիմալացումը",
+        "ignoreBatteryOptimizationsMsg": "Հեռացնել սահմանափակումները՝ VPN-ի կայուն աշխատանքի համար",
+        "memoryLimit": "Հիշողության սահմանափակում",
+        "memoryLimitMsg": "Միացրեք, եթե հիշողությունը չի բավարարում կամ հավելվածը հաճախ է փակվում",
+        "debugMode": "Վրիպազերծման ռեժիմ",
+        "debugModeMsg": "Փոփոխությունը կիրառելու համար վերագործարկեք հավելվածը",
+        "logLevel": "Մատյանի մանրամասնությունը",
+        "connectionTestUrl": "Միացումը ստուգող URL",
+        "urlTestInterval": "URL-ի ստուգման միջակայքը",
+        "clashApiPort": "Clash API-ի պորտը",
+        "useXrayCoreWhenPossible": "Հնարավորության դեպքում օգտագործել xray-core",
+        "useXrayCoreWhenPossibleMsg": "Օգտագործել xray-core-ը բաժանորդագրության հղումները մշակելիս։ Միացնելու համար հղումը պետք է կրկին ներմուծել։"
+      },
+      "routing": {
+        "title": "Երթուղավորում",
+        "perAppProxy": {
+          "title": "Պրոքսի ըստ հավելվածների",
+          "hideSysApps": "Թաքցնել համակարգային հավելվածները",
+          "options": {
+            "import": {
+              "clipboard": "Ներմուծել ընտրությունը փոխանակման բուֆերից",
+              "file": "Ներմուծել ընտրությունը ֆայլից",
+              "msg": "Ներմուծումը կփոխարինի ձեր ընթացիկ ընտրությունը։ Շարունակե՞լ"
+            },
+            "export": {
+              "clipboard": "Պատճենել ընտրությունը բուֆեր",
+              "file": "Արտահանել ընտրությունը ֆայլ"
+            },
+            "shareToAll": "Կիսվել բոլորի հետ",
+            "clearAllSelections": "Մաքրել ամբողջ ընտրությունը"
+          },
+          "modes": {
+            "all": "Բոլորը",
+            "proxy": "Պրոքսի",
+            "bypass": "Շրջանցում",
+            "allMsg": "Բոլոր հավելվածները՝ պրոքսիով",
+            "proxyMsg": "Պրոքսիով՝ միայն ընտրված հավելվածները",
+            "bypassMsg": "Ընտրված հավելվածները՝ պրոքսիից դուրս"
+          },
+          "autoSelection": {
+            "title": "Ավտոընտրություն",
+            "performNow": "Կատարել հիմա",
+            "resetToDefault": "Վերականգնել լռելյայնը",
+            "autoUpdateInterval": "Ավտոթարմացման միջակայքը",
+            "toast": {
+              "success": "Հավելվածների ավտոընտրությունն ավարտվեց",
+              "failure": "Ավտոընտրությունը ձախողվեց",
+              "regionNotFound": "Ավտոընտրություն չգտնվեց, տարածաշրջան՝ \"${region}\"",
+              "alreadyInAuto": "Ձեր ընտրությունն արդեն ավտոցանկում է"
+            },
+            "dialog": {
+              "title": "Հավելվածների ավտոընտրություն",
+              "msg": "Հավելվածների պրոքսիի ավտոընտրությունն անջատվեց, քանի որ տարածաշրջանը փոխվեց՝ \"${region}\""
+            }
+          }
+        },
+        "region": "Տարածաշրջան",
+        "regions": {
+          "ir": "Իրան (ir)",
+          "cn": "Չինաստան (cn)",
+          "ru": "Ռուսաստան (ru)",
+          "af": "Աֆղանստան (af)",
+          "id": "Ինդոնեզիա (id)",
+          "tr": "Թուրքիա (tr)",
+          "br": "Բրազիլիա (br)",
+          "other": "Այլ"
+        },
+        "balancerStrategy": {
+          "title": "Հավասարակշռման ռազմավարություն",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "blockAds": "Արգելափակել գովազդը",
+        "bypassLan": "Շրջանցել LAN-ը",
+        "resolveDestination": "Որոշել նշանակետի հասցեն",
+        "ipv6Route": "IPv6 երթուղի",
+        "ipv6Modes": {
+          "disable": "Անջատել",
+          "enable": "Միացնել",
+          "prefer": "Նախընտրելի",
+          "only": "Բացառապես"
+        },
+        "routeRule": {
+          "title": "Երթուղու կանոններ",
+          "options": {
+            "import": {
+              "clipboard": "Ներմուծել կանոնները փոխանակման բուֆերից",
+              "file": "Ներմուծել կանոնները ֆայլից"
+            },
+            "export": {
+              "clipboard": "Պատճենել կանոնները բուֆեր",
+              "file": "Պահպանել կանոնները ֆայլում"
+            },
+            "reset": "Վերականգնել կանոնները"
+          },
+          "deleteRule": "Ջնջել կանոնը",
+          "createRule": "Ստեղծել նոր կանոն",
+          "rule": {
+            "title": "Կանոն",
+            "ruleChanged": "Կանոնը փոփոխվել է",
+            "ruleChangedMsg": "Պահպանե՞լ փոփոխությունները",
+            "onlyTunMode": "Հասանելի է միայն TUN ռեժիմում",
+            "notAvailabeInThisPlatform": "Հասանելի չէ այս հարթակում",
+            "canNotBeEmpty": "Չի կարող դատարկ լինել",
+            "validUrlEx": "https://example.com",
+            "validUrl": "Ճիշտ \"URL\", օրինակ՝\n@:pages.settings.routing.routeRule.rule.validUrlEx",
+            "validProcessNameEx": "Chrome.exe կամ google chrome կամ chrome",
+            "validProcessName": "Ճիշտ \"Գործընթացի անուն\", օրինակ՝\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
+            "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
+            "validProcessPath": "Ճիշտ \"Գործընթացի ուղի\", օրինակ՝\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
+            "validPortRangeEx": "80 կամ 1-65000",
+            "validPortRange": "Ճիշտ \"Պորտ\" կամ \"Պորտերի միջակայք\", օրինակ՝\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
+            "validIpCidrEx": "8.8.8.8 կամ 10.0.0.0/24",
+            "validIpCidr": "Ճիշտ IP CIDR, օրինակ՝\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
+            "validDomainEx": "Google.com կամ dl.google.com",
+            "validDomain": "Ճիշտ \"Դոմեն\", օրինակ՝\n@:pages.settings.routing.routeRule.rule.validDomainEx",
+            "validDomainSuffixEx": ".com կամ .am",
+            "validDomainSuffix": "Ճիշտ \"Դոմենի վերջածանց\", օրինակ՝\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
+            "tileTitle(map)": {
+              "name": "Անուն",
+              "outbound": "Ելքային ուղին համընկնելիս",
+              "rule_set": "Կանոնների հավաքածուի URL",
+              "package_name": "Փաթեթների անուններ",
+              "process_name": "Գործընթացների անուններ",
+              "process_path": "Գործընթացների ուղիներ",
+              "network": "Ցանցեր",
+              "port_range": "Նշանակետի պորտեր",
+              "source_port_range": "Աղբյուրի պորտեր",
+              "protocol": "Արձանագրություն",
+              "ip_cidr": "Նշանակետի IP CIDR",
+              "source_ip_cidr": "Աղբյուրի IP CIDR",
+              "domain": "Դոմեն",
+              "domain_suffixe": "Դոմենի վերջածանց",
+              "domain_keyword": "Դոմենի բանալի բառ",
+              "domain_regex": "Դոմենի կանոնավոր արտահայտություն"
+            },
+            "outbound(map)": {
+              "proxy": "Պրոքսի",
+              "direct": "Ուղիղ",
+              "direct_with_fragment": "Ուղիղ՝ ֆրագմենտով",
+              "block": "Արգելափակել"
+            },
+            "network(map)": {
+              "all": "Բոլորը",
+              "tcp": "TCP",
+              "udp": "UDP"
+            },
+            "protocol(map)": {
+              "": "Բոլորը",
+              "tls": "TLS",
+              "http": "HTTP",
+              "quic": "QUIC",
+              "stun": "STUN",
+              "dns": "DNS",
+              "bittorrent": "BitTorrent"
+            }
+          },
+          "genericList": {
+            "addNew": "Ավելացնել նոր արժեք",
+            "update": "Թարմացնել արժեքը",
+            "clearList": "Մաքրել ցանկը",
+            "clearListMsg": "Բոլոր տարրերը ջնջվել են"
+          },
+          "androidApps": {
+            "pageTitle": "Android-հավելվածներ",
+            "showSystemApps": "Ցույց տալ համակարգային հավելվածները",
+            "hideSystemApps": "Թաքցնել համակարգային հավելվածները",
+            "clearSelection": "Մաքրել ընտրությունը",
+            "uninstalled": "Հեռացված է"
+          }
+        }
+      },
+      "dns": {
+        "title": "DNS",
+        "remoteDns": "Հեռավոր DNS",
+        "remoteDnsDomainStrategy": "Հեռավոր DNS-ի դոմենային ռազմավարություն",
+        "directDns": "Ելքային սերվերի լուծիչ (ուղիղ)",
+        "directDnsDomainStrategy": "Ելքային դոմենային ռազմավարություն",
+        "enableDnsRouting": "Միացնել DNS-երթուղավորումը",
+        "enableFakeDns": "Միացնել կեղծ DNS-ը",
+        "domainStrategy": {
+          "auto": "Ավտո",
+          "preferIpv6": "Նախընտրել IPv6",
+          "preferIpv4": "Նախընտրել IPv4",
+          "ipv4Only": "Միայն IPv4",
+          "ipv6Only": "Միայն IPv6"
+        }
+      },
+      "inbound": {
+        "title": "Մուտքային",
+        "serviceMode": "Ծառայության ռեժիմ",
+        "serviceModes": {
+          "proxy": "Միայն պրոքսի-ծառայություն",
+          "systemProxy": "Կարգավորել համակարգային պրոքսին",
+          "tun": "VPN",
+          "tunService": "VPN-ծառայություն"
+        },
+        "shortServiceModes": {
+          "proxy": "Պրոքսի",
+          "systemProxy": "Համակարգային պրոքսի",
+          "tun": "VPN",
+          "tunService": "VPN-ծառայություն"
+        },
+        "strictRoute": "Խիստ երթուղավորում",
+        "tunImplementation": "TUN-ի իրականացումը",
+        "tunImplementations": {
+          "mixed": "Խառը",
+          "system": "Համակարգային",
+          "gvisor": "gVisor"
+        },
+        "mixedPort": "Խառը պորտ",
+        "tproxyPort": "Թափանցիկ պրոքսիի պորտ",
+        "directPort": "Ուղիղ պորտ",
+        "redirectPort": "Վերահասցեավորման պորտ",
+        "allowConnectionFromLan": "Կիսվել VPN-ով տեղական ցանցում"
+      },
+      "tlsTricks": {
+        "title": "TLS-հնարքներ",
+        "enable": "Միացնել ֆրագմենտացիան",
+        "packets": "Ֆրագմենտացիայի փաթեթներ",
+        "packetsTlsHello": "TLS Hello",
+        "packets1_1": "1-1",
+        "packets1_2": "1-2",
+        "packets1_3": "1-3",
+        "packets1_4": "1-4",
+        "packets1_5": "1-5",
+        "size": "Ֆրագմենտի չափը",
+        "sleep": "Ֆրագմենտի դադարը",
+        "mixedSniCase": {
+          "enable": "Միացնել SNI-ի խառը ռեգիստրը"
+        },
+        "padding": {
+          "enable": "Միացնել լրացումը",
+          "size": "Լրացման չափը"
+        }
+      },
+      "warp": {
+        "title": "WARP",
+        "enable": "Միացնել WARP-ը",
+        "generateConfig": "Գեներացնել WARP-կոնֆիգուրացիա",
+        "configGenerated": "WARP-կոնֆիգուրացիան գեներացվեց",
+        "missingConfig": "WARP-կոնֆիգուրացիան բացակայում է",
+        "detourMode": "Շրջանցման ռեժիմ",
+        "detourModes": {
+          "proxyOverWarp": "Ուղղել պրոքսիները WARP-ի միջով",
+          "warpOverProxy": "Ուղղել WARP-ը պրոքսիների միջով",
+          "proxyOverWarpExplain": "Ապաարգելափակել պրոքսիները WARP-ով",
+          "warpOverProxyExplain": "Լրացուցիչ անվտանգություն WARP-ով"
+        },
+        "licenseKey": "Լիցենզիայի բանալի",
+        "cleanIp": "Մաքուր IP",
+        "port": "Պորտ",
+        "noise": {
+          "count": "Աղմուկի քանակը",
+          "mode": "Աղմուկի ռեժիմը",
+          "size": "Աղմուկի չափը",
+          "delay": "Աղմուկի ուշացումը"
+        }
+      }
+    }
+  },
+  "components": {
+    "stats": {
+      "connection": "Միացում",
+      "traffic": "Թրաֆիկ",
+      "trafficLive": "Ընթացիկ թրաֆիկ",
+      "trafficTotal": "Ընդհանուր թրաֆիկ",
+      "uplink": "Ուղարկում",
+      "downlink": "Ստացում",
+      "speed": "Արագություն",
+      "totalTransferred": "Ընդամենը փոխանցված"
+    },
+    "subscriptionInfo": {
+      "upload": "Ուղարկված",
+      "download": "Ստացված",
+      "total": "Ընդհանուր թրաֆիկ",
+      "expireDate": "Ավարտի ամսաթիվը",
+      "expired": "Ավարտվել է",
+      "noTraffic": "Քվոտան սպառվել է",
+      "remainingTime": "Մնացած ժամանակը",
+      "remainingDuration": "մնաց ${duration} օր",
+      "remainingDurationNew": "${duration} օր",
+      "remainingTrafficSemanticLabel": "${total} թրաֆիկից ծախսվել է ${consumed}",
+      "remainingTraffic": "Մնացած թրաֆիկը",
+      "remainingUsage": "Մնացել է",
+      "profileSite": "Մատակարար",
+      "profileSupport": "Աջակցություն"
+    }
+  },
+  "dialogs": {
+    "sortProfiles": {
+      "title": "Դասավորել ըստ",
+      "sort": {
+        "name": "Այբբենական",
+        "lastUpdate": "Վերջին թարմացման"
+      }
+    },
+    "warpLicense": {
+      "title": "Cloudflare WARP-ի համաձայնագիր",
+      "description(rich)": "Cloudflare WARP-ը անվճար WireGuard VPN մատակարար է։ Միացնելով այս տարբերակը՝ դուք համաձայնվում եք Cloudflare WARP-ի ${tos(Օգտագործման պայմաններին)} և ${privacy(Գաղտնիության քաղաքականությանը)}։"
+    },
+    "newVersion": {
+      "title": "Հասանելի է թարմացում",
+      "msg": "Հասանելի է @:common.appTitle-ի նոր տարբերակը։ Թարմացնե՞լ հիմա",
+      "currentVersion": "Ընթացիկ տարբերակը՝ ",
+      "newVersion": "Նոր տարբերակը՝ ",
+      "updateNow": "Թարմացնել հիմա"
+    },
+    "confirmation": {
+      "settings": {
+        "import": {
+          "msg": "Սա կվերագրի կոնֆիգուրացիայի բոլոր պարամետրերը նշված արժեքներով։ Շարունակե՞լ"
+        }
+      },
+      "profile": {
+        "delete": {
+          "title": "Ջնջել պրոֆիլը",
+          "msg": "Վստա՞հ եք, որ ուզում եք ընդմիշտ ջնջել այս պրոֆիլը"
+        }
+      },
+      "perAppProxy": {
+        "shareOnGithub": {
+          "title": "Ավտոընտրության բարելավում",
+          "msg": "Ընտրված հավելվածներով կիսվելով՝ դուք օգնում եք լրացնել \"ավտոընտրության\" ցանկը"
+        },
+        "import": {
+          "msg": "Սա կփոխարինի հավելվածների պրոքսիի ձեր ընթացիկ բոլոր ընտրությունները։ Շարունակե՞լ"
+        }
+      },
+      "routeRule": {
+        "delete": {
+          "title": "Ջնջել կանոնը",
+          "msg": "Վստա՞հ եք, որ ուզում եք ջնջել \"$rulename\" կանոնը"
+        }
+      }
+    },
+    "experimentalNotice": {
+      "title": "Օգտագործվում են փորձնական գործառույթներ",
+      "msg": "Դուք միացրել եք փորձնական գործառույթներ, որոնք կարող են ազդել միացման որակի վրա և առաջացնել անսպասելի սխալներ։ Այս պարամետրերը միշտ կարող եք փոխել կամ վերականգնել կարգավորումների էջում։",
+      "disable": "Այլևս ցույց չտալ"
+    },
+    "noActiveProfile": {
+      "title": "Ընտրեք պրոֆիլ",
+      "msg": "Սկսենք միացման պրոֆիլի ավելացումից՝ այնտեղ պահվում են ձեր VPN-միացման տվյալները։\n\nԴեռ չունե՞ք VPN-սերվեր։ Հոգ չէ՝ հետևեք ստորև բերված ուղեցույցին և արագ ու անվճար կարգավորեք այն։",
+      "helpBtn": {
+        "label": "Ցույց տվեք, ինչպես",
+        "url": "https://tunello.online"
+      }
+    },
+    "unknownDomainsWarning": {
+      "title": "Արտաքին հղման զգուշացում",
+      "youAreAboutToVisit": "Դուք անցնում եք՝",
+      "thisWebsiteIsNotInOurTrustedList": "Այս կայքը մեր վստահելի ցանկում չէ։ Շարունակեք զգուշությամբ։"
+    },
+    "proxyInfo": {
+      "fullTag": "Ամբողջական պիտակ՝",
+      "type": "Տեսակ՝",
+      "testTime": "Ստուգման ժամանակը՝",
+      "testDelay": "Ստուգման ուշացումը՝",
+      "isSelected": "Ընտրված է՝",
+      "isGroup": "Խումբ է",
+      "isSecure": "Պաշտպանված է՝",
+      "port": "Պորտ՝",
+      "host": "Հոսթ՝",
+      "ip": "IP՝",
+      "countryCode": "Երկրի կոդը՝",
+      "region": "Տարածաշրջան՝",
+      "city": "Քաղաք՝",
+      "asn": "ASN՝",
+      "organization": "Կազմակերպություն՝",
+      "location": "Տեղադիրք՝",
+      "postalCode": "Փոստային ինդեքս՝",
+      "download": "Ստացված՝",
+      "upload": "Ուղարկված՝"
+    },
+    "windowClosing": {
+      "askEachTime": "Հարցնել ամեն անգամ",
+      "alertMessage": "Թաքցնե՞լ հավելվածը, թե՞ դուրս գալ",
+      "remember": "Հիշել իմ ընտրությունը"
+    }
+  },
+  "connection": {
+    "tapToConnect": "Հպեք՝ միանալու համար",
+    "connect": "Միանալ",
+    "connecting": "Միացում...",
+    "connected": "Միացված է",
+    "disconnect": "Անջատել",
+    "disconnecting": "Անջատում...",
+    "reconnect": "Վերամիանալ",
+    "reconnectMsg": "Վերամիացում՝ փոփոխությունները կիրառելու համար...",
+    "secure": "Պաշտպանված է WARP-ով"
+  },
+  "errors": {
+    "unexpected": "Անսպասելի սխալ",
+    "connection": {
+      "unexpected": "Միացման անսպասելի սխալ",
+      "timeout": "Միացման ժամկետը սպառվեց",
+      "badResponse": "Սխալ պատասխան",
+      "connectionError": "Միացման սխալ",
+      "badCertificate": "Անվավեր վկայագիր"
+    },
+    "profiles": {
+      "unexpected": "Անսպասելի սխալ",
+      "notFound": "Պրոֆիլը չգտնվեց",
+      "invalidConfig": "Սխալ կոնֆիգուրացիա",
+      "invalidUrl": "Սխալ URL",
+      "canceledByUser": "Չեղարկվել է օգտվողի կողմից"
+    },
+    "connectivity": {
+      "unexpected": "Անսպասելի խափանում",
+      "missingVpnPermission": "Բացակայում է VPN-ի թույլտվությունը",
+      "missingNotificationPermission": "Բացակայում է ծանուցումների թույլտվությունը",
+      "core": "Միջուկի սխալ"
+    },
+    "singbox": {
+      "serviceNotRunning": "Ծառայությունը գործարկված չէ",
+      "missingPrivilege": "Բացակայում են իրավունքները",
+      "missingPrivilegeMsg": "VPN-ռեժիմը պահանջում է ադմինիստրատորի իրավունքներ։ Վերագործարկեք հավելվածը ադմինիստրատորի անունից կամ փոխեք ծառայության ռեժիմը։",
+      "invalidConfigOptions": "Կոնֆիգուրացիայի սխալ պարամետրեր",
+      "invalidConfig": "Սխալ կոնֆիգուրացիա"
+    },
+    "warp": {
+      "missingLicense": "WARP-ի լիցենզիա",
+      "missingLicenseMsg": "Ընտրված պրոֆիլն օգտագործում է WARP-ը։ Այն օգտագործելու համար պետք է ընդունել WARP-ի լիցենզիան։"
+    }
+  }
+}

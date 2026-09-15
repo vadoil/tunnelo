@@ -105,7 +105,8 @@
       "sortOptions": {
         "unsorted": "Default",
         "name": "Berdasarkan abjad",
-        "delay": "Berdasarkan latensi"
+        "delay": "Berdasarkan latensi",
+        "usage": "Berdasarkan penggunaan"
       },
       "ipInfo": {
         "address": "Alamat IP",
@@ -587,7 +588,9 @@
       "asn": "ASN:",
       "organization": "Organisasi:",
       "location": "Lokasi:",
-      "postalCode": "Kode pos:"
+      "postalCode": "Kode pos:",
+      "download": "Unduh:",
+      "upload": "Unggah:"
     },
     "windowClosing": {
       "askEachTime": "Tanyakan setiap kali",

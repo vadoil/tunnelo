@@ -111,7 +111,8 @@
       "sortOptions": {
         "unsorted": "الافتراضي",
         "name": "أبجديًا",
-        "delay": "حسب التأخير"
+        "delay": "حسب التأخير",
+        "usage": "حسب الاستخدام"
       },
       "ipInfo": {
         "address": "عنوان IP",
@@ -593,7 +594,9 @@
       "asn": "ASN:",
       "organization": "المُنظمة:",
       "location": "الموقع:",
-      "postalCode": "الرمز البريدي:"
+      "postalCode": "الرمز البريدي:",
+      "download": "التنزيل:",
+      "upload": "الرفع:"
     },
     "windowClosing": {
       "askEachTime": "السؤال كل مرة",

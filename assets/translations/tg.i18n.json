@@ -1,0 +1,646 @@
+{
+  "common": {
+    "appTitle": "Tunnelo",
+    "start": "Оғоз",
+    "version": "Версия",
+    "ok": "ОК",
+    "cancel": "Бекор кардан",
+    "kContinue": "Идома додан",
+    "showMore": "Бештар нишон додан",
+    "showLess": "Камтар нишон додан",
+    "filter": "Филтр",
+    "all": "Ҳама",
+    "pause": "Таваққуф",
+    "resume": "Идома додан",
+    "clear": "Тоза кардан",
+    "close": "Пӯшидан",
+    "auto": "Худкор",
+    "manually": "Дастӣ",
+    "name": "Ном",
+    "url": "URL",
+    "add": "Илова кардан",
+    "clipboard": "Буфери мубодила",
+    "addToClipboard": "Ба буфери мубодила илова кардан",
+    "scanQr": "Сканкунии QR",
+    "free": "Ройгон",
+    "warp": "WARP",
+    "fragment": "Фрагмент",
+    "help": "Кӯмак",
+    "save": "Нигоҳ доштан",
+    "update": "Навсозӣ кардан",
+    "share": "Мубодила кардан",
+    "edit": "Таҳрир кардан",
+    "delete": "Нест кардан",
+    "discard": "Партофтан",
+    "import": "Ворид кардан",
+    "export": "Содир кардан",
+    "later": "Баъдтар",
+    "ignore": "Нодида гирифтан",
+    "quit": "Баромад",
+    "notSet": "Таъин нашудааст",
+    "hide": "Пинҳон кардан",
+    "exit": "Баромадан",
+    "reset": "Бознишонӣ",
+    "done": "Тайёр",
+    "search": "Ҷустуҷӯ",
+    "decline": "Рад кардан",
+    "agree": "Розӣ ҳастам",
+    "empty": "Холӣ",
+    "unknown": "Номаълум",
+    "hidden": "Пинҳон",
+    "timeout": "Вақт гузашт",
+    "sort": "Мураттаб кардан",
+    "dashboard": "Лавҳаи идора",
+    "interval": {
+      "day": {
+        "zero": "",
+        "one": "$n рӯз",
+        "other": "$n рӯз"
+      },
+      "hour": {
+        "zero": "",
+        "one": "$n соат",
+        "other": "$n соат"
+      }
+    },
+    "msg": {
+      "permission": {
+        "denied": "Иҷозат дода нашуд"
+      },
+      "export": {
+        "clipboard": {
+          "success": "Ба буфери мубодила илова шуд",
+          "failure": "Ба буфери мубодила нусхабардорӣ нашуд",
+          "contentTooLarge": "Мазмун хеле калон аст. Ба ҷои ин ба файл содир кунед"
+        },
+        "file": {
+          "success": "Файли JSON сохта шуд",
+          "failure": "Файл сохта нашуд"
+        }
+      },
+      "import": {
+        "confirm": "Воридкуниро тасдиқ кунед",
+        "success": "Бомуваффақият ворид шуд",
+        "failure": "Ворид карда нашуд"
+      }
+    }
+  },
+  "intro": {
+    "banner": "Ҳар он чи барои интернети бемаҳдудият лозим аст",
+    "termsAndPolicyCaution(rich)": "Бо идома додан шумо бо ${tap(@:pages.about.termsAndConditions)} розӣ мешавед",
+    "info(rich)": "Бо ❤️ аз ҷониби Tunnelo сохта шудааст - ${tap_source(Коди кушода)} (${tap_license(Иҷозатнома)})"
+  },
+  "pages": {
+    "home": {
+      "title": "Асосӣ",
+      "quickSettings": "Танзимоти тез"
+    },
+    "proxies": {
+      "title": "Проксиҳо",
+      "sort": "Мураттаб кардани проксиҳо",
+      "testDelay": "Санҷиши таъхир",
+      "empty": "Проксии дастрас нест",
+      "activeProxy": "Проксии фаъол",
+      "unknownIp": "IP-и номаълум",
+      "sortOptions": {
+        "unsorted": "Пешфарз",
+        "name": "Аз рӯи алифбо",
+        "delay": "Аз рӯи таъхир",
+        "usage": "Аз рӯи сарф"
+      },
+      "ipInfo": {
+        "address": "Суроғаи IP",
+        "country": "Кишвар",
+        "organization": "Ташкилот"
+      },
+      "delay": {
+        "result": "Таъхир: ${delay} мс",
+        "timeout": "Вақти санҷиши таъхир гузашт",
+        "testing": "Таъхир: санҷида истодааст..."
+      }
+    },
+    "profiles": {
+      "title": "Профилҳо",
+      "add": "Илова кардани профил",
+      "update": "Навсозии профил",
+      "viewAllProfiles": "Дидани ҳамаи профилҳо",
+      "activeProfileName": "Номи профили фаъол: \"${name}\".",
+      "nonActiveProfileName": "\"${name}\"-ро ҳамчун профили фаъол интихоб кунед",
+      "freeSubNotFound": "Обунаи ройгон ёфт нашуд",
+      "freeSubNotFoundForRegion": "Барои минтақаи \"${region}\" обунаи ройгон ёфт нашуд.",
+      "failedToLoad": "Бор карда нашуд",
+      "updateSubscriptions": "Навсозии обунаҳо",
+      "share": {
+        "urlToClipboard": "URL ба буфери мубодила",
+        "showUrlQr": "Нишон додани QR-и URL",
+        "jsonToClipboard": "JSON ба буфери мубодила"
+      },
+      "msg": {
+        "save": {
+          "success": "Профил нигоҳ дошта шуд"
+        },
+        "invalidUrl": "URL-и нодуруст",
+        "add": {
+          "failure": "Профил илова карда нашуд"
+        },
+        "update": {
+          "success": "Профил навсозӣ шуд",
+          "successNamed": "\"${name}\" навсозӣ шуд",
+          "failure": "Профил навсозӣ нашуд",
+          "failureNamed": "\"${name}\" навсозӣ нашуд"
+        },
+        "delete": {
+          "success": "Профил нест карда шуд"
+        }
+      }
+    },
+    "profileDetails": {
+      "title": "Профил",
+      "lastUpdate": "Навсозии охирин",
+      "form": {
+        "nameHint": "Номи профил",
+        "emptyName": "Ном ҳатмист",
+        "invalidUrl": "URL-и нодуруст",
+        "urlHint": "URL-и пурраи конфигуратсия",
+        "disableAutoUpdate": "Хомӯш кардани навсозии худкор",
+        "autoUpdateInterval": "Фосилаи навсозии худкор",
+        "loading": "Профил илова шуда истодааст..."
+      }
+    },
+    "logs": {
+      "title": "Сабтҳо",
+      "shareCoreLogs": "Мубодилаи сабтҳои ядро",
+      "shareAppLogs": "Мубодилаи сабтҳои барнома"
+    },
+    "about": {
+      "title": "Дар бораи барнома",
+      "notAvailableMsg": "Шумо аллакай нусхаи охиринро истифода мебаред",
+      "checkForUpdate": "Санҷиши навсозӣ",
+      "openWorkingDir": "Кушодани ҷузвдони корӣ",
+      "sourceCode": "Коди манбаъ",
+      "telegramChannel": "Канал дар Telegram",
+      "termsAndConditions": "Шартҳои истифода",
+      "privacyPolicy": "Сиёсати махфият"
+    },
+    "settings": {
+      "title": "Танзимот",
+      "resetTunnel": "Бознишонии профили VPN",
+      "options": {
+        "import": {
+          "clipboard": "Воридкунии танзимот аз буфери мубодила",
+          "file": "Воридкунии танзимот аз файл"
+        },
+        "export": {
+          "anonymousToClipboard": "Нусхабардории танзимоти беном ба буфери мубодила",
+          "anonymousToFile": "Содир кардани танзимоти беном ба файл",
+          "allToClipboard": "Нусхабардории ҳамаи танзимот ба буфери мубодила",
+          "allToFile": "Содир кардани ҳамаи танзимот ба файл"
+        },
+        "reset": "Бознишонии танзимот"
+      },
+      "general": {
+        "title": "Умумӣ",
+        "locale": "Забон",
+        "themeMode": "Мавзӯи намоиш",
+        "themeModes": {
+          "system": "Системавӣ",
+          "dark": "Торик",
+          "light": "Равшан",
+          "black": "Сиёҳ"
+        },
+        "enableAnalytics": "Фаъол кардани таҳлил",
+        "enableAnalyticsMsg": "Иҷозат ба ҷамъоварии маълумоти таҳлилӣ ва фиристодани гузориши вайрониҳо барои беҳтар кардани барнома",
+        "autoIpCheck": "Худкор санҷидани IP-и пайваст",
+        "dynamicNotification": "Нишон додани суръат дар огоҳинома",
+        "hapticFeedback": "Посухи ламсӣ",
+        "actionAtClosing": "Амал ҳангоми пӯшидан",
+        "autoStart": "Оғоз ҳангоми воридшавӣ ба система",
+        "silentStart": "Оғоз дар ҳолати ҷамъшуда",
+        "ignoreBatteryOptimizations": "Хомӯш кардани сарфаи батарея",
+        "ignoreBatteryOptimizationsMsg": "Маҳдудиятҳоро бардоред, то VPN беҳтар кор кунад",
+        "memoryLimit": "Маҳдудияти ҳофиза",
+        "memoryLimitMsg": "Фаъол кунед, агар хатогии норасоии ҳофиза ё вайроншавии зуд-зуди барнома рӯй диҳад",
+        "debugMode": "Ҳолати ислоҳи хатоҳо",
+        "debugModeMsg": "Барномаро аз нав оғоз кунед, то ин тағйирот татбиқ шавад",
+        "logLevel": "Сатҳи сабт",
+        "connectionTestUrl": "URL барои санҷиши пайваст",
+        "urlTestInterval": "Фосилаи санҷиши URL",
+        "clashApiPort": "Порти Clash API",
+        "useXrayCoreWhenPossible": "Истифодаи xray-core, агар имкон бошад",
+        "useXrayCoreWhenPossibleMsg": "Истифодаи xray-core ҳангоми коркарди пайванди обуна. Барои фаъол шудани ин имконият пайванди обунаро аз нав ворид кунед."
+      },
+      "routing": {
+        "title": "Масирсозӣ",
+        "perAppProxy": {
+          "title": "Прокси барои барномаҳо",
+          "hideSysApps": "Пинҳон кардани барномаҳои системавӣ",
+          "options": {
+            "import": {
+              "clipboard": "Воридкунии интихоб аз буфери мубодила",
+              "file": "Воридкунии интихоб аз файл",
+              "msg": "Воридкунӣ интихоби ҷории шуморо иваз мекунад. Идома медиҳед?"
+            },
+            "export": {
+              "clipboard": "Нусхабардории интихоб ба буфери мубодила",
+              "file": "Содир кардани интихоб ба файл"
+            },
+            "shareToAll": "Мубодила бо ҳама",
+            "clearAllSelections": "Тоза кардани ҳамаи интихобҳо"
+          },
+          "modes": {
+            "all": "Ҳама",
+            "proxy": "Прокси",
+            "bypass": "Бе прокси",
+            "allMsg": "Ҳамаи барномаҳо тавассути прокси",
+            "proxyMsg": "Танҳо барномаҳои интихобшуда тавассути прокси",
+            "bypassMsg": "Барномаҳои интихобшуда бе прокси кор кунанд"
+          },
+          "autoSelection": {
+            "title": "Интихоби худкор",
+            "performNow": "Ҳозир иҷро кардан",
+            "resetToDefault": "Бозгашт ба пешфарз",
+            "autoUpdateInterval": "Фосилаи навсозии худкор",
+            "toast": {
+              "success": "Интихоби худкори барномаҳо анҷом ёфт",
+              "failure": "Интихоби худкор иҷро нашуд",
+              "regionNotFound": "Интихоби худкор барои минтақаи \"${region}\" ёфт нашуд",
+              "alreadyInAuto": "Интихоби шумо аллакай дар рӯйхати худкор аст"
+            },
+            "dialog": {
+              "title": "Интихоби худкори барномаҳо",
+              "msg": "Интихоби худкори прокси барои барномаҳо аз сабаби иваз шудани минтақа ба \"${region}\" хомӯш карда шуд"
+            }
+          }
+        },
+        "region": "Минтақа",
+        "regions": {
+          "ir": "Эрон (ir)",
+          "cn": "Чин (cn)",
+          "ru": "Русия (ru)",
+          "af": "Афғонистон (af)",
+          "id": "Индонезия (id)",
+          "tr": "Туркия (tr)",
+          "br": "Бразилия (br)",
+          "other": "Дигар"
+        },
+        "balancerStrategy": {
+          "title": "Стратегияи Balancer",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "blockAds": "Манъи реклама",
+        "bypassLan": "Гузаштан аз LAN",
+        "resolveDestination": "Муайян кардани суроғаи таъинот",
+        "ipv6Route": "Масири IPv6",
+        "ipv6Modes": {
+          "disable": "Хомӯш кардан",
+          "enable": "Фаъол кардан",
+          "prefer": "Афзалиятнок",
+          "only": "Танҳо"
+        },
+        "routeRule": {
+          "title": "Қоидаҳои масирсозӣ",
+          "options": {
+            "import": {
+              "clipboard": "Воридкунии қоидаҳо аз буфери мубодила",
+              "file": "Воридкунии қоидаҳо аз файл"
+            },
+            "export": {
+              "clipboard": "Нусхабардории қоидаҳо ба буфери мубодила",
+              "file": "Нигоҳ доштани қоидаҳо ба файл"
+            },
+            "reset": "Бознишонии қоидаҳо"
+          },
+          "deleteRule": "Нест кардани қоида",
+          "createRule": "Сохтани қоидаи нав",
+          "rule": {
+            "title": "Қоида",
+            "ruleChanged": "Қоида тағйир ёфт",
+            "ruleChangedMsg": "Тағйиротро нигоҳ медоред?",
+            "onlyTunMode": "Танҳо дар ҳолати TUN дастрас аст",
+            "notAvailabeInThisPlatform": "Дар ин платформа дастрас нест",
+            "canNotBeEmpty": "Холӣ буда наметавонад",
+            "validUrlEx": "https://example.com",
+            "validUrl": "\"URL\"-и дуруст, ба монанди\n@:pages.settings.routing.routeRule.rule.validUrlEx",
+            "validProcessNameEx": "Chrome.exe ё google chrome ё chrome",
+            "validProcessName": "\"Номи раванд\"-и дуруст, ба монанди\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
+            "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
+            "validProcessPath": "\"Роҳи раванд\"-и дуруст, ба монанди\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
+            "validPortRangeEx": "80 ё 1-65000",
+            "validPortRange": "\"Порт\" ё \"Фосилаи портҳо\"-и дуруст, ба монанди\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
+            "validIpCidrEx": "8.8.8.8 ё 10.0.0.0/24",
+            "validIpCidr": "IP CIDR-и дуруст, ба монанди\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
+            "validDomainEx": "Google.com ё dl.google.com",
+            "validDomain": "\"Домен\"-и дуруст, ба монанди\n@:pages.settings.routing.routeRule.rule.validDomainEx",
+            "validDomainSuffixEx": ".com ё .tj",
+            "validDomainSuffix": "\"Суффикси домен\"-и дуруст, ба монанди\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
+            "tileTitle(map)": {
+              "name": "Ном",
+              "outbound": "Хуруҷ ҳангоми мувофиқат",
+              "rule_set": "URL-и маҷмӯи қоидаҳо",
+              "package_name": "Номҳои бастаҳо",
+              "process_name": "Номҳои равандҳо",
+              "process_path": "Роҳҳои равандҳо",
+              "network": "Шабакаҳо",
+              "port_range": "Портҳои таъинот",
+              "source_port_range": "Портҳои манбаъ",
+              "protocol": "Протокол",
+              "ip_cidr": "IP CIDR-и таъинот",
+              "source_ip_cidr": "IP CIDR-и манбаъ",
+              "domain": "Домен",
+              "domain_suffixe": "Суффикси домен",
+              "domain_keyword": "Калимаи калидии домен",
+              "domain_regex": "Ифодаи муназзами домен"
+            },
+            "outbound(map)": {
+              "proxy": "Прокси",
+              "direct": "Мустақим",
+              "direct_with_fragment": "Мустақим бо фрагмент",
+              "block": "Манъ кардан"
+            },
+            "network(map)": {
+              "all": "Ҳама",
+              "tcp": "TCP",
+              "udp": "UDP"
+            },
+            "protocol(map)": {
+              "": "Ҳама",
+              "tls": "TLS",
+              "http": "HTTP",
+              "quic": "QUIC",
+              "stun": "STUN",
+              "dns": "DNS",
+              "bittorrent": "BitTorrent"
+            }
+          },
+          "genericList": {
+            "addNew": "Илова кардани қимати нав",
+            "update": "Навсозии қимат",
+            "clearList": "Тоза кардани рӯйхат",
+            "clearListMsg": "Ҳамаи унсурҳо нест карда шуданд"
+          },
+          "androidApps": {
+            "pageTitle": "Барномаҳои Android",
+            "showSystemApps": "Нишон додани барномаҳои системавӣ",
+            "hideSystemApps": "Пинҳон кардани барномаҳои системавӣ",
+            "clearSelection": "Тоза кардани интихоб",
+            "uninstalled": "Нест карда шуд"
+          }
+        }
+      },
+      "dns": {
+        "title": "DNS",
+        "remoteDns": "DNS-и дурдаст",
+        "remoteDnsDomainStrategy": "Стратегияи домени DNS-и дурдаст",
+        "directDns": "Резолвери сервери хуруҷ (мустақим)",
+        "directDnsDomainStrategy": "Стратегияи домени хуруҷ",
+        "enableDnsRouting": "Фаъол кардани масирсозии DNS",
+        "enableFakeDns": "Фаъол кардани DNS-и сохта",
+        "domainStrategy": {
+          "auto": "Худкор",
+          "preferIpv6": "Афзалият ба IPv6",
+          "preferIpv4": "Афзалият ба IPv4",
+          "ipv4Only": "Танҳо IPv4",
+          "ipv6Only": "Танҳо IPv6"
+        }
+      },
+      "inbound": {
+        "title": "Вуруд",
+        "serviceMode": "Ҳолати хидмат",
+        "serviceModes": {
+          "proxy": "Танҳо хидмати прокси",
+          "systemProxy": "Танзими проксии системавӣ",
+          "tun": "VPN",
+          "tunService": "Хидмати VPN"
+        },
+        "shortServiceModes": {
+          "proxy": "Прокси",
+          "systemProxy": "Проксии системавӣ",
+          "tun": "VPN",
+          "tunService": "Хидмати VPN"
+        },
+        "strictRoute": "Масирсозии қатъӣ",
+        "tunImplementation": "Татбиқи TUN",
+        "tunImplementations": {
+          "mixed": "Омехта",
+          "system": "Системавӣ",
+          "gvisor": "gVisor"
+        },
+        "mixedPort": "Порти омехта",
+        "tproxyPort": "Порти проксии шаффоф",
+        "directPort": "Порти мустақим",
+        "redirectPort": "Порти равонакунӣ",
+        "allowConnectionFromLan": "Мубодилаи VPN дар шабакаи маҳаллӣ"
+      },
+      "tlsTricks": {
+        "title": "Ҳилаҳои TLS",
+        "enable": "Фаъол кардани фрагментатсия",
+        "packets": "Пакетҳои фрагментатсия",
+        "packetsTlsHello": "TLS Hello",
+        "packets1_1": "1-1",
+        "packets1_2": "1-2",
+        "packets1_3": "1-3",
+        "packets1_4": "1-4",
+        "packets1_5": "1-5",
+        "size": "Андозаи фрагмент",
+        "sleep": "Таъхири фрагмент",
+        "mixedSniCase": {
+          "enable": "Фаъол кардани SNI бо ҳарфҳои омехта"
+        },
+        "padding": {
+          "enable": "Фаъол кардани пуркунӣ",
+          "size": "Андозаи пуркунӣ"
+        }
+      },
+      "warp": {
+        "title": "WARP",
+        "enable": "Фаъол кардани WARP",
+        "generateConfig": "Сохтани конфигуратсияи WARP",
+        "configGenerated": "Конфигуратсияи WARP сохта шуд",
+        "missingConfig": "Конфигуратсияи WARP нест",
+        "detourMode": "Ҳолати масири WARP",
+        "detourModes": {
+          "proxyOverWarp": "Проксиҳоро тавассути WARP равона кардан",
+          "warpOverProxy": "WARP-ро тавассути проксиҳо равона кардан",
+          "proxyOverWarpExplain": "Кушодани проксиҳо бо WARP",
+          "warpOverProxyExplain": "Амнияти иловагӣ бо WARP"
+        },
+        "licenseKey": "Калиди иҷозатнома",
+        "cleanIp": "IP-и тоза",
+        "port": "Порт",
+        "noise": {
+          "count": "Шумораи садо",
+          "mode": "Ҳолати садо",
+          "size": "Андозаи садо",
+          "delay": "Таъхири садо"
+        }
+      }
+    }
+  },
+  "components": {
+    "stats": {
+      "connection": "Пайваст",
+      "traffic": "Трафик",
+      "trafficLive": "Трафики ҷорӣ",
+      "trafficTotal": "Трафики умумӣ",
+      "uplink": "Фиристодан",
+      "downlink": "Гирифтан",
+      "speed": "Суръат",
+      "totalTransferred": "Ҳамагӣ интиқол шуд"
+    },
+    "subscriptionInfo": {
+      "upload": "Фиристодашуда",
+      "download": "Гирифташуда",
+      "total": "Трафики умумӣ",
+      "expireDate": "Санаи анҷом",
+      "expired": "Мӯҳлат гузашт",
+      "noTraffic": "Ҳаҷм тамом шуд",
+      "remainingTime": "Вақти боқимонда",
+      "remainingDuration": "${duration} рӯз боқӣ мондааст",
+      "remainingDurationNew": "${duration} рӯз",
+      "remainingTrafficSemanticLabel": "аз ${total} трафик ${consumed} сарф шуд",
+      "remainingTraffic": "Трафики боқимонда",
+      "remainingUsage": "Боқӣ мондааст",
+      "profileSite": "Провайдер",
+      "profileSupport": "Дастгирӣ"
+    }
+  },
+  "dialogs": {
+    "sortProfiles": {
+      "title": "Мураттаб кардан аз рӯи",
+      "sort": {
+        "name": "Аз рӯи алифбо",
+        "lastUpdate": "Навсозии охирин"
+      }
+    },
+    "warpLicense": {
+      "title": "Розигӣ бо Cloudflare WARP",
+      "description(rich)": "Cloudflare WARP провайдери ройгони WireGuard VPN аст. Бо фаъол кардани ин имконият шумо бо ${tos(Шартҳои хидмат)} ва ${privacy(Сиёсати махфият)}-и Cloudflare WARP розӣ мешавед."
+    },
+    "newVersion": {
+      "title": "Навсозӣ дастрас аст",
+      "msg": "Нусхаи нави @:common.appTitle дастрас аст. Ҳозир навсозӣ мекунед?",
+      "currentVersion": "Нусхаи ҷорӣ: ",
+      "newVersion": "Нусхаи нав: ",
+      "updateNow": "Ҳозир навсозӣ кардан"
+    },
+    "confirmation": {
+      "settings": {
+        "import": {
+          "msg": "Ин ҳамаи параметрҳои конфигуратсияро бо қиматҳои додашуда иваз мекунад. Мутмаин ҳастед?"
+        }
+      },
+      "profile": {
+        "delete": {
+          "title": "Нест кардани профил",
+          "msg": "Мутмаин ҳастед, ки ин профилро бебозгашт нест мекунед?"
+        }
+      },
+      "perAppProxy": {
+        "shareOnGithub": {
+          "title": "Беҳтар кардани интихоби худкор",
+          "msg": "Бо мубодилаи барномаҳои интихобшуда шумо ба пурра кардани рӯйхати \"интихоби худкор\" кӯмак мекунед"
+        },
+        "import": {
+          "msg": "Ин ҳамаи танзимоти проксии барномаҳои шуморо иваз мекунад. Идома медиҳед?"
+        }
+      },
+      "routeRule": {
+        "delete": {
+          "title": "Нест кардани қоида",
+          "msg": "Мутмаин ҳастед, ки қоидаи \"$rulename\"-ро нест мекунед?"
+        }
+      }
+    },
+    "experimentalNotice": {
+      "title": "Имкониятҳои таҷрибавӣ фаъоланд",
+      "msg": "Шумо якчанд имконияти таҷрибавиро фаъол кардед — онҳо метавонанд сифати пайвастро паст кунанд ва хатогиҳои ғайричашмдошт ба вуҷуд оранд. Ин параметрҳоро ҳамеша дар саҳифаи танзимот иваз ё бознишонӣ карда метавонед.",
+      "disable": "Дигар нишон надодан"
+    },
+    "noActiveProfile": {
+      "title": "Профилро интихоб кунед",
+      "msg": "Аз илова кардани профили пайваст оғоз мекунем — дар он маълумоти пайвасти VPN-и шумо ҳаст.\n\nҲанӯз сервери VPN надоред? Ташвиш накунед — аз рӯи дастури зерин онро зуд ва ройгон танзим кунед.",
+      "helpBtn": {
+        "label": "Нишон диҳед, чӣ тавр",
+        "url": "https://tunello.online"
+      }
+    },
+    "unknownDomainsWarning": {
+      "title": "Огоҳӣ дар бораи пайванди берунӣ",
+      "youAreAboutToVisit": "Шумо ба ин сомона мегузаред:",
+      "thisWebsiteIsNotInOurTrustedList": "Ин сомона дар рӯйхати боэътимоди мо нест. Лутфан эҳтиёткор бошед."
+    },
+    "proxyInfo": {
+      "fullTag": "Теги пурра:",
+      "type": "Навъ:",
+      "testTime": "Вақти санҷиш:",
+      "testDelay": "Таъхири санҷиш:",
+      "isSelected": "Интихобшуда:",
+      "isGroup": "Ин гурӯҳ аст",
+      "isSecure": "Ҳифзшуда:",
+      "port": "Порт:",
+      "host": "Хост:",
+      "ip": "IP:",
+      "countryCode": "Рамзи кишвар:",
+      "region": "Минтақа:",
+      "city": "Шаҳр:",
+      "asn": "ASN:",
+      "organization": "Ташкилот:",
+      "location": "Ҷойгиршавӣ:",
+      "postalCode": "Индекси почта:",
+      "download": "Гирифташуда:",
+      "upload": "Фиристодашуда:"
+    },
+    "windowClosing": {
+      "askEachTime": "Ҳар дафъа пурсидан",
+      "alertMessage": "Барномаро пинҳон кунем ё бандем?",
+      "remember": "Интихоби маро дар хотир нигоҳ доред"
+    }
+  },
+  "connection": {
+    "tapToConnect": "Барои пайваст шудан зер кунед",
+    "connect": "Пайваст кардан",
+    "connecting": "Пайваст шуда истодааст...",
+    "connected": "Пайваст шуд",
+    "disconnect": "Қатъ кардан",
+    "disconnecting": "Қатъ шуда истодааст...",
+    "reconnect": "Аз нав пайваст кардан",
+    "reconnectMsg": "Барои ба инобат гирифтани тағйирот аз нав пайваст шуда истодааст...",
+    "secure": "Бо WARP ҳифз шудааст"
+  },
+  "errors": {
+    "unexpected": "Хатогии ғайричашмдошт",
+    "connection": {
+      "unexpected": "Хатогии ғайричашмдошти пайваст",
+      "timeout": "Вақти пайваст гузашт",
+      "badResponse": "Ҷавоби нодуруст",
+      "connectionError": "Хатогии пайваст",
+      "badCertificate": "Сертификати нодуруст"
+    },
+    "profiles": {
+      "unexpected": "Хатогии ғайричашмдошт",
+      "notFound": "Профил ёфт нашуд",
+      "invalidConfig": "Конфигуратсияи нодуруст",
+      "invalidUrl": "URL-и нодуруст",
+      "canceledByUser": "Аз ҷониби корбар бекор карда шуд"
+    },
+    "connectivity": {
+      "unexpected": "Нокомии ғайричашмдошт",
+      "missingVpnPermission": "Иҷозати VPN нест",
+      "missingNotificationPermission": "Иҷозати огоҳиномаҳо нест",
+      "core": "Хатогии ядро"
+    },
+    "singbox": {
+      "serviceNotRunning": "Хидмат кор намекунад",
+      "missingPrivilege": "Ҳуқуқ намерасад",
+      "missingPrivilegeMsg": "Ҳолати VPN ҳуқуқи маъмурро талаб мекунад. Барномаро аз номи маъмур аз нав оғоз кунед ё ҳолати хидматро иваз кунед.",
+      "invalidConfigOptions": "Параметрҳои нодурусти конфигуратсия",
+      "invalidConfig": "Конфигуратсияи нодуруст"
+    },
+    "warp": {
+      "missingLicense": "Иҷозатномаи WARP нест",
+      "missingLicenseMsg": "Профили интихобшуда имконияти WARP-ро истифода мебарад; барои истифодаи он бояд иҷозатномаи WARP қабул карда шавад."
+    }
+  }
+}
