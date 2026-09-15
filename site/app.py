@@ -407,6 +407,64 @@ async def contacts(request: Request):
     return templates.TemplateResponse("contacts.html", _ctx(request))
 
 
+@app.post("/internal/mail")
+async def internal_mail(request: Request):
+    """
+    Отправка письма по просьбе сервиса активации (коды входа, чеки).
+
+    Сервис активации живёт у хостера, который закрыл исходящие SMTP, поэтому
+    письма уходят отсюда: локальный postfix пересылает их через Resend, где
+    tunello.online подтверждён (SPF и DKIM на месте). Наружу метод открыт,
+    поэтому закрыт секретом: иначе с нашего адреса сможет писать кто угодно,
+    и домен быстро окажется в чёрных списках.
+
+    Маршрут уже терялся однажды при переписывании оплаты — и коды входа
+    молча перестали приходить (сервис получал 404). Не удалять.
+    """
+    if not MAIL_SECRET:
+        return JSONResponse({"error": "mail not configured"}, status_code=503)
+    if not hmac.compare_digest(request.headers.get("x-tunnelo-secret", ""), MAIL_SECRET):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+
+    body = await request.json()
+    to = str(body.get("to", "")).strip()
+    subject = str(body.get("subject", "")).strip() or "Tunnelo"
+    text = str(body.get("text", ""))
+    if "@" not in to or not text:
+        return JSONResponse({"error": "bad request"}, status_code=400)
+
+    msg = EmailMessage()
+    msg["From"] = MAIL_FROM
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.set_content(text)
+
+    def send():
+        if SMTP_HOST:
+            if SMTP_PORT == 465:
+                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as srv:
+                    if SMTP_USER:
+                        srv.login(SMTP_USER, SMTP_PASS)
+                    srv.send_message(msg)
+            else:
+                with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as srv:
+                    srv.starttls()
+                    if SMTP_USER:
+                        srv.login(SMTP_USER, SMTP_PASS)
+                    srv.send_message(msg)
+        else:
+            with smtplib.SMTP("127.0.0.1", 25, timeout=20) as srv:
+                srv.send_message(msg)
+
+    try:
+        await asyncio.to_thread(send)
+    except Exception as e:
+        LOG.error("письмо на %s не ушло: %s", to, e)
+        return JSONResponse({"error": "send failed"}, status_code=502)
+    LOG.info("письмо отправлено на %s", to)
+    return {"ok": True}
+
+
 @app.get("/health")
 async def health():
     return {"ok": True}
