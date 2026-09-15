@@ -85,7 +85,11 @@ class ActivationException implements Exception {
 /// он уже общается с 3x-ui.
 class TunneloActivation {
   /// Запасной путь при отказе DNS живёт в адаптере — см. [DohFallbackAdapter].
-  TunneloActivation({Dio? dio}) : _dio = dio ?? (Dio()..httpClientAdapter = DohFallbackAdapter(IOHttpClientAdapter()));
+  TunneloActivation({Dio? dio})
+    : _dio =
+          dio ??
+          (Dio(BaseOptions(connectTimeout: const Duration(seconds: 8)))
+            ..httpClientAdapter = DohFallbackAdapter(IOHttpClientAdapter()));
 
   final Dio _dio;
 
@@ -97,6 +101,11 @@ class TunneloActivation {
   static const _kSubUrl = 'tunnelo_sub_url';
 
   /// Стабильный идентификатор устройства: системный, иначе свой случайный.
+  ///
+  /// На Android системного нет: `androidInfo.id` — это Build.ID, метка
+  /// прошивки вида TQ3A.230805.001, одинаковая у всех телефонов с одной
+  /// версией системы. Сервер по нему выдавал бы один ключ разным людям.
+  /// Поэтому там всегда свой случайный, он хранится в настройках.
   Future<String> deviceId() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(_kDeviceId);
@@ -106,7 +115,7 @@ class TunneloActivation {
     try {
       final info = DeviceInfoPlugin();
       if (Platform.isAndroid) {
-        raw = (await info.androidInfo).id;
+        raw = null;
       } else if (Platform.isIOS) {
         raw = (await info.iosInfo).identifierForVendor;
       } else if (Platform.isWindows) {

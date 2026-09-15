@@ -191,6 +191,9 @@ final foreignVpnActiveProvider = FutureProvider<bool>((ref) async {
   if (!Platform.isAndroid) return false;
   final status = ref.watch(connectionNotifierProvider).valueOrNull;
   final ours = status is Connected || status is Connecting || status is Disconnecting;
+  // Сразу после нашего отключения tun0 ещё пару секунд жив — не принимать
+  // его за чужой.
+  if (!ours) await Future<void>.delayed(const Duration(seconds: 3));
   try {
     final interfaces = await NetworkInterface.list();
     return foreignTunnelUp(interfaces.map((i) => i.name), ourTunnelUp: ours);

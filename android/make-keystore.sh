@@ -19,12 +19,14 @@ chmod 700 "$DIR"
 if [[ -f "$JKS" ]]; then
   echo "Ключ уже есть: $JKS — не перезаписываю."
   PASS=$(grep 'Пароль' "$DIR/ПРОЧТИ.txt" | awk '{print $NF}')
+  export PASS
 else
   PASS=$(openssl rand -base64 30 | tr -d '/+=' | cut -c1-28)
+  export PASS
   "$KEYTOOL" -genkeypair -v \
     -keystore "$JKS" -alias "$ALIAS" \
     -keyalg RSA -keysize 4096 -validity 10000 \
-    -storepass "$PASS" -keypass "$PASS" \
+    -storepass:env PASS -keypass:env PASS \
     -dname "CN=Tunnelo, O=Tunnelo, C=RU"
   cat > "$DIR/ПРОЧТИ.txt" <<EOF
 Ключ подписи Tunnelo для Android (release keystore). Создан $(date +%d.%m.%Y).
@@ -54,6 +56,6 @@ gh secret list -R "$REPO"
 
 echo
 echo "Отпечаток ключа (пригодится для Google Play):"
-"$KEYTOOL" -list -v -keystore "$JKS" -alias "$ALIAS" -storepass "$PASS" | grep -E 'SHA1:|SHA256:'
+"$KEYTOOL" -list -v -keystore "$JKS" -alias "$ALIAS" -storepass:env PASS | grep -E 'SHA1:|SHA256:'
 echo
 echo "Готово. Резервную копию папки $DIR сделайте прямо сейчас."

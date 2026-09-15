@@ -64,7 +64,9 @@ abstract class DohFallback {
 
     for (final resolver in _resolvers) {
       try {
-        final resp = await Dio().get<dynamic>(
+        // Без connectTimeout «чёрная дыра» на 1.1.1.1:443 висит до таймаута
+        // ОС, и второй резолвер не пробуется вовсе.
+        final resp = await Dio(BaseOptions(connectTimeout: const Duration(seconds: 5))).get<dynamic>(
           resolver,
           queryParameters: {'name': host, 'type': 'A'},
           options: Options(

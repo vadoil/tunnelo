@@ -120,6 +120,11 @@ class TunneloSetupNotifier extends StateNotifier<SetupState> with AppLogger {
       state = const SetupRunning('Загружаем серверы…');
       await _addProfile(r.subscription);
 
+      // Подписку и устройства главная уже успела спросить до того, как
+      // появился ключ, — иначе до перезапуска будет «ещё настраивается».
+      _ref
+        ..invalidate(tunneloSubscriptionProvider)
+        ..invalidate(tunneloDevicesProvider);
       state = SetupDone(daysLeft: r.daysLeft, servers: r.servers);
       return true;
     } on ActivationException catch (e) {

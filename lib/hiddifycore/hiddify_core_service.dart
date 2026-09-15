@@ -187,7 +187,9 @@ class HiddifyCoreService with InfraLogger {
         // запущено без прав администратора, адаптер wintun не создать.
         // Сборка требует их сама, но если запустили в обход — сказать прямо,
         // а не «Непредвиденный сбой».
-        if ((e.message ?? '').contains('Access is denied')) {
+        // Текст ошибки локализован Windows: на русской системе это «Отказано в
+        // доступе», поэтому ловим по месту, а не по словам.
+        if ((e.message ?? '').contains('configure tun interface')) {
           return left(
             const ConnectionFailure.missingVpnPermission(
               'Нужны права администратора. Закройте Tunnelo и запустите его правой кнопкой → '
