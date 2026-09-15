@@ -17,8 +17,15 @@ DL=/var/www/dl
 BASE=https://api.amnez.online/dl
 TMP=$(mktemp -d)
 
-fetch() { gh run download "$1" -R $REPO -D "$TMP/$2" >/dev/null; }
-push() { scp -q "$1" "$HOST:$DL/$2.new" && ssh $HOST "mv -f $DL/$2.new $DL/$2"; echo "  $BASE/$2"; }
+fetch() { gh run download "$1" -R $REPO -D "$TMP/$2" >/dev/null || { echo "не скачался прогон $1"; exit 1; }; }
+# Файла нет → стоп до записи latest.json: иначе приложение позовёт обновиться по 404.
+push() {
+  [[ -f "$1" ]] || { echo "нет файла для $2 — прогон без артефакта?"; exit 1; }
+  scp -q "$1" "$HOST:$DL/$2.new" || exit 1
+  ssh $HOST "mv -f $DL/$2.new $DL/$2" || exit 1
+  curl -fsSI "$BASE/$2" >/dev/null || { echo "$BASE/$2 не отвечает"; exit 1; }
+  echo "  $BASE/$2"
+}
 
 echo "Выкладываю $VERSION…"
 ANDROID=""; WINDOWS=""; MACOS=""
@@ -29,7 +36,11 @@ if [[ -n "$APK" && "$APK" != "-" ]]; then
 fi
 if [[ -n "$WIN" && "$WIN" != "-" ]]; then
   fetch "$WIN" win
-  push "$(find "$TMP/win" -name 'Tunnelo-Setup-*.exe' | head -1)" "Tunnelo-Setup-$VERSION.exe"
+  EXE=$(find "$TMP/win" -name 'Tunnelo-Setup-*.exe' | head -1)
+  # Установщик назван по версии из pubspec: опечатка в аргументе не должна
+  # выложить 1.0.27 под именем 1.0.28 — приложение звало бы обновиться вечно.
+  [[ "$(basename "$EXE")" == "Tunnelo-Setup-$VERSION.exe" ]] || { echo "версия установщика $(basename "$EXE") ≠ $VERSION"; exit 1; }
+  push "$EXE" "Tunnelo-Setup-$VERSION.exe"
   WINDOWS="$BASE/Tunnelo-Setup-$VERSION.exe"
 fi
 if [[ -n "$MAC" && "$MAC" != "-" ]]; then
@@ -62,5 +73,6 @@ print(json.dumps({
 }, ensure_ascii=False, indent=2))
 EOF
 push "$TMP/latest.json" latest.json
-cat "$TMP/latest.json"
+echo "--- проверка:"
+curl -fsS "$BASE/latest.json" | /opt/homebrew/bin/python3.11 -m json.tool
 rm -rf "$TMP"

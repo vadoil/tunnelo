@@ -17,6 +17,7 @@ from email.message import EmailMessage
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 
 import httpx
@@ -26,6 +27,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Без basicConfig корневой логгер остаётся на WARNING без обработчиков, и
+# записи о платежах («платёж создан», «продлено») терялись молча.
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 LOG = logging.getLogger("tunnelo")
 
 # Сервис активации — единственный источник правды о подписках.
@@ -244,7 +248,11 @@ async def pay(plan: str = "2d-12m", key: str = "", app: str = "", method: int = 
     и по нему мы поймём, кому продлевать. Способ по умолчанию — карта (11),
     СБП это 2, SberPay 14.
     """
-    p = PLANS.get(plan) or PLANS["2d-12m"]
+    # Неизвестный тариф раньше молча становился самым дорогим, а ключ уходил в
+    # orderId и return-URL как есть. Способы: 11 карта, 2 СБП, 14 SberPay.
+    p = PLANS.get(plan)
+    if p is None or method not in (2, 11, 14) or (key and not re.fullmatch(r"[a-z0-9]{8,64}", key)):
+        return JSONResponse({"error": "bad request"}, status_code=400)
 
     if not (PLATEGA_MERCHANT and PLATEGA_SECRET):
         return RedirectResponse("/cabinet?pay=soon", status_code=303)
@@ -463,6 +471,28 @@ async def internal_mail(request: Request):
         return JSONResponse({"error": "send failed"}, status_code=502)
     LOG.info("письмо отправлено на %s", to)
     return {"ok": True}
+
+
+@app.get("/paid", response_class=HTMLResponse)
+async def paid(key: str = ""):
+    """
+    Сюда Platega возвращает человека после оплаты из приложения. Открыть
+    tunnelo://paid напрямую браузеры часто отказываются, поэтому страница с
+    кнопкой: нажал — приложение открылось на экране подписки.
+    """
+    link = "tunnelo://paid" + (f"?key={key}" if re.fullmatch(r"[a-z0-9]{8,64}", key or "") else "")
+    return HTMLResponse(
+        "<!doctype html><html lang='ru'><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+        "<title>Tunnelo — оплата прошла</title>"
+        "<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0C1230;color:#EAF6F1;"
+        "display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;padding:24px;text-align:center}"
+        "a{display:inline-block;margin-top:20px;padding:14px 26px;border-radius:14px;background:#5FE0B8;color:#0C1230;"
+        "font-weight:600;text-decoration:none}</style></head><body><div>"
+        "<h1>Оплата прошла</h1><p>Подписка продлится сама. Вернитесь в приложение.</p>"
+        f"<a href='{link}'>Открыть Tunnelo</a>"
+        "</div></body></html>"
+    )
 
 
 @app.get("/health")

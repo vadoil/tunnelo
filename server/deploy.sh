@@ -18,7 +18,15 @@ ssh "$HOST" "set -e; cd $DIR
   chmod 700 activation-3xui.py
   systemctl restart tunnelo-activation
   sleep 3
-  echo \"сервис: \$(systemctl is-active tunnelo-activation)\"
-  journalctl -u tunnelo-activation -n 3 --no-pager -o cat
   set -a; . /etc/default/tunnelo-activation; set +a
+  # Не поднялся или /health не отвечает → откат на бэкап, и скрипт красный.
+  if ! systemctl is-active --quiet tunnelo-activation || ! curl -fsS -m 10 http://127.0.0.1:\$PORT/health >/dev/null; then
+    echo 'СЕРВИС НЕ ПОДНЯЛСЯ — откатываю'
+    journalctl -u tunnelo-activation -n 20 --no-pager -o cat
+    cp activation-3xui.py.bak-$STAMP activation-3xui.py
+    systemctl restart tunnelo-activation
+    exit 1
+  fi
+  echo \"сервис: \$(systemctl is-active tunnelo-activation), /health отвечает\"
+  journalctl -u tunnelo-activation -n 3 --no-pager -o cat
   python3 activation-3xui.py promo list"

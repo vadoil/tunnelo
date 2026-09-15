@@ -49,6 +49,7 @@ import secrets
 import sqlite3
 import string
 import sys
+import traceback
 import time
 import urllib.error
 import urllib.request
@@ -113,9 +114,24 @@ def require_env():
 
 
 # ---------- база -------------------------------------------------------------
+_schema_ready = False
+
+
 def db():
+    """Соединение на запрос. Схема создаётся один раз на процесс: раньше DDL
+    и посев промокодов шли на каждом запросе — это write-транзакция, и она
+    сериализовала даже чтение статуса."""
+    global _schema_ready
+    if not _schema_ready:
+        init_db()
+        _schema_ready = True
+    return sqlite3.connect(DB, timeout=10)
+
+
+def init_db():
     os.makedirs(os.path.dirname(DB), exist_ok=True)
     c = sqlite3.connect(DB, timeout=10)
+    c.execute("PRAGMA journal_mode=WAL")
     c.execute("""CREATE TABLE IF NOT EXISTS activations(
         device TEXT NOT NULL,
         code   TEXT NOT NULL,
@@ -186,7 +202,7 @@ def db():
         [(k, v["days"], v["limit"], v["note"], datetime.now(timezone.utc).isoformat())
          for k, v in PROMO_CODES.items()])
     c.commit()
-    return c
+    c.close()
 
 
 # ---------- панель -----------------------------------------------------------
@@ -261,11 +277,33 @@ def create_client(code, days):
     return email, sub_id, expiry_ms, len(ids)
 
 
+class PanelDown(Exception):
+    """Панель не ответила: сеть, таймаут, 5xx. Это не «клиента нет»."""
+
+
 def client_status(email):
+    """Состояние клиента. None — панель ответила, что такого нет.
+    PanelDown — панель не ответила: решать по нему ничего нельзя, раньше
+    в этой ситуации активация удалялась и заводился второй ключ."""
     try:
         return panel("GET", f"/panel/api/clients/traffic/{email}")
-    except Exception:
+    except RuntimeError:
         return None
+    except Exception as e:
+        raise PanelDown(str(e)) from e
+
+
+def status_or_empty(email):
+    """Для ответов, где срок — украшение: панель молчит → пусто."""
+    try:
+        return client_status(email) or {}
+    except PanelDown:
+        return {}
+
+
+def short(key):
+    """Ключ в журнал — только начало: полный ключ и есть доступ к подписке."""
+    return (key or "")[:4] + "…"
 
 
 def extend(email, days):
@@ -362,7 +400,8 @@ def referral_code(sub_id):
 
 def sub_by_referral(con, code):
     """Обратный ход: код -> ключ. LIKE идёт по индексу idx_sub."""
-    if not code.startswith("TUN") or len(code) != 9:
+    # Только буквы и цифры: «_» и «%» в LIKE подбирали бы чужой ключ.
+    if not re.fullmatch(r"TUN[A-Z0-9]{6}", code or ""):
         return None
     rows = con.execute(
         "SELECT DISTINCT sub_id FROM activations WHERE sub_id LIKE ?", (code[3:].lower() + "%",)
@@ -504,8 +543,8 @@ def account_state(con, user_id, email):
         return out
     row = con.execute(
         "SELECT email FROM activations WHERE sub_id=? LIMIT 1", (sub_id,)).fetchone()
-    st = client_status(row[0]) if row else None
-    expiry = (st or {}).get("expiryTime", 0)
+    st = status_or_empty(row[0]) if row else {}
+    expiry = st.get("expiryTime", 0)
     inv = con.execute(
         "SELECT COUNT(*), COALESCE(SUM(days),0) FROM referrals WHERE referrer_sub=?",
         (sub_id,)).fetchone()
@@ -623,9 +662,32 @@ class H(BaseHTTPRequestHandler):
         self._write_body(b)
 
     def log_message(self, fmt, *a):
-        sys.stderr.write("%s %s\n" % (self.address_string(), fmt % a))
+        # /sub/<key> и /status/<key> — ключ целиком в журнале не нужен.
+        line = re.sub(r"/(sub|status)/([a-z0-9]{4})[a-z0-9]*", r"/\1/\2…", fmt % a)
+        sys.stderr.write("%s %s\n" % (self.address_string(), line))
 
     def do_GET(self):
+        self._guard(self._get)
+
+    def do_POST(self):
+        self._guard(self._post)
+
+    def _guard(self, fn):
+        """Панель молчит → 503 с понятным текстом; всё остальное → 500 с
+        трейсбеком в журнале. Раньше исключение рвало соединение без ответа."""
+        try:
+            fn()
+        except PanelDown as e:
+            sys.stderr.write(f"панель недоступна: {e}\n")
+            self._send(503, {"error": "panel down", "message": "Сервис временно недоступен"})
+        except Exception:
+            sys.stderr.write("необработанная ошибка:\n" + traceback.format_exc())
+            try:
+                self._send(500, {"error": "internal"})
+            except Exception:
+                pass
+
+    def _get(self):
         if self.path == "/health":
             try:
                 lst = panel("GET", "/panel/api/inbounds/list")
@@ -703,7 +765,7 @@ class H(BaseHTTPRequestHandler):
         try:
             status, body, headers = sub_fetch(sub_id, query)
         except Exception as e:
-            sys.stderr.write(f"sub {sub_id}: upstream error: {e}\n")
+            sys.stderr.write(f"sub {short(sub_id)}: upstream error: {e}\n")
             return self._send(502, {"error": "subscription unavailable"})
 
         if status != 200:
@@ -718,11 +780,11 @@ class H(BaseHTTPRequestHandler):
         else:
             body, kept, dropped = sub_filter(body)
             if dropped:
-                sys.stderr.write(f"sub {sub_id}: отдал {kept}, отфильтровал {dropped}\n")
+                sys.stderr.write(f"sub {short(sub_id)}: отдал {kept}, отфильтровал {dropped}\n")
             if kept == 0:
                 # Пустая подписка стёрла бы у клиента весь список серверов —
                 # это заметно хуже, чем лишний сервер, поэтому кричим в лог.
-                sys.stderr.write(f"sub {sub_id}: ВНИМАНИЕ, после фильтра "
+                sys.stderr.write(f"sub {short(sub_id)}: ВНИМАНИЕ, после фильтра "
                                  f"({','.join(SUB_PROTOCOLS)}) не осталось ни одного сервера\n")
 
         self.send_response(200)
@@ -737,14 +799,21 @@ class H(BaseHTTPRequestHandler):
         self.end_headers()
         self._write_body(body)
 
-    def do_POST(self):
+    def _post(self):
         if self.path not in ("/activate", "/extend", "/redeem",
                              "/auth/request", "/auth/verify"):
             return self._send(404, {"error": "no route"})
-        n = int(self.headers.get("Content-Length", "0") or 0)
+        try:
+            n = int(self.headers.get("Content-Length", "0") or 0)
+        except ValueError:
+            return self._send(400, {"error": "bad length"})
+        if n > 64 * 1024:
+            return self._send(413, {"error": "too large"})
         try:
             body = json.loads(self.rfile.read(n).decode()) if n else {}
         except Exception:
+            return self._send(400, {"error": "bad json"})
+        if not isinstance(body, dict):
             return self._send(400, {"error": "bad json"})
 
         if self.path == "/extend":
@@ -802,7 +871,7 @@ class H(BaseHTTPRequestHandler):
                 (device, code, sub_id, email, datetime.now(timezone.utc).isoformat()),
             )
             con.commit()
-            sys.stderr.write(f"activated {email} sub={sub_id} inbounds={n_inb}\n")
+            sys.stderr.write(f"activated {email} sub={short(sub_id)} inbounds={n_inb}\n")
             return self._send(201, {
                 "key": sub_id,
                 "subscription": SUB_URI + sub_id,
@@ -855,11 +924,17 @@ class H(BaseHTTPRequestHandler):
                 try:
                     set_panel_device_limit(email, devices)
                 except Exception as e:
-                    sys.stderr.write(f"лимит в панели не обновлён {key}: {e}\n")
+                    sys.stderr.write(f"лимит в панели не обновлён {short(key)}: {e}\n")
+            # Платёжная система повторяет уведомление, если мы ответили не
+            # сразу (внутри до пяти походов в панель). Второй раз — не начислять.
+            order = str(body.get("order_id", "")).strip()
+            if order and con.execute(
+                    "SELECT 1 FROM payments WHERE order_id=?", (order,)).fetchone():
+                sys.stderr.write(f"повтор уведомления об оплате {order}: дни не начисляю\n")
+                return self._send(200, {"ok": True, "duplicate": True})
             extend(email, days)
             # Платёж записываем здесь же: кабинет показывает историю оплат,
-            # и брать её больше неоткуда — уведомление Enot приходит один раз.
-            order = str(body.get("order_id", "")).strip()
+            # и брать её больше неоткуда — уведомление приходит один раз.
             if order:
                 owner = con.execute(
                     "SELECT user_id FROM user_subs WHERE sub_id=?", (key,)).fetchone()
@@ -873,12 +948,12 @@ class H(BaseHTTPRequestHandler):
                      "paid", datetime.now(timezone.utc).isoformat()))
                 con.commit()
         except Exception as e:
-            sys.stderr.write(f"ВНИМАНИЕ: оплата прошла, продлить не удалось {key}: {e}\n")
+            sys.stderr.write(f"ВНИМАНИЕ: оплата прошла, продлить не удалось {short(key)}: {e}\n")
             return self._send(502, {"error": "panel error"})
         finally:
             con.close()
 
-        st = client_status(email) or {}
+        st = status_or_empty(email)
         expiry = st.get("expiryTime", 0)
         sys.stderr.write(f"extended {email} +{days}d\n")
         return self._send(200, {"ok": True, "key": key, "expires": expiry,
@@ -1055,11 +1130,11 @@ class H(BaseHTTPRequestHandler):
                     "VALUES(?,?,?,?,?)",
                     (device, code, key, email, datetime.now(timezone.utc).isoformat()))
                 con.commit()
-                sys.stderr.write(f"attached device to {key}\n")
+                sys.stderr.write(f"attached device to {short(key)}\n")
         finally:
             con.close()
 
-        st = client_status(email) or {}
+        st = status_or_empty(email)
         expiry = st.get("expiryTime", 0)
         return self._send(200, {"key": key, "subscription": SUB_URI + key,
                                 "expires": expiry, "daysLeft": days_left_of(expiry),
@@ -1096,7 +1171,7 @@ class H(BaseHTTPRequestHandler):
                 "INSERT INTO referrals(referee_sub,referrer_sub,days,created) VALUES(?,?,?,?)",
                 (key, owner, REFERRAL_DAYS, datetime.now(timezone.utc).isoformat()))
             con.commit()
-            sys.stderr.write(f"referral {key} <- {owner} +{REFERRAL_DAYS}d\n")
+            sys.stderr.write(f"referral {short(key)} <- {short(owner)} +{REFERRAL_DAYS}d\n")
         except Exception as e:
             sys.stderr.write(f"referral error: {e}\n")
             return self._send(502, {"error": "panel error",
@@ -1130,4 +1205,5 @@ if __name__ == "__main__":
         print(f"!! панель недоступна: {e}", file=sys.stderr)
     print(f"activation service on :{PORT}", file=sys.stderr)
     print(f"промокоды: {codes}", file=sys.stderr)
-    ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
+    # Наружу смотрит nginx; сам сервис — только для него.
+    ThreadingHTTPServer((os.environ.get("BIND", "127.0.0.1"), PORT), H).serve_forever()
