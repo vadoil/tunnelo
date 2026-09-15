@@ -99,5 +99,54 @@ class Cabinet(unittest.TestCase):
         self.assertEqual(r.headers["location"], "/cabinet")
 
 
+class Languages(unittest.TestCase):
+    """Девять языков сайта: ключи у всех одинаковые, иначе страница
+    показывает русскую фразу среди чужих или падает на .format()."""
+
+    def setUp(self):
+        self.client = TestClient(site.app)
+        import i18n
+        self.i18n = i18n
+
+    def test_every_language_has_same_keys(self):
+        base = set(self.i18n.RU)
+        for code, strings in self.i18n.STRINGS.items():
+            missing = base - set(strings)
+            extra = set(strings) - base
+            self.assertFalse(missing, f"{code}: нет ключей {sorted(missing)[:3]}")
+            self.assertFalse(extra, f"{code}: лишние ключи {sorted(extra)[:3]}")
+
+    def test_placeholders_survive_translation(self):
+        import re
+        holes = lambda s: sorted(re.findall(r"\{\w+\}", s))
+        for code, strings in self.i18n.STRINGS.items():
+            for key, ru in self.i18n.RU.items():
+                if key in strings:
+                    self.assertEqual(holes(ru), holes(strings[key]),
+                                     f"{code}.{key}: плейсхолдеры разошлись")
+
+    def test_language_switch_changes_page(self):
+        ru = self.client.get("/").text
+        en = self.client.get("/?lang=en").text
+        self.assertIn("Выбрать тариф", ru)
+        self.assertIn("Choose a plan", en)
+        self.assertNotIn("Выбрать тариф", en)
+
+    def test_unknown_language_falls_back_to_russian(self):
+        html = self.client.get("/?lang=xx").text
+        self.assertIn("Выбрать тариф", html)
+
+    def test_choice_is_remembered(self):
+        r = self.client.get("/?lang=en")
+        self.assertEqual(r.cookies.get("tunnelo_lang"), "en")
+
+    def test_every_language_renders(self):
+        for code, _ in self.i18n.LANGS:
+            r = self.client.get(f"/?lang={code}")
+            self.assertEqual(r.status_code, 200, f"главная не открылась на {code}")
+            r = self.client.get(f"/cabinet?lang={code}")
+            self.assertEqual(r.status_code, 200, f"кабинет не открылся на {code}")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

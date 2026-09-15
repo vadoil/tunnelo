@@ -1,95 +1,93 @@
 {% extends "base.html" %}
-{% block title %}Личный кабинет — Tunnelo{% endblock %}
+{% block title %}{{ t.title_cabinet }}{% endblock %}
 {% block body %}
 <div class="wrap wrap-narrow">
 
   {% if paid %}
-    <div class="msg ok">Оплачено. Дни появятся в течение минуты — обновите страницу.</div>
+    <div class="msg ok">{{ t.cab_paid_msg }}</div>
   {% endif %}
   {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
 
   {% if request.query_params.get('pw') == 'ok' %}
-    <div class="msg ok">Пароль изменён. Остальные входы оборвались.</div>
+    <div class="msg ok">{{ t.cab_pw_ok }}</div>
   {% elif request.query_params.get('pw') == 'mismatch' %}
-    <div class="msg err">Пароли не совпали — введите одинаковые.</div>
+    <div class="msg err">{{ t.cab_pw_mismatch }}</div>
   {% elif request.query_params.get('pw') == 'fail' %}
-    <div class="msg err">Текущий пароль не подошёл.</div>
+    <div class="msg err">{{ t.cab_pw_fail }}</div>
   {% endif %}
 
   {% if account %}
     {# ---------- вошли ---------- #}
-    <h1>Ваша подписка</h1>
+    <h1>{{ t.cab_sub_h }}</h1>
     <p class="sub">
       {% if account.login %}{{ account.login }} · {% endif %}{{ account.email }}
-      · <a href="/cabinet/exit">выйти</a>
+      · <a href="/cabinet/exit">{{ t.cab_exit }}</a>
     </p>
 
     {% if new_password %}
     {# Пара показывается один раз — сразу после того, как её завели. #}
     <div class="card creds">
-      <div class="k">Ваш логин и пароль</div>
-      <p class="note">Этой парой вы входите в приложение и сюда. Мы отправили её
-         письмом — но лучше сохраните прямо сейчас.</p>
+      <div class="k">{{ t.cab_creds_h }}</div>
+      <p class="note">{{ t.cab_creds_note }}</p>
       <div class="keybox">{{ new_login }}</div>
       <div class="keybox">{{ new_password }}</div>
     </div>
     {% endif %}
 
     <div class="card">
-      <div class="row"><span class="k">Состояние</span>
-        <span class="v">{{ 'активна' if account.active else 'истекла' }}</span></div>
+      <div class="row"><span class="k">{{ t.cab_state }}</span>
+        <span class="v">{{ t.cab_state_on if account.active else t.cab_state_off }}</span></div>
       {% if account.daysLeft is not none %}
-      <div class="row"><span class="k">Осталось</span>
-        <span class="v">{{ account.daysLeft }} дн.</span></div>
+      <div class="row"><span class="k">{{ t.cab_left }}</span>
+        <span class="v">{{ account.daysLeft }} {{ t.cab_days }}</span></div>
       {% endif %}
-      <div class="row"><span class="k">Устройства</span>
-        <span class="v">{{ account.devices }} из {{ account.deviceLimit }}</span></div>
+      <div class="row"><span class="k">{{ t.cab_devices }}</span>
+        <span class="v">{{ account.devices }} {{ t.cab_of }} {{ account.deviceLimit }}</span></div>
       {% if account.referralCode %}
-      <div class="row"><span class="k">Код приглашения</span>
+      <div class="row"><span class="k">{{ t.cab_ref_code }}</span>
         <span class="v">{{ account.referralCode }}</span></div>
-      <div class="row"><span class="k">Приглашено</span>
-        <span class="v">{{ account.invited }} · начислено {{ account.bonusDays }} дн.</span></div>
+      <div class="row"><span class="k">{{ t.cab_invited }}</span>
+        <span class="v">{{ account.invited }} · {{ t.cab_bonus }} {{ account.bonusDays }} {{ t.cab_days }}</span></div>
       {% endif %}
     </div>
 
     {% if account.key %}
     <div class="card">
-      <div class="k">Код переноса</div>
-      <p class="note">Введите его в приложении на втором устройстве —
-         откройте «Промокод» и вставьте.</p>
+      <div class="k">{{ t.cab_key_h }}</div>
+      <p class="note">{{ t.cab_key_note }}</p>
       <div class="keybox">{{ account.key }}</div>
     </div>
     {% endif %}
 
-    <h2 style="margin-top:34px">Продлить</h2>
+    <h2 style="margin-top:34px">{{ t.cab_extend }}</h2>
     <div class="plans">
       {% for p in plans %}
       <div class="plan {% if p.best %}best{% endif %}">
-        <div class="term">{{ p.devices }}</div>
-        <div class="price">{{ p.month.price }} <small>₽ / мес</small></div>
-        <div class="note">или {{ p.year.price }} ₽ за год</div>
+        <div class="term">{{ t[p.devices_key] }}</div>
+        <div class="price">{{ p.month.price }} <small>{{ t.plans_per_month }}</small></div>
+        <div class="note">{{ t.plans_or_year_short.format(year=p.year.price) }}</div>
         <div class="plan-buy">
           <a class="btn btn-primary" href="/pay?plan={{ p.year.id }}&key={{ account.key or '' }}">
-            На год <span class="save">−33%</span></a>
-          <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}&key={{ account.key or '' }}">На месяц</a>
+            {{ t.plans_btn_year }} <span class="save">−33%</span></a>
+          <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}&key={{ account.key or '' }}">{{ t.plans_btn_month }}</a>
         </div>
       </div>
       {% endfor %}
     </div>
 
-    <h2 style="margin-top:34px">Пароль</h2>
+    <h2 style="margin-top:34px">{{ t.cab_pw_h }}</h2>
     <form method="post" action="/cabinet/password" class="card cab-form">
-      <input class="field" name="current" type="password" placeholder="Текущий пароль"
+      <input class="field" name="current" type="password" placeholder="{{ t.cab_pw_current }}"
              autocomplete="current-password" required>
       <input class="field" name="password" type="password" minlength="8"
-             placeholder="Новый пароль" autocomplete="new-password" required>
+             placeholder="{{ t.cab_pw_new }}" autocomplete="new-password" required>
       <input class="field" name="password2" type="password" minlength="8"
-             placeholder="Ещё раз" autocomplete="new-password" required>
-      <button class="btn btn-ghost" type="submit">Сменить пароль</button>
+             placeholder="{{ t.cab_pw_again }}" autocomplete="new-password" required>
+      <button class="btn btn-ghost" type="submit">{{ t.cab_pw_btn }}</button>
     </form>
 
     {% if account.payments %}
-    <h2 style="margin-top:34px">Платежи</h2>
+    <h2 style="margin-top:34px">{{ t.cab_payments }}</h2>
     <div class="card">
       {% for pay in account.payments %}
       <div class="row"><span class="k">{{ pay.date[:10] }}</span>
@@ -101,38 +99,35 @@
   {% else %}
     {# ---------- вход ---------- #}
     <img class="cab-fox" src="/static/fox/lantern.png" alt="">
-    <h1>Вход</h1>
+    <h1>{{ t.cab_login_h }}</h1>
 
     {% if code_sent %}
-      <p class="sub">Отправили код на {{ form_email }}. Он действует 15 минут.</p>
+      <p class="sub">{{ t.cab_code_sent.format(email=form_email) }}</p>
       <form method="post" action="/cabinet/enter" class="cab-form">
         <input type="hidden" name="email" value="{{ form_email }}">
         <input class="field" name="code" inputmode="numeric" maxlength="6"
-               placeholder="000000" autocomplete="one-time-code" autofocus required>
-        <button class="btn btn-primary" type="submit">Войти</button>
+               placeholder="{{ t.cab_code_ph }}" autocomplete="one-time-code" autofocus required>
+        <button class="btn btn-primary" type="submit">{{ t.cab_enter }}</button>
       </form>
-      <p class="note">Письмо не пришло? Загляните в «Спам» или
-         <a href="/cabinet">попробуйте другой адрес</a>.</p>
+      <p class="note">{{ t.cab_code_spam }}
+         <a href="/cabinet">{{ t.cab_code_other }}</a>.</p>
     {% else %}
-      <p class="sub">Логин и пароль приходят письмом — при оплате или при первом
-         входе по почте. Подписка живёт на аккаунте: сменили телефон, вошли и
-         продолжили.</p>
+      <p class="sub">{{ t.cab_login_sub }}</p>
       <form method="post" action="/cabinet/login" class="cab-form">
-        <input class="field" name="login" placeholder="Логин или почта"
+        <input class="field" name="login" placeholder="{{ t.cab_login_ph }}"
                value="{{ login or '' }}" autocomplete="username" autofocus required>
-        <input class="field" name="password" type="password" placeholder="Пароль"
+        <input class="field" name="password" type="password" placeholder="{{ t.cab_pass_ph }}"
                autocomplete="current-password" required>
-        <button class="btn btn-primary" type="submit">Войти</button>
+        <button class="btn btn-primary" type="submit">{{ t.cab_enter }}</button>
       </form>
-      <p class="note"><a href="/cabinet/forgot">Забыли пароль?</a> Пришлём ссылку на почту.</p>
+      <p class="note"><a href="/cabinet/forgot">{{ t.cab_forgot_link }}</a> {{ t.cab_forgot_tail }}</p>
 
-      <div class="or">или</div>
-      <p class="note">Первый раз или пароля ещё нет — войдите по почте, пришлём
-         код, а вместе с ним заведём логин и пароль.</p>
+      <div class="or">{{ t.cab_or }}</div>
+      <p class="note">{{ t.cab_bymail_note }}</p>
       <form method="post" action="/cabinet/code" class="cab-form">
         <input class="field" name="email" type="email" placeholder="you@example.com"
                value="{{ form_email or '' }}" autocomplete="email" required>
-        <button class="btn btn-ghost" type="submit">Прислать код на почту</button>
+        <button class="btn btn-ghost" type="submit">{{ t.cab_bymail_btn }}</button>
       </form>
     {% endif %}
   {% endif %}

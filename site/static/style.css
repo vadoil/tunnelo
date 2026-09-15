@@ -404,3 +404,35 @@ input, textarea, select { background: var(--card-solid) !important; color: var(-
                           border-bottom: 1px solid rgba(255,255,255,.22); }
 .sub a:hover, .note a:hover, .msg a:hover { color: var(--deep);
                           border-bottom-color: currentColor; }
+
+/* Переключатель языка. Раскрывается по наведению и по фокусу с клавиатуры:
+   без JS, чтобы работал и при выключенных скриптах. */
+.lang { position: relative; }
+.lang-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--card);
+  color: var(--text); font: inherit; font-size: 15px; cursor: pointer;
+  transition: border-color .12s, color .12s;
+}
+.lang-btn:hover { border-color: var(--sea); color: var(--deep); }
+.lang-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 30;
+  min-width: 190px; padding: 6px; border-radius: 14px;
+  background: var(--card-solid); border: 1px solid var(--line);
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  display: none; flex-direction: column;
+}
+.lang:hover .lang-menu, .lang:focus-within .lang-menu { display: flex; }
+.lang-menu a {
+  padding: 9px 12px; border-radius: 9px; color: var(--text);
+  text-decoration: none; font-size: 15px;
+}
+.lang-menu a:hover { background: var(--card); color: var(--deep); }
+.lang-menu a.on { color: var(--sea); font-weight: 600; }
+@media (max-width: 560px) { .lang-btn span { display: none; }
+                            .lang-btn { padding: 7px 9px; } }
+
+/* Документы по российскому праву переводить нельзя — говорим об этом прямо. */
+.docs-note { text-align: center; color: var(--muted); font-size: 13px;
+             margin-top: -10px; padding-bottom: 14px; }

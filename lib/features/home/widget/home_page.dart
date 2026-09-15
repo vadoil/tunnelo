@@ -14,17 +14,43 @@ import 'package:hiddify/features/tunnelo/tunnelo_conflict_card.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_connect_area.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_server_pill.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_setup_notifier.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_sign_in_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_status_card.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hiddify/gen/assets.gen.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
+/// Главная закрыта, пока человек не вошёл.
+///
+/// Решение от 16.09.2026: подписка живёт на аккаунте, а не на телефоне, и
+/// приложение без входа не работает. Ключ на устройстве оставался у того, кто
+/// однажды поставил приложение, а человек, сменивший телефон, терял доступ.
 class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Токен читаем с диска один раз за жизнь виджета. Пока читаем — держим
+    // пустой фон: мигать экраном входа перед вошедшим человеком нельзя.
+    final signedIn = useState<bool?>(null);
+    final reread = useState(0);
+    final api = ref.read(tunneloActivationProvider);
+    useEffect(() {
+      var alive = true;
+      api.savedToken().then((token) {
+        if (alive) signedIn.value = token != null && token.isNotEmpty;
+      });
+      return () => alive = false;
+    }, [reread.value]);
+
+    if (signedIn.value == null) {
+      return const TunneloBackground(child: Scaffold(backgroundColor: Colors.transparent));
+    }
+    if (signedIn.value == false) {
+      return TunneloSignInPage(onSignedIn: () => reread.value++);
+    }
+
     final t = ref.watch(translationsProvider).requireValue;
     // final hasAnyProfile = ref.watch(hasAnyProfileProvider);
     final activeProfile = ref.watch(activeProfileProvider);

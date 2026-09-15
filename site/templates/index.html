@@ -4,21 +4,16 @@
 
   <div class="hero">
     <div class="hero-text">
-      <div class="hero-badge">Умная маршрутизация: каждому сайту — свой путь</div>
-      <h1>Зарубежные сервисы<br>и российские — вместе</h1>
-      <p>Обычный VPN отправляет через себя весь трафик — и банк начинает
-         требовать подтверждений, маркетплейс показывает чужие цены,
-         государственные сервисы работают со сбоями. Приходится включать и
-         выключать его по десять раз на дню.</p>
-      <p><b>Tunnelo разделяет трафик сам.</b> Зарубежные сервисы идут через
-         туннель, российские — напрямую. Одновременно, без переключений.</p>
+      <div class="hero-badge">{{ t.hero_badge }}</div>
+      <h1>{{ t.hero_title_1 }}<br>{{ t.hero_title_2 }}</h1>
+      <p>{{ t.hero_p1 }}</p>
+      <p><b>{{ t.hero_p2_b }}</b> {{ t.hero_p2 }}</p>
 
       <div class="hero-actions">
-        <a class="btn btn-primary" href="#plans">Выбрать тариф</a>
-        <a class="btn btn-ghost" href="#how">Как это работает</a>
+        <a class="btn btn-primary" href="#plans">{{ t.hero_cta_plans }}</a>
+        <a class="btn btn-ghost" href="#how">{{ t.hero_cta_how }}</a>
       </div>
-      <div class="hero-note">Банк, Госуслуги и маркетплейсы работают как обычно.
-           YouTube и Telegram — как будто границ нет. Одновременно.</div>
+      <div class="hero-note">{{ t.hero_note }}</div>
     </div>
 
     <div class="hero-art">
@@ -26,45 +21,41 @@
       <span class="ring ring-2"></span>
       <span class="ring ring-3"></span>
       <span class="lantern-glow"></span>
-      <img class="hero-fox" src="/static/fox/lantern.png"
-           alt="Лис Tunnelo с фонарём — свет в конце туннеля">
+      <img class="hero-fox" src="/static/fox/lantern.png" alt="{{ t.hero_fox_alt }}">
     </div>
   </div>
 
   <section id="how" style="padding-top:16px">
-    <h2>Как это работает</h2>
-    <p class="sub">Обычный VPN гонит через себя всё подряд — и банки начинают
-       требовать подтверждения, а маркетплейсы показывают чужие цены.
-       Tunnelo разделяет трафик.</p>
+    <h2>{{ t.how_title }}</h2>
+    <p class="sub">{{ t.how_sub }}</p>
     {% include "_scheme.html" %}
   </section>
 
   <!-- Боль, которую снимаем: качели «включил-выключил». -->
   <div class="compare">
     <div class="col col-bad">
-      <div class="col-h">Обычный VPN</div>
-      <div class="line"><span class="ok">✓</span> YouTube работает</div>
-      <div class="line"><span class="no">✕</span> банк требует подтверждений</div>
-      <div class="line"><span class="no">✕</span> Ozon показывает чужие цены</div>
-      <div class="line"><span class="no">✕</span> Госуслуги не пускают</div>
-      <div class="col-f">и так каждый раз: включил — выключил</div>
+      <div class="col-h">{{ t.cmp_bad_h }}</div>
+      <div class="line"><span class="ok">✓</span> {{ t.cmp_youtube }}</div>
+      <div class="line"><span class="no">✕</span> {{ t.cmp_bank_bad }}</div>
+      <div class="line"><span class="no">✕</span> {{ t.cmp_shop_bad }}</div>
+      <div class="line"><span class="no">✕</span> {{ t.cmp_gov_bad }}</div>
+      <div class="col-f">{{ t.cmp_bad_f }}</div>
     </div>
     <div class="col col-good">
-      <div class="col-h">Tunnelo</div>
-      <div class="line"><span class="ok">✓</span> YouTube работает</div>
-      <div class="line"><span class="ok">✓</span> банк работает</div>
-      <div class="line"><span class="ok">✓</span> Ozon показывает ваши цены</div>
-      <div class="line"><span class="ok">✓</span> Госуслуги пускают</div>
-      <div class="col-f">включили один раз и забыли</div>
+      <div class="col-h">{{ t.cmp_good_h }}</div>
+      <div class="line"><span class="ok">✓</span> {{ t.cmp_youtube }}</div>
+      <div class="line"><span class="ok">✓</span> {{ t.cmp_bank_good }}</div>
+      <div class="line"><span class="ok">✓</span> {{ t.cmp_shop_good }}</div>
+      <div class="line"><span class="ok">✓</span> {{ t.cmp_gov_good }}</div>
+      <div class="col-f">{{ t.cmp_good_f }}</div>
     </div>
   </div>
 
 
   <div class="banner">
     <div>
-      <h2>Одна подписка — все устройства</h2>
-      <p>Телефон, компьютер и планшет. Приложение одинаковое везде:
-         поставили, нажали одну кнопку — работает.</p>
+      <h2>{{ t.dev_title }}</h2>
+      <p>{{ t.dev_text }}</p>
     </div>
     <div class="devices">
       <div class="device"><span class="ic">🤖</span><span class="nm">Android</span></div>
@@ -76,37 +67,34 @@
 
   <div class="cards">
     <div class="card">
-      <h3>Ничего не нужно настраивать</h3>
-      <p>Ни регистрации, ни ключей, ни выбора серверов. Установили, открыли,
-         нажали кнопку — всё уже готово.</p>
+      <h3>{{ t.card1_h }}</h3>
+      <p>{{ t.card1_p }}</p>
     </div>
     <div class="card">
-      <h3>Банки и госуслуги не ругаются</h3>
-      <p>Российские сервисы видят ваш обычный адрес. Вход проходит с первого
-         раза, без бесконечных подтверждений.</p>
+      <h3>{{ t.card2_h }}</h3>
+      <p>{{ t.card2_p }}</p>
     </div>
     <div class="card">
-      <h3>Скорость, а не просто соединение</h3>
-      <p>Современный протокол поверх UDP держит высокую скорость: видео идёт
-         в качестве, а не в трёхстах пикселях с паузами.</p>
+      <h3>{{ t.card3_h }}</h3>
+      <p>{{ t.card3_p }}</p>
     </div>
   </div>
 
   <section id="plans">
     <img class="plan-fox" src="/static/fox/coins.png" alt="">
-    <h2>Тарифы</h2>
-    <p class="sub">При оплате за год — на треть дешевле</p>
+    <h2>{{ t.plans_title }}</h2>
+    <p class="sub">{{ t.plans_sub }}</p>
     <div class="plans">
       {% for p in plans %}
       <div class="plan {% if p.best %}best{% endif %}">
-        <div class="term">{{ p.devices }}</div>
-        <div class="price">{{ p.month.price }} <small>₽ / мес</small></div>
-        <div class="note">или {{ p.year.price }} ₽ за год — это {{ p.year.per_month }} ₽ в месяц</div>
+        <div class="term">{{ t[p.devices_key] }}</div>
+        <div class="price">{{ p.month.price }} <small>{{ t.plans_per_month }}</small></div>
+        <div class="note">{{ t.plans_or_year.format(year=p.year.price, per=p.year.per_month) }}</div>
         <div class="plan-buy">
           <a class="btn btn-primary" href="/pay?plan={{ p.year.id }}">
-            На год <span class="save">−33%</span>
+            {{ t.plans_btn_year }} <span class="save">−33%</span>
           </a>
-          <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}">На месяц</a>
+          <a class="btn btn-ghost" href="/pay?plan={{ p.month.id }}">{{ t.plans_btn_month }}</a>
         </div>
       </div>
       {% endfor %}

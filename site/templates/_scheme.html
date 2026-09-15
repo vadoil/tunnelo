@@ -6,12 +6,12 @@
   <div class="flow-head">
     <div class="node">
       <span class="node-ic">📱</span>
-      <span>Ваше устройство</span>
+      <span>{{ t.flow_device }}</span>
     </div>
     <span class="flow-line"></span>
     <div class="node node-brand">
       <img class="node-fox" src="/static/fox/lantern.png" alt="">
-      <span>Tunnelo смотрит,<br>куда вы идёте</span>
+      <span>{{ t.flow_brand_1 }}<br>{{ t.flow_brand_2 }}</span>
     </div>
   </div>
 
@@ -19,18 +19,15 @@
 
   <div class="flow-split">
     <div class="branch branch-direct">
-      <div class="branch-tag">Российское — напрямую</div>
+      <div class="branch-tag">{{ t.flow_direct_tag }}</div>
       <div class="branch-list">Госуслуги · Сбербанк · Т-Банк · Ozon · Wildberries · Avito · Яндекс</div>
-      <div class="branch-why">Сайт видит ваш обычный адрес. Банк не просит
-        подтверждений, маркетплейс показывает ваши цены, Госуслуги пускают.</div>
+      <div class="branch-why">{{ t.flow_direct_why }}</div>
     </div>
 
     <div class="branch branch-tunnel">
-      <div class="branch-tag">Зарубежные сервисы — через туннель</div>
+      <div class="branch-tag">{{ t.flow_tunnel_tag }}</div>
       <div class="branch-list">YouTube · ChatGPT · Spotify · GitHub · Steam</div>
-      <div class="branch-why">Открывается с зарубежного адреса, соединение
-        стабильно. Переключать ничего не нужно — обе дороги работают
-        одновременно.</div>
+      <div class="branch-why">{{ t.flow_tunnel_why }}</div>
     </div>
   </div>
 </div>

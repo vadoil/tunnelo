@@ -22,6 +22,8 @@ from datetime import datetime, timezone
 
 import httpx
 from fastapi import FastAPI, Form, Request
+
+import i18n
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -102,13 +104,13 @@ PLANS = {
 # Витрина: два тарифа, у каждого цена за месяц и за год.
 PLAN_CARDS = [
     {
-        "devices": "1 устройство",
+        "devices_key": "plan_dev_1",
         "month": {"id": "1d-1m", "price": 299},
         "year": {"id": "1d-12m", "price": 2388, "per_month": 199},
         "best": False,
     },
     {
-        "devices": "2 устройства",
+        "devices_key": "plan_dev_2",
         "month": {"id": "2d-1m", "price": 499},
         "year": {"id": "2d-12m", "price": 3996, "per_month": 333},
         "best": True,
@@ -134,10 +136,21 @@ def _gb(b: int) -> str:
 
 
 
+def _lang(request: Request):
+    """Язык страницы: выбор в адресе, потом печенье, потом язык браузера."""
+    return i18n.pick(request.query_params.get("lang", ""),
+                     request.cookies.get(i18n.COOKIE, ""),
+                     request.headers.get("accept-language", ""))
+
+
 def _ctx(request: Request, **extra):
-    """Реквизиты и контакты нужны на каждой странице — собираем в одном месте."""
+    """Реквизиты, контакты и строки языка нужны на каждой странице."""
+    lang = _lang(request)
     base = {
         "request": request,
+        "lang": lang,
+        "langs": i18n.LANGS,
+        "t": i18n.strings(lang),
         "org": ORG,
         "show_org": SHOW_ORG,
         "review_code": REVIEW_CODE,
@@ -154,9 +167,18 @@ def _ctx(request: Request, **extra):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", _ctx(
+    resp = templates.TemplateResponse("index.html", _ctx(
         request, plans=PLAN_CARDS, trial_days=TRIAL_DAYS, devices=DEVICE_LIMIT,
     ))
+    return _remember_lang(request, resp)
+
+
+def _remember_lang(request: Request, resp):
+    """Язык, выбранный в адресе, запоминаем на год — чтобы не выбирать снова."""
+    chosen = request.query_params.get("lang", "")
+    if chosen in i18n.CODES:
+        resp.set_cookie(i18n.COOKIE, chosen, max_age=31536000, samesite="lax")
+    return resp
 
 
 def _set_session(resp, token):
@@ -216,11 +238,11 @@ async def cabinet_code(request: Request, email: str = Form("")):
         data = r.json()
     except Exception:
         return templates.TemplateResponse("cabinet.html", _ctx(
-            request, error="Сервис недоступен. Попробуйте через минуту.",
+            request, error=i18n.strings(_lang(request))["err_service"],
             plans=PLAN_CARDS))
     if r.status_code != 200:
         return templates.TemplateResponse("cabinet.html", _ctx(
-            request, error=data.get("message") or "Не удалось отправить код",
+            request, error=data.get("message") or i18n.strings(_lang(request))["err_send_code"],
             email=email, plans=PLAN_CARDS))
     return templates.TemplateResponse("cabinet.html", _ctx(
         request, form_email=email, code_sent=True, plans=PLAN_CARDS))
@@ -237,11 +259,11 @@ async def cabinet_enter(request: Request, email: str = Form(""), code: str = For
         data = r.json()
     except Exception:
         return templates.TemplateResponse("cabinet.html", _ctx(
-            request, error="Сервис недоступен. Попробуйте через минуту.",
+            request, error=i18n.strings(_lang(request))["err_service"],
             form_email=email, code_sent=True, plans=PLAN_CARDS))
     if r.status_code != 200 or not data.get("token"):
         return templates.TemplateResponse("cabinet.html", _ctx(
-            request, error=data.get("message") or "Код не подошёл",
+            request, error=data.get("message") or i18n.strings(_lang(request))["err_code"],
             email=email, code_sent=True, plans=PLAN_CARDS))
 
     if data.get("newPassword"):
@@ -262,11 +284,11 @@ async def cabinet_login(request: Request, login: str = Form(""), password: str =
                                  json={"login": login, "password": password})
     if st == 0:
         return templates.TemplateResponse("cabinet.html", _ctx(
-            request, error="Сервис недоступен. Попробуйте через минуту.",
+            request, error=i18n.strings(_lang(request))["err_service"],
             login=login, plans=PLAN_CARDS))
     if st != 200 or not data.get("token"):
         return templates.TemplateResponse("cabinet.html", _ctx(
-            request, error=data.get("message") or "Логин или пароль не подошли",
+            request, error=data.get("message") or i18n.strings(_lang(request))["err_credentials"],
             login=login, plans=PLAN_CARDS))
     return _set_session(RedirectResponse("/cabinet", status_code=303), data["token"])
 
@@ -283,10 +305,10 @@ async def cabinet_forgot(request: Request, email: str = Form("")):
     st, data = await _activation("POST", "/auth/forgot", json={"email": email})
     if st == 0:
         return templates.TemplateResponse("forgot.html", _ctx(
-            request, error="Сервис недоступен. Попробуйте через минуту.", form_email=email))
+            request, error=i18n.strings(_lang(request))["err_service"], form_email=email))
     if st != 200:
         return templates.TemplateResponse("forgot.html", _ctx(
-            request, error=data.get("message") or "Не удалось отправить письмо",
+            request, error=data.get("message") or i18n.strings(_lang(request))["err_send_link"],
             email=email))
     return templates.TemplateResponse("forgot.html", _ctx(request, sent=True, form_email=email))
 
@@ -303,16 +325,16 @@ async def cabinet_reset(request: Request, token: str = Form(""),
     token = token.strip()
     if password != password2:
         return templates.TemplateResponse("reset.html", _ctx(
-            request, token=token, error="Пароли не совпали — введите одинаковые."))
+            request, token=token, error=i18n.strings(_lang(request))["err_pw_mismatch"]))
     st, data = await _activation("POST", "/auth/reset",
                                  json={"token": token, "password": password})
     if st == 0:
         return templates.TemplateResponse("reset.html", _ctx(
-            request, token=token, error="Сервис недоступен. Попробуйте через минуту."))
+            request, token=token, error=i18n.strings(_lang(request))["err_service"]))
     if st != 200 or not data.get("token"):
         return templates.TemplateResponse("reset.html", _ctx(
             request, token=token,
-            error=data.get("message") or "Не удалось сменить пароль"))
+            error=data.get("message") or i18n.strings(_lang(request))["err_reset"]))
     # Пароль сменили — сразу впускаем, повторно логиниться незачем.
     return _set_session(RedirectResponse("/cabinet", status_code=303), data["token"])
 

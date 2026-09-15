@@ -1,27 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Новый пароль — Tunnelo{% endblock %}
+{% block title %}{{ t.title_reset }}{% endblock %}
 {% block body %}
 <div class="wrap wrap-narrow">
   <img class="cab-fox" src="/static/fox/lantern.png" alt="">
-  <h1>Новый пароль</h1>
+  <h1>{{ t.reset_h }}</h1>
 
   {% if not token %}
-    <p class="sub">Ссылка неполная — откройте её из письма целиком.</p>
-    <p class="note"><a href="/cabinet/forgot">Запросить новую ссылку</a></p>
+    <p class="sub">{{ t.reset_broken }}</p>
+    <p class="note"><a href="/cabinet/forgot">{{ t.reset_ask_new }}</a></p>
   {% else %}
-    <p class="sub">Придумайте пароль не короче восьми знаков. Им вы будете
-       входить и в приложение, и в кабинет.</p>
+    <p class="sub">{{ t.reset_sub }}</p>
     {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
     <form method="post" action="/cabinet/reset" class="cab-form">
       <input type="hidden" name="token" value="{{ token }}">
       <input class="field" name="password" type="password" minlength="8"
-             placeholder="Новый пароль" autocomplete="new-password" autofocus required>
+             placeholder="{{ t.cab_pw_new }}" autocomplete="new-password" autofocus required>
       <input class="field" name="password2" type="password" minlength="8"
-             placeholder="Ещё раз" autocomplete="new-password" required>
-      <button class="btn btn-primary" type="submit">Сохранить и войти</button>
+             placeholder="{{ t.cab_pw_again }}" autocomplete="new-password" required>
+      <button class="btn btn-primary" type="submit">{{ t.reset_btn }}</button>
     </form>
-    <p class="note">После смены пароля все входы на других устройствах
-       оборвутся — войдите заново уже с новым.</p>
+    <p class="note">{{ t.reset_note }}</p>
   {% endif %}
 </div>
 {% endblock %}

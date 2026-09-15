@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ru">
+<html lang="{{ lang }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Tunnelo — VPN, который не нужно выключать{% endblock %}</title>
-<meta name="description" content="Умная маршрутизация трафика: зарубежные сервисы идут через туннель, российские — напрямую. Банки, Госуслуги и Ozon работают как обычно.">
+<title>{% block title %}{{ t.title_index }}{% endblock %}</title>
+<meta name="description" content="{{ t.meta_description }}">
 <link rel="stylesheet" href="/static/style.css">
 <link rel="icon" href="/static/logo.svg">
 </head>
@@ -16,17 +16,36 @@
       <span>Tunnelo</span>
     </a>
     <nav>
-      <a href="/#plans">Тарифы</a>
-      <a href="/contacts" class="hide-sm">Контакты</a>
+      <a href="/#plans">{{ t.nav_plans }}</a>
+      <a href="/contacts" class="hide-sm">{{ t.nav_contacts }}</a>
+
+      <!-- Язык выбирается на месте и запоминается: человек из Еревана не
+           должен искать переключатель на каждой странице заново. -->
+      <div class="lang">
+        <button class="lang-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M3 12h18M12 3c2.4 2.6 2.4 15 0 18M12 3c-2.4 2.6-2.4 15 0 18"
+                  stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <span>{% for c, name in langs %}{% if c == lang %}{{ name }}{% endif %}{% endfor %}</span>
+        </button>
+        <div class="lang-menu">
+          {% for c, name in langs %}
+          <a href="?lang={{ c }}" {% if c == lang %}class="on"{% endif %}>{{ name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
       <!-- Кабинет — иконкой и справа: в него заходят с любой страницы,
            и он должен быть на виду, а не теряться среди разделов. -->
-      <a href="/cabinet" class="cab-link" title="Личный кабинет">
+      <a href="/cabinet" class="cab-link" title="{{ t.cabinet_title }}">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/>
           <path d="M4.5 20c.9-3.7 3.9-5.6 7.5-5.6s6.6 1.9 7.5 5.6"
                 stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
         </svg>
-        <span>Кабинет</span>
+        <span>{{ t.nav_cabinet }}</span>
       </a>
     </nav>
   </div>
@@ -38,16 +57,19 @@
   <!-- Документы кнопками, а не строчками: банк должен видеть их сразу,
        не разглядывая мелкий текст в подвале. -->
   <div class="wrap docs-bar">
-    <a class="doc-btn" href="/offer">Договор оферты</a>
-    <a class="doc-btn" href="/terms">Условия и возврат</a>
-    <a class="doc-btn" href="/privacy">Обработка данных</a>
-    <a class="doc-btn" href="/contacts">Контакты</a>
+    <a class="doc-btn" href="/offer">{{ t.doc_offer }}</a>
+    <a class="doc-btn" href="/terms">{{ t.doc_terms }}</a>
+    <a class="doc-btn" href="/privacy">{{ t.doc_privacy }}</a>
+    <a class="doc-btn" href="/contacts">{{ t.doc_contacts }}</a>
   </div>
+  {% if lang != 'ru' %}
+  <div class="wrap docs-note">{{ t.docs_ru_note }}</div>
+  {% endif %}
 
   <div class="wrap foot">
     <div class="foot-col">
       <div class="foot-h">Tunnelo</div>
-      <p>Сервис умной маршрутизации трафика.</p>
+      <p>{{ t.foot_about }}</p>
       {% if show_org %}
       <p>{{ org.name }}</p>
       <p>{{ org.address }}</p>
@@ -56,7 +78,7 @@
     </div>
 
     <div class="foot-col">
-      <div class="foot-h">Поддержка</div>
+      <div class="foot-h">{{ t.foot_support }}</div>
       <p><a href="https://t.me/pervostok">Telegram @pervostok</a></p>
       <p>MAX: {{ phone_pretty }}</p>
       <p><a href="tel:{{ phone }}">{{ phone_pretty }}</a></p>
@@ -64,27 +86,26 @@
     </div>
 
     <div class="foot-col">
-      <div class="foot-h">Документы</div>
-      <p><a href="/offer">Договор оферты</a></p>
-      <p><a href="/terms">Возврат и отмена</a></p>
-      <p><a href="/privacy">Персональные данные</a></p>
-      <p><a href="/contacts">Реквизиты</a></p>
+      <div class="foot-h">{{ t.foot_docs }}</div>
+      <p><a href="/offer">{{ t.foot_doc_offer }}</a></p>
+      <p><a href="/terms">{{ t.foot_doc_terms }}</a></p>
+      <p><a href="/privacy">{{ t.foot_doc_privacy }}</a></p>
+      <p><a href="/contacts">{{ t.foot_doc_contacts }}</a></p>
     </div>
 
     <div class="foot-col">
-      <div class="foot-h">Оплата</div>
+      <div class="foot-h">{{ t.foot_pay }}</div>
       <div class="pays">
         <span class="pay">VISA</span>
         <span class="pay">Mastercard</span>
         <span class="pay">МИР</span>
         <span class="pay">СБП</span>
       </div>
-      <p class="tiny">Платежи проводит сертифицированный платёжный сервис.
-         Реквизиты карты к нам не попадают.</p>
+      <p class="tiny">{{ t.foot_pay_note }}</p>
     </div>
   </div>
   <div class="wrap foot-b">
-    © {{ year }} Tunnelo. Все права защищены.
+    © {{ year }} Tunnelo. {{ t.foot_rights }}
     {% if review_code %}<span class="rev-code">{{ review_code }}</span>{% endif %}
   </div>
 </footer>

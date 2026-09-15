@@ -16,6 +16,10 @@ abstract class TunneloConfig {
   static const redeemUrl = 'https://api.amnez.online/redeem';
   static const authRequestUrl = 'https://api.amnez.online/auth/request';
   static const authVerifyUrl = 'https://api.amnez.online/auth/verify';
+  static const authLoginUrl = 'https://api.amnez.online/auth/login';
+  /// Куда вести за паролем и за регистрацией — обе страницы на сайте.
+  static const forgotUrl = 'https://tunello.online/cabinet/forgot';
+  static const signUpUrl = 'https://tunello.online/cabinet';
   static const meUrl = 'https://api.amnez.online/me';
   static const defaultPromo = 'PARDAUTO';
 
@@ -274,6 +278,45 @@ class TunneloActivation {
     final p = await SharedPreferences.getInstance();
     await p.setString(_kToken, token);
     await p.setString(_kEmail, email.trim().toLowerCase());
+    final key = body['key'] as String?;
+    final sub = body['subscription'] as String?;
+    if (key != null && sub != null) {
+      await _save(ActivationResult(key: key, subscription: sub));
+    }
+    return token;
+  }
+
+  /// Вход парой логин/пароль. Пара выдаётся при оплате и при первом входе
+  /// по почте — с 16.09.2026 приложение спрашивает именно её, а подписка
+  /// живёт на аккаунте, а не на телефоне.
+  Future<String> signInWithPassword(String login, String password) async {
+    final resp = await _request(
+      Uri.parse(TunneloConfig.authLoginUrl),
+      body: {
+        'login': login.trim().toLowerCase(),
+        'password': password,
+        'device': await deviceId(),
+        'key': await savedKey() ?? '',
+      },
+      options: Options(
+        contentType: Headers.jsonContentType,
+        sendTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 25),
+        validateStatus: (s) => s != null && s < 500,
+      ),
+    );
+    final body = _json(resp.data);
+    if (resp.statusCode != 200) {
+      throw ActivationException(
+        (body['message'] as String?) ?? 'Логин или пароль не подошли',
+      );
+    }
+    final token = body['token'] as String?;
+    if (token == null) throw const ActivationException('Сервер не выдал доступ');
+    final p = await SharedPreferences.getInstance();
+    await p.setString(_kToken, token);
+    final email = body['email'] as String?;
+    if (email != null) await p.setString(_kEmail, email);
     final key = body['key'] as String?;
     final sub = body['subscription'] as String?;
     if (key != null && sub != null) {
