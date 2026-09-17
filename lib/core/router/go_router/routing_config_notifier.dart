@@ -22,6 +22,7 @@ import 'package:hiddify/features/settings/overview/sections/tls_tricks_page.dart
 import 'package:hiddify/features/settings/overview/sections/warp_options_page.dart';
 import 'package:hiddify/features/settings/overview/settings_page.dart';
 import 'package:hiddify/features/tunnelo/promo_code_page.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_auth_gate.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_devices_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_friends_page.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_login_page.dart';
@@ -123,10 +124,14 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
       },
       routes: <RouteBase>[
         StatefulShellRoute.indexedStack(
-          builder: (_, _, navigationShell) => MyAdaptiveLayout(
-            navigationShell: navigationShell,
-            isMobileBreakpoint: isMobileBreakpoint,
-            showProfilesAction: showProfilesAction,
+          // Оболочка целиком за входом: и главная, и «Настройки». Без пары
+          // логин-пароль человек видит только экран входа.
+          builder: (_, _, navigationShell) => TunneloAuthGate(
+            child: MyAdaptiveLayout(
+              navigationShell: navigationShell,
+              isMobileBreakpoint: isMobileBreakpoint,
+              showProfilesAction: showProfilesAction,
+            ),
           ),
           branches: <StatefulShellBranch>[
             StatefulShellBranch(
