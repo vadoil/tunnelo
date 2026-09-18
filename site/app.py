@@ -101,6 +101,56 @@ PLANS = {
     "2d-12m": {"id": "2d-12m", "devices": 2, "term": "год",   "price": 3996, "days": 365},
 }
 
+# Скидочные коды. Лежат файлом рядом с сайтом, а не в коде: добавить код или
+# закрыть его нужно без выката и рестарта. Формат:
+#   {"TEST90": {"off": 90, "until": "2026-12-31", "note": "проверка оплаты"}}
+# off — процент скидки (1..99), until — последний день, когда код работает
+# (необязательно). Дни подписки код не меняет: он только про цену.
+COUPONS_PATH = os.getenv("TUNNELO_COUPONS", os.path.join(BASE_DIR, "coupons.json"))
+_COUPONS = {"mtime": -1.0, "data": {}}
+
+
+def coupon_get(code):
+    """Скидка по коду или None. Файл перечитываем, когда он изменился."""
+    code = (code or "").strip().upper()
+    if not code:
+        return None
+    try:
+        mtime = os.path.getmtime(COUPONS_PATH)
+    except OSError:
+        return None
+    if mtime != _COUPONS["mtime"]:
+        try:
+            with open(COUPONS_PATH, encoding="utf-8") as fh:
+                _COUPONS["data"] = {str(k).upper(): v for k, v in json.load(fh).items()}
+            _COUPONS["mtime"] = mtime
+        except Exception as e:
+            # Битый файл не должен ронять оплату: продаём по полной цене.
+            LOG.warning("файл скидок не прочитан: %s", e)
+            return None
+    c = _COUPONS["data"].get(code)
+    if not isinstance(c, dict):
+        return None
+    try:
+        off = int(c.get("off", 0))
+    except (TypeError, ValueError):
+        return None
+    if not 1 <= off <= 99:
+        return None
+    until = str(c.get("until") or "")
+    if until and until < datetime.now(timezone.utc).strftime("%Y-%m-%d"):
+        return None
+    return {"off": off, "note": str(c.get("note") or "")}
+
+
+def apply_coupon(price, code):
+    """Цена со скидкой и код, который сработал. Округляем до рубля вверх:
+    платёжная система не любит копейки, а округление вниз дарит копейку."""
+    c = coupon_get(code)
+    if not c:
+        return price, None
+    return max(1, -(-price * (100 - c["off"]) // 100)), (code or "").strip().upper()
+
 # Витрина: два тарифа, у каждого цена за месяц и за год.
 PLAN_CARDS = [
     {
@@ -365,13 +415,17 @@ async def cabinet_exit():
 
 
 @app.get("/pay")
-async def pay(plan: str = "2d-12m", key: str = "", app: str = "", method: int = 11):
+async def pay(plan: str = "2d-12m", key: str = "", app: str = "", method: int = 11,
+              promo: str = ""):
     """
     Создаёт платёж в Platega и уводит человека на страницу оплаты.
 
     Ключ подписки кладём в payload — он вернётся в уведомлении об оплате,
     и по нему мы поймём, кому продлевать. Способ по умолчанию — карта (11),
     СБП это 2, SberPay 14.
+
+    `promo` — скидочный код из coupons.json. Он меняет только сумму: дни и
+    число устройств остаются тарифными, иначе скидка молча урезала бы срок.
     """
     # Неизвестный тариф раньше молча становился самым дорогим, а ключ уходил в
     # orderId и return-URL как есть. Способы: 11 карта, 2 СБП, 14 SberPay.
@@ -382,11 +436,13 @@ async def pay(plan: str = "2d-12m", key: str = "", app: str = "", method: int = 
     if not (PLATEGA_MERCHANT and PLATEGA_SECRET):
         return RedirectResponse("/cabinet?pay=soon", status_code=303)
 
+    price, used_promo = apply_coupon(p["price"], promo)
     order_id = f"{plan}-{key or 'new'}-{int(datetime.now(timezone.utc).timestamp())}"
     body = {
         "paymentMethod": method,
-        "paymentDetails": {"amount": p["price"], "currency": "RUB"},
-        "description": f"Tunnelo — {p['devices']} устр., {p['term']}",
+        "paymentDetails": {"amount": price, "currency": "RUB"},
+        "description": (f"Tunnelo — {p['devices']} устр., {p['term']}"
+                        + (f" (промокод {used_promo})" if used_promo else "")),
         # Из приложения возвращаем в приложение, из браузера — в кабинет.
         "return": (f"{SITE_URL}/paid?key={key}" if app
                    else f"{SITE_URL}/cabinet?paid=1"),
@@ -395,7 +451,8 @@ async def pay(plan: str = "2d-12m", key: str = "", app: str = "", method: int = 
         # payload вернётся в уведомлении дословно — кладём туда всё, что нужно
         # для продления: кому, на сколько и сколько устройств.
         "payload": json.dumps({"key": key, "days": p["days"],
-                               "devices": p["devices"], "plan": plan},
+                               "devices": p["devices"], "plan": plan,
+                               "promo": used_promo or ""},
                               ensure_ascii=False),
     }
     try:
@@ -408,7 +465,8 @@ async def pay(plan: str = "2d-12m", key: str = "", app: str = "", method: int = 
         data = r.json()
         link = data.get("redirect")
         if link:
-            LOG.info("платёж создан: %s", data.get("transactionId"))
+            LOG.info("платёж создан: %s на %s ₽%s", data.get("transactionId"), price,
+                     f" по промокоду {used_promo} (−{p['price'] - price} ₽)" if used_promo else "")
             return RedirectResponse(link, status_code=303)
         LOG.warning("Platega не вернула ссылку: %s", str(data)[:300])
     except Exception as e:
@@ -437,7 +495,17 @@ async def pay_callback(request: Request):
     ok_secret = hmac.compare_digest(
         request.headers.get("x-secret", ""), PLATEGA_SECRET)
     if not (ok_merchant and ok_secret):
-        LOG.warning("уведомление с чужими ключами отброшено")
+        # Чем именно не сошлось — видно только здесь. Самого секрета в журнал
+        # не пишем: хватает длины и того, какие заголовки вообще пришли.
+        got_secret = request.headers.get("x-secret", "")
+        LOG.warning(
+            "уведомление с чужими ключами отброшено: merchant %s, secret %s "
+            "(пришло %d знаков, ждём %d), заголовки: %s",
+            "совпал" if ok_merchant else f"не совпал ({request.headers.get('x-merchantid', '—')})",
+            "совпал" if ok_secret else "не совпал",
+            len(got_secret), len(PLATEGA_SECRET),
+            ", ".join(sorted(request.headers.keys())),
+        )
         return JSONResponse({"error": "forbidden"}, status_code=403)
 
     raw = await request.json()

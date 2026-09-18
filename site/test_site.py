@@ -148,5 +148,27 @@ class Languages(unittest.TestCase):
             self.assertEqual(r.status_code, 200, f"кабинет не открылся на {code}")
 
 
+class Coupons(unittest.TestCase):
+    """Скидочные коды. Ошибка здесь стоит денег в обе стороны: лишний ноль в
+    проценте раздаёт подписки даром, потерянный код берёт полную цену."""
+
+    def test_known_code_cuts_price(self):
+        price, code = site.apply_coupon(299, "test90")
+        self.assertEqual(code, "TEST90", "код не сработал — регистр или файл coupons.json")
+        self.assertEqual(price, 30, "299 ₽ со скидкой 90% — это 30 ₽ (округляем вверх)")
+
+    def test_unknown_code_keeps_price(self):
+        self.assertEqual(site.apply_coupon(299, "нетакого"), (299, None))
+        self.assertEqual(site.apply_coupon(299, ""), (299, None))
+
+    def test_expired_code_ignored(self):
+        site._COUPONS["mtime"] = -1
+        self.assertIsNone(site.coupon_get("PROSHLOGODNIY"))
+
+    def test_discount_never_below_rouble(self):
+        price, _ = site.apply_coupon(1, "TEST90")
+        self.assertGreaterEqual(price, 1, "платёж на 0 ₽ касса не примет")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
