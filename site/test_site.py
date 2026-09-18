@@ -150,23 +150,49 @@ class Languages(unittest.TestCase):
 
 class Coupons(unittest.TestCase):
     """Скидочные коды. Ошибка здесь стоит денег в обе стороны: лишний ноль в
-    проценте раздаёт подписки даром, потерянный код берёт полную цену."""
+    проценте раздаёт подписки даром, потерянный код берёт полную цену.
+
+    Коды берём свои, а не боевые: открытые скидки меняются без выката, и
+    тест не должен падать оттого, что код закрыли."""
+
+    def setUp(self):
+        import json as _json
+        import tempfile
+        self.file = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+        _json.dump({
+            "HALF": {"off": 50},
+            "ALMOSTFREE": {"off": 90, "until": "2999-01-01"},
+            "LASTYEAR": {"off": 50, "until": "2020-01-01"},
+            "TOOMUCH": {"off": 100},
+        }, self.file)
+        self.file.close()
+        self.saved_path = site.COUPONS_PATH
+        site.COUPONS_PATH = self.file.name
+        site._COUPONS["mtime"] = -1.0
+
+    def tearDown(self):
+        site.COUPONS_PATH = self.saved_path
+        site._COUPONS["mtime"] = -1.0
+        os.unlink(self.file.name)
 
     def test_known_code_cuts_price(self):
-        price, code = site.apply_coupon(299, "test90")
-        self.assertEqual(code, "TEST90", "код не сработал — регистр или файл coupons.json")
+        price, code = site.apply_coupon(299, "almostfree")
+        self.assertEqual(code, "ALMOSTFREE", "код не сработал — регистр или чтение файла")
         self.assertEqual(price, 30, "299 ₽ со скидкой 90% — это 30 ₽ (округляем вверх)")
+        self.assertEqual(site.apply_coupon(499, "HALF")[0], 250)
 
     def test_unknown_code_keeps_price(self):
         self.assertEqual(site.apply_coupon(299, "нетакого"), (299, None))
         self.assertEqual(site.apply_coupon(299, ""), (299, None))
 
     def test_expired_code_ignored(self):
-        site._COUPONS["mtime"] = -1
-        self.assertIsNone(site.coupon_get("PROSHLOGODNIY"))
+        self.assertIsNone(site.coupon_get("LASTYEAR"), "просроченный код обязан молчать")
+
+    def test_full_discount_refused(self):
+        self.assertIsNone(site.coupon_get("TOOMUCH"), "100% — это не скидка, а подарок мимо кассы")
 
     def test_discount_never_below_rouble(self):
-        price, _ = site.apply_coupon(1, "TEST90")
+        price, _ = site.apply_coupon(1, "ALMOSTFREE")
         self.assertGreaterEqual(price, 1, "платёж на 0 ₽ касса не примет")
 
 
