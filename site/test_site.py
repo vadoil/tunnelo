@@ -231,6 +231,26 @@ class Downloads(unittest.TestCase):
         html = self.client.get("/").text
         self.assertNotIn("Скачать Tunnelo", html, "пустой раздел скачивания не должен рисоваться")
 
+    def test_local_file_wins_over_remote(self):
+        """Файл лежит у нас — качаем с tunello.online, а не с api.amnez.online."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            saved = site.DOWNLOADS_DIR
+            site.DOWNLOADS_DIR = tmp
+            try:
+                open(os.path.join(tmp, "Tunnelo-9.9.9.apk"), "w").close()
+                self.assertEqual(
+                    site._local_link("https://api.amnez.online/dl/Tunnelo-9.9.9.apk"),
+                    f"{site.SITE_URL}/downloads/Tunnelo-9.9.9.apk",
+                )
+                # Чего нет на месте — остаётся по прежней ссылке.
+                self.assertEqual(
+                    site._local_link("https://api.amnez.online/dl/Tunnelo-Setup-9.9.9.exe"),
+                    "https://api.amnez.online/dl/Tunnelo-Setup-9.9.9.exe",
+                )
+            finally:
+                site.DOWNLOADS_DIR = saved
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

@@ -198,7 +198,19 @@ def _lang(request: Request):
 # которому приложение проверяет обновления: одна правда на сайт и на клиент,
 # и после выкладки новой версии сайт меняется сам.
 RELEASES_URL = os.getenv("TUNNELO_RELEASES_URL", "https://api.amnez.online/dl/latest.json")
+# Сами файлы лежат и здесь, рядом с сайтом: качать с tunello.online привычнее,
+# чем с технического адреса api.amnez.online, да и живёт он отдельно. Чего нет
+# на месте — остаётся по прежней ссылке, чтобы раздел не терял платформы.
+DOWNLOADS_DIR = os.getenv("TUNNELO_DOWNLOADS", os.path.join(BASE_DIR, "downloads"))
 _releases = {"at": 0.0, "data": {}}
+
+
+def _local_link(url):
+    """Ссылка на файл у нас, если он здесь есть. Иначе — как было."""
+    name = url.rsplit("/", 1)[-1]
+    if name and os.path.exists(os.path.join(DOWNLOADS_DIR, name)):
+        return f"{SITE_URL}/downloads/{name}"
+    return url
 
 
 def latest_release():
@@ -212,7 +224,7 @@ def latest_release():
         if isinstance(data, dict) and data.get("downloads"):
             _releases["data"] = {
                 "version": str(data.get("version") or ""),
-                "downloads": data["downloads"],
+                "downloads": {k: _local_link(v) for k, v in data["downloads"].items()},
             }
             _releases["at"] = now
     except Exception as e:

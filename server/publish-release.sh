@@ -15,6 +15,10 @@ REPO=vadoil/tunnelo
 HOST=root@78.17.33.149
 DL=/var/www/dl
 BASE=https://api.amnez.online/dl
+# Копия файлов на сайте: качать с tunello.online привычнее, чем с технического
+# адреса, и раздача переживёт недоступность сервера с панелью.
+SITE_HOST=root@27.102.139.44
+SITE_DL=/opt/tunnelo-site/downloads
 TMP=$(mktemp -d)
 
 fetch() { gh run download "$1" -R $REPO -D "$TMP/$2" >/dev/null || { echo "не скачался прогон $1"; exit 1; }; }
@@ -27,11 +31,21 @@ push() {
   echo "  $BASE/$2"
 }
 
+# Тот же файл на сайт. Не критично: не доехал — ссылка останется на api,
+# сайт сам выберет то, что есть (см. _local_link в site/app.py).
+push_site() {
+  scp -q "$1" "$SITE_HOST:$SITE_DL/$2.new" \
+    && ssh $SITE_HOST "mkdir -p $SITE_DL && mv -f $SITE_DL/$2.new $SITE_DL/$2" \
+    && echo "  https://tunello.online/downloads/$2" \
+    || echo "  ! на сайт $2 не доехал — ссылка останется на api.amnez.online"
+}
+
 echo "Выкладываю $VERSION…"
 ANDROID=""; WINDOWS=""; MACOS=""
 if [[ -n "$APK" && "$APK" != "-" ]]; then
   fetch "$APK" apk
   push "$(find "$TMP/apk" -name 'Tunnelo-arm64.apk' | head -1)" "Tunnelo-$VERSION.apk"
+  push_site "$(find "$TMP/apk" -name 'Tunnelo-arm64.apk' | head -1)" "Tunnelo-$VERSION.apk"
   ANDROID="$BASE/Tunnelo-$VERSION.apk"
 fi
 if [[ -n "$WIN" && "$WIN" != "-" ]]; then
@@ -41,11 +55,13 @@ if [[ -n "$WIN" && "$WIN" != "-" ]]; then
   # выложить 1.0.27 под именем 1.0.28 — приложение звало бы обновиться вечно.
   [[ "$(basename "$EXE")" == "Tunnelo-Setup-$VERSION.exe" ]] || { echo "версия установщика $(basename "$EXE") ≠ $VERSION"; exit 1; }
   push "$EXE" "Tunnelo-Setup-$VERSION.exe"
+  push_site "$EXE" "Tunnelo-Setup-$VERSION.exe"
   WINDOWS="$BASE/Tunnelo-Setup-$VERSION.exe"
 fi
 if [[ -n "$MAC" && "$MAC" != "-" ]]; then
   fetch "$MAC" mac
   push "$(find "$TMP/mac" -name 'Tunnelo-macOS.zip' | head -1)" "Tunnelo-macOS-$VERSION.zip"
+  push_site "$(find "$TMP/mac" -name 'Tunnelo-macOS.zip' | head -1)" "Tunnelo-macOS-$VERSION.zip"
   MACOS="$BASE/Tunnelo-macOS-$VERSION.zip"
 fi
 
