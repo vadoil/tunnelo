@@ -33,6 +33,7 @@
 | Подписка | `https://panel.amnez.online/sub/{subId}` | обновление раз в 12 ч |
 | Сайт tunello.online | `27.102.139.44`, `/opt/tunnelo-site`, сервис `tunnelo-site.service` | исходники в `site/`; выкат: scp app.py, templates, static/style.css + `systemctl restart tunnelo-site` (бэкап app.py.bak-дата) |
 | Скачивание сборок | `https://api.amnez.online/dl/<файл>` | nginx, файлы в `/var/www/dl` на том же сервере; выкладывать `server/publish-release.sh`, он же пишет `latest.json` для проверки обновлений |
+| Раздел «Скачать» на сайте | главная tunello.online | ссылки и номер версии берутся из `latest.json` (кэш 10 минут), править руками нечего: выложили сборку — сайт сам показывает новую |
 | Приём оплаты Platega | `https://app.platega.io/transaction/process` | ключи `PLATEGA_MERCHANT`/`PLATEGA_SECRET` в `.env` сайта (настроены 18.09.2026); Callback URL в ЛК Platega — `https://tunello.online/api/pay/callback` |
 
 **Почта.** У хостера сервиса активации закрыт исходящий SMTP, поэтому коды
