@@ -56,9 +56,9 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
     ref.watch(coreRestartSignalProvider);
 
     yield* _connectionRepo.watchConnectionStatus().doOnData((event) {
-      if (event case Disconnected(connectionFailure: final _?) when PlatformUtils.isDesktop) {
-        ref.read(Preferences.startedByUser.notifier).update(false);
-      }
+      // Tunnelo: обрыв больше не снимает «включено». Флаг означает намерение
+      // человека, а не состояние ядра: гасит туннель только кнопка, всё
+      // остальное — повод подняться заново (см. TunneloKeepAlive).
       loggy.info("connection status: ${event.format()}");
     });
   }
@@ -124,10 +124,21 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
 
   final _singleStart = SingleCall();
 
-  Future<void> _connect() async {
+  /// Поднять туннель после обрыва, о котором человек не просил.
+  ///
+  /// Отличается от обычного подключения двумя вещами: не показывает окно с
+  /// ошибкой (сторож пробует снова и снова, окна закрыли бы весь экран) и
+  /// не снимает намерение — его снимает только кнопка.
+  Future<void> reconnectAfterDrop() async {
+    if (!ref.read(Preferences.startedByUser)) return;
+    loggy.info("поднимаю туннель после обрыва");
+    await _connect(silent: true);
+  }
+
+  Future<void> _connect({bool silent = false}) async {
     _singleStart.run(
       () async {
-        await _connectThrottled();
+        await _connectThrottled(silent: silent);
       },
       onIgnored: () {
         loggy.debug("connect called while another connect/disconnect is still running, ignoring");
@@ -135,7 +146,7 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
     );
   }
 
-  Future<void> _connectThrottled() async {
+  Future<void> _connectThrottled({bool silent = false}) async {
     final activeProfile = await ref.read(activeProfileProvider.future);
     if (activeProfile == null) {
       loggy.info("no active profile, not connecting");
@@ -146,14 +157,17 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
     ) async {
       loggy.warning("error connecting", err);
       //Go err is not normal object to see the go errors are string and need to be dumped
-      await ref
-          .read(dialogNotifierProvider.notifier)
-          .showCustomAlertFromErr(err.present(ref.read(translationsProvider).requireValue));
+      if (!silent) {
+        await ref
+            .read(dialogNotifierProvider.notifier)
+            .showCustomAlertFromErr(err.present(ref.read(translationsProvider).requireValue));
+      }
       loggy.warning(err);
       if (err.toString().contains("panic")) {
         await Sentry.captureException(Exception(err.toString()));
       }
-      await ref.read(Preferences.startedByUser.notifier).update(false);
+      // Намерение не трогаем: попытка не удалась — сторож попробует снова.
+      // Гасит туннель только кнопка.
       state = AsyncError(err, StackTrace.current);
     }).run();
   }

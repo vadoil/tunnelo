@@ -183,9 +183,14 @@ class BoxService(
             }
             status.postValue(Status.Started)
 
-            if (Settings.startCoreAfterStartingService){
-                Mobile.start("","")
-                }
+            if (Settings.startCoreAfterStartingService) {
+                // Tunnelo: ядру нужен путь к конфигу. Пустые строки, которые
+                // стояли здесь, означали «запусти неизвестно что» — ядро молча
+                // не поднималось, и туннель после перезагрузки телефона или
+                // воскрешения сервиса не появлялся, хотя сам сервис работал.
+                Mobile.start(selectedConfigPath, "")
+                Log.d(TAG, "ядро запущено сервисом: $selectedConfigPath")
+            }
 //            if (delayStart) {
 //                delay(1000L)
 //            }
@@ -199,6 +204,9 @@ class BoxService(
                 notification.show(activeProfileName, R.string.status_started)
             }
             notification.start()
+            // Будильник-сторож: переживает смерть процесса и поднимает туннель,
+            // если систему прижало и она убила приложение целиком.
+            WatchdogReceiver.schedule(service as android.content.Context)
         } catch (e: Exception) {
             stopAndAlert(Alert.StartService, e.message)
             return
@@ -294,6 +302,8 @@ class BoxService(
 //            }
 //            commandServer = null
             Settings.startedByUser = false
+            // Выключено кнопкой — сторожу больше нечего караулить.
+            WatchdogReceiver.cancel(Application.application)
             withContext(Dispatchers.Main) {
                 Mobile.close(4L)
                 status.value = Status.Stopped
@@ -304,7 +314,9 @@ class BoxService(
     }
 
     private suspend fun stopAndAlert(type: Alert, message: String? = null) {
-        Settings.startedByUser = false
+        // Намерение не снимаем: ядро упало не потому, что человек этого хотел.
+        // Снимает его только кнопка (stopService), а подняться заново —
+        // задача сторожа в приложении и перезагрузки телефона.
         withContext(Dispatchers.Main) {
             if (receiverRegistered) {
                 service.unregisterReceiver(receiver)
@@ -320,8 +332,19 @@ class BoxService(
 
     @OptIn(DelicateCoroutinesApi::class)
     @Suppress("SameReturnValue")
-    internal fun onStartCommand(): Int {
-        if (status.value != Status.Stopped) return Service.START_NOT_STICKY
+    internal fun onStartCommand(intent: Intent? = null): Int {
+        // Tunnelo: START_STICKY — систему просим поднять сервис, если она его
+        // убила (память, засыпание, прошивка производителя). Выключение
+        // кнопкой идёт через stopSelf, а его sticky не воскрешает.
+        //
+        // Пустой intent означает как раз такое воскрешение: экрана нет, и
+        // ядро запустить некому — обычно это делает приложение через gRPC.
+        // Поэтому просим сервис поднять ядро самостоятельно, как после
+        // перезагрузки телефона.
+        if (intent == null) {
+            Settings.startCoreAfterStartingService = true
+        }
+        if (status.value != Status.Stopped) return Service.START_STICKY
         status.value = Status.Starting
 
         if (!receiverRegistered) {
@@ -345,7 +368,7 @@ class BoxService(
 //            }
             startService()
         }
-        return Service.START_NOT_STICKY
+        return Service.START_STICKY
     }
 
     fun onBind(intent: Intent): IBinder {

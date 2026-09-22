@@ -138,6 +138,26 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="proxy" />
         </service>
+        <!-- Tunnelo: после перезагрузки телефона и обновления приложения туннель
+             поднимается сам, если человек не выключал его кнопкой. Класс
+             BootReceiver был в проекте, но здесь не объявлен — и молчал. -->
+        <receiver
+            android:name=".bg.BootReceiver"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+        <!-- Будильник-сторож: проверяет раз в несколько минут, что туннель жив,
+             и поднимает его, если приложение убили целиком. -->
+        <receiver
+            android:name=".bg.WatchdogReceiver"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="false" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
