@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -233,4 +234,19 @@ Future<List<String>> _macApps() async {
     }
   }
   return names;
+}
+
+/// Открыть страницу приложения в системных настройках Android.
+///
+/// Оттуда чужой VPN удаляется в два касания. Пустой [packageName] открывает
+/// общий список приложений — пригодится, если пакет нам неизвестен.
+Future<void> openAppSettings([String packageName = '']) async {
+  if (!Platform.isAndroid) return;
+  try {
+    await const MethodChannel(
+      'com.hiddify.app/platform',
+    ).invokeMethod<bool>('open_app_settings', {'package': packageName});
+  } catch (_) {
+    // Настройки не открылись — не беда: в карточке написано, куда идти руками.
+  }
 }

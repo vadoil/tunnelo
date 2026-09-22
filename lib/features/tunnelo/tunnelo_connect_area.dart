@@ -6,14 +6,27 @@ import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Высота нижней панели с вкладками. Material 3 рисует её ровно такой.
+const _navBarHeight = 80.0;
+
+/// Сколько по вертикали занимает всё остальное на главной: шапка, карточка
+/// подписки, карточка про российские сайты, подпись под лисом, индикатор
+/// задержки и карточка сервера.
+const _restOfScreen = 610.0;
+
 /// Размер лиса под высоту окна. На телефоне — полные 260, в низком окне
-/// на десктопе меньше, чтобы карточка выбора сервера не уезжала за край.
-/// 560 — всё остальное на главной по вертикали: шапка, карточка подписки,
-/// подпись под лисом, индикатор задержки и карточка сервера. Ниже 160
-/// лис уже не читается. Считаем от MediaQuery, а не LayoutBuilder: главная
-/// лежит в SliverFillRemaining, которому нужна intrinsic-высота, а
-/// LayoutBuilder её не даёт.
-double foxSizeFor(double viewHeight) => (viewHeight - 560).clamp(160.0, 260.0);
+/// меньше, чтобы карточка выбора сервера не уезжала под нижнюю панель.
+///
+/// Считаем от MediaQuery, а не LayoutBuilder: главная лежит в
+/// SliverFillRemaining, которому нужна intrinsic-высота, а LayoutBuilder её
+/// не даёт. Вычитаем и системные отступы с панелью вкладок — без них лис
+/// получался максимальным, и карточка «Быстрейший сервер» срезалась пополам.
+/// Ниже 160 лис уже не читается.
+double foxSizeFor(BuildContext context) {
+  final media = MediaQuery.of(context);
+  final free = media.size.height - media.padding.top - media.padding.bottom - _navBarHeight;
+  return (free - _restOfScreen).clamp(150.0, 260.0);
+}
 
 /// Середина главного экрана: кнопка подключения — или причина, почему её нет.
 ///
@@ -35,7 +48,7 @@ class TunneloConnectArea extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        TunneloFoxButton(size: foxSizeFor(MediaQuery.sizeOf(context).height)),
+        TunneloFoxButton(size: foxSizeFor(context)),
         const ActiveProxyDelayIndicator(),
       ],
     );

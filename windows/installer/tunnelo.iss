@@ -73,8 +73,12 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopico
 ; с наивысшими правами: стартует при входе без запроса UAC.
 Filename: "schtasks"; Parameters: "/Create /F /TN ""{#AppName}"" /SC ONLOGON /RL HIGHEST /TR ""\""{app}\{#AppExe}\"""""; \
   Flags: runhidden; Tasks: autostart
+; Запускаем от имени того, кто ставил, а не от администратора, под которым
+; работает установщик. Иначе приложение стартует в чужом сеансе: процесс
+; висит, окна на рабочем столе нет — со стороны это «установилось и не
+; запускается». Права оно попросит само, своим манифестом.
 Filename: "{app}\{#AppExe}"; Description: "Запустить {#AppName}"; WorkingDir: "{app}"; \
-  Flags: nowait postinstall skipifsilent
+  Flags: nowait postinstall skipifsilent runasoriginaluser
 
 [UninstallRun]
 Filename: "taskkill"; Parameters: "/F /IM {#AppExe}"; \

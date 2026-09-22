@@ -9,7 +9,6 @@ import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/app_update/notifier/app_update_notifier.dart';
 import 'package:hiddify/features/app_update/notifier/app_update_state.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
-import 'package:hiddify/features/tunnelo/tunnelo_backdrop.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_conflict_card.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_connect_area.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_server_pill.dart';
@@ -109,10 +108,11 @@ class HomePage extends HookConsumerWidget {
             Gap(8),
           ],
         ),
-        // Tunnelo: вместо карты мира Hiddify — вид вдоль туннеля.
-        // Точка схода совпадает с кнопкой: она и есть свет в конце.
-        body: TunneloBackdrop(
-          child: Stack(
+        // Tunnelo: кольца туннеля с фона убраны — рядом с лисом они читались
+        // как чужие квадраты и спорили с ним за внимание. Свет теперь один,
+        // и он там, где ему место: вокруг фонаря.
+        body: Builder(
+          builder: (context) => Stack(
             alignment: Alignment.center,
             children: [
               Center(
@@ -140,7 +140,7 @@ class HomePage extends HookConsumerWidget {
                           // сервисов заблокирована. Плюсом человек отправляет
                           // такой адрес через туннель сам.
                           const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                             child: TunneloTunnelSitesCard(),
                           ),
                           const SliverFillRemaining(

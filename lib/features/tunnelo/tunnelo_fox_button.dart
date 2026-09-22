@@ -71,16 +71,37 @@ class TunneloFoxButton extends HookConsumerWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    if (connected)
+                    if (connected) ...[
+                      // Три слоя огня: широкое зарево заливает всё вокруг
+                      // фонаря, средний ореол держит форму, яркое ядро дышит
+                      // быстрее остальных. Один слой давал ровное пятно —
+                      // с тремя свет живёт.
+                      Align(
+                        alignment: _lantern,
+                        child: _Glow(
+                          strength: 0.30 + 0.22 * flame,
+                          warm: true,
+                          size: (300 + 60 * flame) * k,
+                        ),
+                      ),
                       Align(
                         alignment: _lantern,
                         child: _Glow(
                           strength: 0.62 + 0.38 * flame,
                           warm: true,
-                          size: (150 + 30 * flame) * k,
+                          size: (170 + 34 * flame) * k,
                         ),
-                      )
-                    else if (busy)
+                      ),
+                      Align(
+                        alignment: _lantern,
+                        child: _Glow(
+                          strength: 0.85 + 0.15 * _flicker(1 - pulse.value),
+                          warm: true,
+                          size: (74 + 16 * flame) * k,
+                          core: true,
+                        ),
+                      ),
+                    ] else if (busy)
                       Align(
                         alignment: _lantern,
                         child: _Glow(strength: 0.10 + 0.12 * t, warm: false, size: (90 + 10 * t) * k),
@@ -190,15 +211,20 @@ class _Shade extends StatelessWidget {
 
 /// Мягкое свечение фонаря.
 class _Glow extends StatelessWidget {
-  const _Glow({required this.strength, required this.warm, required this.size});
+  const _Glow({required this.strength, required this.warm, required this.size, this.core = false});
 
   final double strength;
   final bool warm;
   final double size;
 
+  /// Ядро пламени: почти белое в середине — так огонь читается горячим,
+  /// а не просто оранжевым пятном.
+  final bool core;
+
   @override
   Widget build(BuildContext context) {
     final color = warm ? const Color(0xFFFFC46B) : TunneloColors.sea;
+    final middle = core ? const Color(0xFFFFB347) : color;
     return IgnorePointer(
       child: Container(
         width: size,
@@ -207,11 +233,11 @@ class _Glow extends StatelessWidget {
           shape: BoxShape.circle,
           gradient: RadialGradient(
             colors: [
-              color.withValues(alpha: strength.clamp(0.0, 1.0)),
-              color.withValues(alpha: (strength * 0.35).clamp(0.0, 1.0)),
+              (core ? const Color(0xFFFFF3D0) : color).withValues(alpha: strength.clamp(0.0, 1.0)),
+              middle.withValues(alpha: (strength * (core ? 0.75 : 0.35)).clamp(0.0, 1.0)),
               color.withValues(alpha: 0),
             ],
-            stops: const [0.0, 0.45, 1.0],
+            stops: core ? const [0.0, 0.32, 1.0] : const [0.0, 0.45, 1.0],
           ),
         ),
       ),

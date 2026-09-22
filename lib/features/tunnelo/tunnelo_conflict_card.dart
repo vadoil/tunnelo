@@ -47,11 +47,12 @@ class _TunneloConflictCardState extends ConsumerState<TunneloConflictCard> with 
     if (conflicts.isEmpty && !foreignActive) return const SizedBox.shrink();
 
     final names = conflicts.map((c) => c.name).join(', ');
-    final title = conflicts.isEmpty ? 'Сейчас включён другой VPN' : 'Мешает другой VPN';
+    final title = conflicts.isEmpty ? 'Сейчас включён другой VPN' : 'Удалите другой VPN';
     final body = conflicts.isEmpty
         ? 'Выключите его, иначе Tunnelo не сможет подключиться.'
-        : 'Найдено: $names. Два VPN спорят за трафик, из-за этого соединение рвётся '
-              'или не поднимается. Отключите их или удалите, Tunnelo сделает всё сам.';
+        : 'Найдено: $names. Два VPN спорят за трафик: соединение рвётся или не '
+              'поднимается вовсе. Для надёжной работы удалите их — Tunnelo '
+              'заменяет их полностью и настраивается сам.';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -81,9 +82,25 @@ class _TunneloConflictCardState extends ConsumerState<TunneloConflictCard> with 
           if (conflicts.isNotEmpty) ...[
             const SizedBox(height: 10),
             if (Platform.isAndroid)
-              const Text(
-                'Настройки → Приложения → название → Удалить.',
-                style: TextStyle(color: TunneloColors.muted, fontSize: 13, height: 1.35),
+              // Кнопка на каждый найденный VPN: открывает его страницу в
+              // настройках, где есть «Удалить». Искать приложение в общем
+              // списке человеку незачем.
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final conflict in conflicts)
+                    TextButton(
+                      onPressed: () => openAppSettings(conflict.id),
+                      style: TextButton.styleFrom(
+                        foregroundColor: TunneloColors.sea,
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      child: Text('Удалить ${conflict.name}'),
+                    ),
+                ],
               )
             else if (Platform.isWindows || Platform.isMacOS)
               Align(

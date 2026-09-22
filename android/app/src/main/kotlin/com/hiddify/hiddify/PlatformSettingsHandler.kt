@@ -43,6 +43,11 @@ class PlatformSettingsHandler : FlutterPlugin, MethodChannel.MethodCallHandler, 
             RequestIgnoreBatteryOptimizations("request_ignore_battery_optimizations"),
             GetInstalledPackages("get_installed_packages"),
             GetPackagesIcon("get_package_icon"),
+
+            // Страница чужого VPN в системных настройках: оттуда его удаляют
+            // в два касания. Без этого человеку приходится искать приложение
+            // в списке из сотни других.
+            OpenAppSettings("open_app_settings"),
         }
     }
 
@@ -118,6 +123,25 @@ class PlatformSettingsHandler : FlutterPlugin, MethodChannel.MethodCallHandler, 
                 )
                 ignoreRequestResult = result
                 activity?.startActivityForResult(intent, REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            }
+
+            Trigger.OpenAppSettings.method -> {
+                val packageName = call.argument<String>("package") ?: ""
+                val intent = if (packageName.isBlank()) {
+                    Intent(android.provider.Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS)
+                } else {
+                    Intent(
+                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:$packageName")
+                    )
+                }
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    (activity ?: Application.application).startActivity(intent)
+                    result.success(true)
+                } catch (e: Exception) {
+                    result.success(false)
+                }
             }
 
             Trigger.GetInstalledPackages.method -> {
