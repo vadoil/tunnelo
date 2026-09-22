@@ -99,11 +99,36 @@ const knownVpnKeywords = <String, String>{
 };
 
 /// Android: что из установленного — известный VPN.
+///
+/// Смотрим не только на имя пакета, но и на название приложения: пакеты
+/// переименовывают, форки расходятся, и список никогда не будет полным.
+/// Happ, например, встречается и как `com.happproxy`, и под другими именами —
+/// по названию он находится в любом случае. Плюс ловим всё, что честно
+/// называет себя VPN: чужой туннель мешает нам независимо от того, знаем мы
+/// его или нет.
 List<VpnConflict> conflictsFromPackages(Iterable<({String packageName, String name})> apps) {
+  final seen = <String>{};
   final found = <VpnConflict>[];
   for (final app in apps) {
+    if (app.packageName == 'app.tunnelo.com') continue;
     final known = knownVpnPackages[app.packageName];
-    if (known != null) found.add(VpnConflict(name: known, id: app.packageName));
+    if (known != null) {
+      if (seen.add(known)) found.add(VpnConflict(name: known, id: app.packageName));
+      continue;
+    }
+    final lower = app.name.toLowerCase();
+    String? byName;
+    for (final entry in knownVpnKeywords.entries) {
+      if (_matchesWord(lower, entry.key)) {
+        byName = entry.value;
+        break;
+      }
+    }
+    // «VPN» отдельным словом в названии — почти всегда действительно VPN.
+    byName ??= _matchesWord(lower, 'vpn') ? app.name : null;
+    if (byName != null && seen.add(byName)) {
+      found.add(VpnConflict(name: byName, id: app.packageName));
+    }
   }
   return found;
 }

@@ -18,6 +18,28 @@ void main() {
     test('пусто, если чужих VPN нет', () {
       expect(conflictsFromPackages([(packageName: 'ru.yandex.searchplugin', name: 'Яндекс')]), isEmpty);
     });
+
+    test('узнаёт клиента по названию, даже если пакет незнакомый', () {
+      final found = conflictsFromPackages([
+        (packageName: 'com.example.unknown', name: 'Happ'),
+      ]);
+      expect(found.map((c) => c.name), ['Happ']);
+    });
+
+    test('ловит всё, что называет себя VPN', () {
+      final found = conflictsFromPackages([
+        (packageName: 'com.some.client', name: 'Super VPN'),
+      ]);
+      expect(found.map((c) => c.name), ['Super VPN']);
+    });
+
+    test('не считает конфликтом себя и не ловит слово внутри другого', () {
+      final found = conflictsFromPackages([
+        (packageName: 'app.tunnelo.com', name: 'Tunnelo'),
+        (packageName: 'com.happy.farm', name: 'Happy Farm'),
+      ]);
+      expect(found, isEmpty);
+    });
   });
 
   group('conflictsFromNames', () {
@@ -90,7 +112,7 @@ HKEY_LOCAL_MACHINE\\SOFTWARE\\...\\Uninstall\\Tunnelo_is1
         wrap(const TunneloConflictCard(), conflicts: const [VpnConflict(name: 'AmneziaVPN', id: 'org.amnezia.vpn')]),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Мешает другой VPN'), findsOneWidget);
+      expect(find.text('Удалите другой VPN'), findsOneWidget);
       expect(find.textContaining('AmneziaVPN'), findsOneWidget);
       expect(find.textContaining('удалите'), findsOneWidget);
     });
@@ -99,7 +121,7 @@ HKEY_LOCAL_MACHINE\\SOFTWARE\\...\\Uninstall\\Tunnelo_is1
       await tester.pumpWidget(wrap(const TunneloConflictCard(), conflicts: const []));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
-      expect(find.text('Мешает другой VPN'), findsNothing);
+      expect(find.text('Удалите другой VPN'), findsNothing);
     });
 
     testWidgets('чужой туннель без известных программ — отдельный текст', (tester) async {
