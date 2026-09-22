@@ -31,6 +31,9 @@ import com.hiddify.core.libbox.Libbox
 import com.hiddify.core.mobile.Mobile
 
 
+import com.hiddify.core.api.v2.hcore.ChangeHiddifySettingsRequest
+import com.hiddify.core.api.v2.hcore.CoreClient
+import com.hiddify.hiddify.utils.GrpcClientProvider
 import com.hiddify.core.libbox.CommandServer
 import com.hiddify.core.libbox.CommandServerHandler
 import com.hiddify.core.libbox.Notification
@@ -98,7 +101,9 @@ class BoxService(
             ContextCompat.startForegroundService(Application.application, intent)
         }
 
+        /** Выключение кнопкой: единственное, после чего туннель остаётся лежать. */
         fun stop() {
+            Settings.startedByUser = false
             Application.application.sendBroadcast(
                     Intent(Action.SERVICE_CLOSE).setPackage(
                             Application.application.packageName
@@ -184,12 +189,34 @@ class BoxService(
             status.postValue(Status.Started)
 
             if (Settings.startCoreAfterStartingService) {
-                // Tunnelo: ядру нужен путь к конфигу. Пустые строки, которые
-                // стояли здесь, означали «запусти неизвестно что» — ядро молча
-                // не поднималось, и туннель после перезагрузки телефона или
-                // воскрешения сервиса не появлялся, хотя сам сервис работал.
+                // Tunnelo: ядро поднимаем сами — приложения (и его gRPC-вызовов)
+                // сейчас нет. Две вещи, без которых это не работало:
+                //
+                // 1. Настройки. Своя база у ядра есть, но между запусками она
+                //    пуста, и без настроек оно строит конфиг по умолчанию —
+                //    без tun, то есть сервис работает, а туннеля нет. Поэтому
+                //    отдаём ядру то, что приложение сохранило при последнем
+                //    подключении, тем же gRPC-вызовом, каким это делает оно.
+                // 2. Путь к конфигу: здесь стояли пустые строки.
+                val optionsJson = Settings.coreOptionsJson
+                if (optionsJson.isNotBlank()) {
+                    try {
+                        GrpcClientProvider.grpcClient.create(CoreClient::class)
+                            .ChangeHiddifySettings()
+                            .executeBlocking(ChangeHiddifySettingsRequest(hiddify_settings_json = optionsJson))
+                        Log.d(TAG, "настройки ядра переданы сервисом")
+                    } catch (e: Exception) {
+                        Log.w(TAG, "настройки ядра не переданы: ${e.message}")
+                    }
+                } else {
+                    Log.w(TAG, "приложение не сохранило настройки ядра — туннеля не будет")
+                }
                 Mobile.start(selectedConfigPath, "")
                 Log.d(TAG, "ядро запущено сервисом: $selectedConfigPath")
+                // Флаг одноразовый: он про этот запуск без приложения. Если
+                // оставить его поднятым, следующее обычное подключение получит
+                // ядро, уже запущенное сервисом, и упадёт с «createService».
+                Settings.startCoreAfterStartingService = false
             }
 //            if (delayStart) {
 //                delay(1000L)
@@ -301,9 +328,17 @@ class BoxService(
 //                Seq.destroyRef(refnum)
 //            }
 //            commandServer = null
-            Settings.startedByUser = false
-            // Выключено кнопкой — сторожу больше нечего караулить.
-            WatchdogReceiver.cancel(Application.application)
+            // Намерение здесь не трогаем: сюда приходят и выключение кнопкой,
+            // и остановка системой — например, при перезагрузке телефона, когда
+            // VPN отзывается. Раньше оба случая снимали «включено», и после
+            // перезагрузки туннель уже не возвращался. Кнопка снимает намерение
+            // сама, там же, где её нажали (BoxService.stop()).
+            //
+            // Сторожа снимаем только вместе с намерением: остановку системой он
+            // как раз и должен пережить.
+            if (!Settings.startedByUser) {
+                WatchdogReceiver.cancel(Application.application)
+            }
             withContext(Dispatchers.Main) {
                 Mobile.close(4L)
                 status.value = Status.Stopped

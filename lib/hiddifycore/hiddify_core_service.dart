@@ -23,6 +23,7 @@ import 'package:hiddify/utils/platform_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:loggy/loggy.dart' as loggyl;
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HiddifyCoreService with InfraLogger {
   HiddifyCoreService(this.ref);
@@ -107,17 +108,32 @@ class HiddifyCoreService with InfraLogger {
     });
   }
 
+  /// Ключ, под которым лежат последние настройки ядра.
+  ///
+  /// Android-сервис читает их сам, когда поднимает ядро без приложения: своя
+  /// база у ядра есть, но между запусками она пуста, и без этих настроек оно
+  /// стартует с умолчаниями — без tun, то есть без туннеля вообще.
+  static const coreOptionsKey = 'tunnelo_core_options';
+
   TaskEither<String, Unit> changeOptions(SingboxConfigOption options) {
     return TaskEither(() async {
       loggy.debug("changing options");
       // latestOptions = options;
+      final optionsJson = jsonEncode(options.toJson());
+      try {
+        await (await SharedPreferences.getInstance()).setString(coreOptionsKey, optionsJson);
+      } catch (e) {
+        // Не смогли сохранить — туннель всё равно поднимется, просто
+        // автозапуск без приложения останется без настроек.
+        loggy.warning("настройки ядра не сохранены для автозапуска: $e");
+      }
       try {
         final res = await core.fgClient.changeHiddifySettings(
-          ChangeHiddifySettingsRequest(hiddifySettingsJson: jsonEncode(options.toJson())),
+          ChangeHiddifySettingsRequest(hiddifySettingsJson: optionsJson),
         );
         if (res.messageType != MessageType.EMPTY) return left("${res.messageType} ${res.message}");
         await core.bgClient.changeHiddifySettings(
-          ChangeHiddifySettingsRequest(hiddifySettingsJson: jsonEncode(options.toJson())),
+          ChangeHiddifySettingsRequest(hiddifySettingsJson: optionsJson),
         );
       } on GrpcError catch (e) {
         if (e.code == StatusCode.unavailable) {

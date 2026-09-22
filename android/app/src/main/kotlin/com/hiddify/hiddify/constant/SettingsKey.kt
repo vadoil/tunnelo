@@ -23,6 +23,10 @@ object SettingsKey {
 
     const val START_CORE_ON_STARTING_SERVICE = "${KEY_PREFIX}starting_core_on_starting_service"
 
+    // Последние настройки ядра, сохранённые приложением. Нужны сервису,
+    // когда он поднимает ядро сам: своя база ядра между запусками пуста.
+    const val CORE_OPTIONS_JSON = "${KEY_PREFIX}tunnelo_core_options"
+
     const val WORKING_DIR = "working_dir"
     const val BASE_DIR = "base_dir"
     const val TMP_DIR = "tmp_dir"

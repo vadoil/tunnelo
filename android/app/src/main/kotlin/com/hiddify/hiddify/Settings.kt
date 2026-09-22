@@ -154,6 +154,10 @@ object Settings {
         get() = preferences.getInt(SettingsKey.GRPC_PORT, 17078)!!
         set(value) = preferences.edit().putInt(SettingsKey.GRPC_PORT, value).apply()
 
+    /** Настройки ядра, сохранённые приложением при последнем подключении. */
+    val coreOptionsJson: String
+        get() = preferences.getString(SettingsKey.CORE_OPTIONS_JSON, "") ?: ""
+
     var startCoreAfterStartingService: Boolean
         get() = preferences.getBoolean(SettingsKey.START_CORE_ON_STARTING_SERVICE, false)
         set(value) = preferences.edit().putBoolean(SettingsKey.START_CORE_ON_STARTING_SERVICE, value).apply()
