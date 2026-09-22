@@ -22,10 +22,14 @@ const _restOfScreen = 610.0;
 /// не даёт. Вычитаем и системные отступы с панелью вкладок — без них лис
 /// получался максимальным, и карточка «Быстрейший сервер» срезалась пополам.
 /// Ниже 160 лис уже не читается.
-double foxSizeFor(BuildContext context) {
+double foxSizeFor(double freeHeight) => (freeHeight - _restOfScreen).clamp(150.0, 260.0);
+
+/// Та же высота, но посчитанная от окна: из него вычитаются системные
+/// отступы и панель вкладок — без них лис выходил максимальным, и карточка
+/// «Быстрейший сервер» срезалась пополам.
+double foxSizeForWindow(BuildContext context) {
   final media = MediaQuery.of(context);
-  final free = media.size.height - media.padding.top - media.padding.bottom - _navBarHeight;
-  return (free - _restOfScreen).clamp(150.0, 260.0);
+  return foxSizeFor(media.size.height - media.padding.top - media.padding.bottom - _navBarHeight);
 }
 
 /// Середина главного экрана: кнопка подключения — или причина, почему её нет.
@@ -48,7 +52,7 @@ class TunneloConnectArea extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        TunneloFoxButton(size: foxSizeFor(context)),
+        TunneloFoxButton(size: foxSizeForWindow(context)),
         const ActiveProxyDelayIndicator(),
       ],
     );
