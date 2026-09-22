@@ -65,6 +65,27 @@
     </div>
   </div>
 
+  {% if release and release.downloads %}
+  <div class="banner" id="download">
+    <div>
+      <h2>{{ t.dl_title }}</h2>
+      <p>{{ t.dl_text }}</p>
+      {% if release.version %}<p class="muted">{{ t.dl_version }} {{ release.version }}</p>{% endif %}
+    </div>
+    <div class="devices">
+      {% if release.downloads.android %}
+      <a class="btn btn-primary" href="{{ release.downloads.android }}">🤖 {{ t.dl_android }}</a>
+      {% endif %}
+      {% if release.downloads.windows %}
+      <a class="btn btn-ghost" href="{{ release.downloads.windows }}">🪟 {{ t.dl_windows }}</a>
+      {% endif %}
+      {% if release.downloads.macos %}
+      <a class="btn btn-ghost" href="{{ release.downloads.macos }}">🍎 {{ t.dl_macos }}</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   <div class="cards">
     <div class="card">
       <h3>{{ t.card1_h }}</h3>

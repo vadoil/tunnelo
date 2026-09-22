@@ -72,6 +72,12 @@ STRINGS = {
     "cmp_good_f": "bir marta yoqdingiz va unutdingiz",
 
     # --- устройства ---
+    "dl_title": "Tunnelo'ni yuklab oling",
+    "dl_text": "Ilovani o'rnating, kiring — tunnel o'zi ko'tariladi. Rossiya saytlari to'g'ridan-to'g'ri, bloklanganlari biz orqali ochiladi.",
+    "dl_version": "Versiya",
+    "dl_android": "Android (APK)",
+    "dl_windows": "Windows",
+    "dl_macos": "macOS",
     "dev_title": "Bitta obuna — barcha qurilmalar",
     "dev_text": "Telefon, kompyuter va planshet. Ilova hamma joyda bir xil: "
                 "oʻrnatdingiz, bitta tugmani bosdingiz — ishlaydi.",

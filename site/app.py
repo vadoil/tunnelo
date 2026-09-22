@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import re
+import time
 from datetime import datetime, timezone
 
 import httpx
@@ -193,6 +194,32 @@ def _lang(request: Request):
                      request.headers.get("accept-language", ""))
 
 
+# Свежие сборки. Ссылки и номер версии берём из того же latest.json, по
+# которому приложение проверяет обновления: одна правда на сайт и на клиент,
+# и после выкладки новой версии сайт меняется сам.
+RELEASES_URL = os.getenv("TUNNELO_RELEASES_URL", "https://api.amnez.online/dl/latest.json")
+_releases = {"at": 0.0, "data": {}}
+
+
+def latest_release():
+    """Версия и ссылки на сборки. Недоступен сервер — отдаём, что помним."""
+    now = time.monotonic()
+    if _releases["data"] and now - _releases["at"] < 600:
+        return _releases["data"]
+    try:
+        with httpx.Client(timeout=8) as client:
+            data = client.get(RELEASES_URL).json()
+        if isinstance(data, dict) and data.get("downloads"):
+            _releases["data"] = {
+                "version": str(data.get("version") or ""),
+                "downloads": data["downloads"],
+            }
+            _releases["at"] = now
+    except Exception as e:
+        LOG.warning("список сборок не обновился: %s", e)
+    return _releases["data"]
+
+
 def _ctx(request: Request, **extra):
     """Реквизиты, контакты и строки языка нужны на каждой странице."""
     lang = _lang(request)
@@ -219,6 +246,7 @@ def _ctx(request: Request, **extra):
 async def index(request: Request):
     resp = templates.TemplateResponse("index.html", _ctx(
         request, plans=PLAN_CARDS, trial_days=TRIAL_DAYS, devices=DEVICE_LIMIT,
+        release=latest_release(),
     ))
     return _remember_lang(request, resp)
 

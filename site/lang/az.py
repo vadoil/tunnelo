@@ -71,6 +71,12 @@ STRINGS = {
     "cmp_good_f": "bir dəfə yandırdınız və unutdunuz",
 
     # --- устройства ---
+    "dl_title": "Tunnelo-nu yükləyin",
+    "dl_text": "Tətbiqi quraşdırın, daxil olun — tunel özü qalxır. Rusiya saytları birbaşa, bloklananlar isə bizim vasitəmizlə açılır.",
+    "dl_version": "Versiya",
+    "dl_android": "Android (APK)",
+    "dl_windows": "Windows",
+    "dl_macos": "macOS",
     "dev_title": "Bir abunə — bütün cihazlar",
     "dev_text": "Telefon, kompüter və planşet. Tətbiq hər yerdə eynidir: "
                 "quraşdırdınız, bir düyməyə basdınız — işləyir.",

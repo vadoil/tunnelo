@@ -100,6 +100,12 @@ RU = {
     "cmp_good_f": "включили один раз и забыли",
 
     # --- устройства ---
+    "dl_title": "Скачать Tunnelo",
+    "dl_text": "Поставьте приложение, войдите — и туннель поднимется сам. Российские сайты пойдут напрямую, заблокированные — через нас.",
+    "dl_version": "Версия",
+    "dl_android": "Android (APK)",
+    "dl_windows": "Windows",
+    "dl_macos": "macOS",
     "dev_title": "Одна подписка — все устройства",
     "dev_text": "Телефон, компьютер и планшет. Приложение одинаковое везде: "
                 "поставили, нажали одну кнопку — работает.",
@@ -279,6 +285,12 @@ EN = {
     "cmp_bad_f": "and so it goes, on and off, every time",
     "cmp_good_f": "switch it on once and forget",
 
+    "dl_title": "Download Tunnelo",
+    "dl_text": "Install the app, sign in — the tunnel comes up on its own. Russian sites go direct, blocked ones go through us.",
+    "dl_version": "Version",
+    "dl_android": "Android (APK)",
+    "dl_windows": "Windows",
+    "dl_macos": "macOS",
     "dev_title": "One subscription — every device",
     "dev_text": "Phone, computer and tablet. The app is the same everywhere: "
                 "install it, press one button, it works.",

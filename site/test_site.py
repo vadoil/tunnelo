@@ -196,5 +196,41 @@ class Coupons(unittest.TestCase):
         self.assertGreaterEqual(price, 1, "платёж на 0 ₽ касса не примет")
 
 
+class Downloads(unittest.TestCase):
+    """Раздел скачивания: ссылки берутся из latest.json, а не вбиты руками —
+    иначе после каждой выкладки сайт показывал бы старую версию.
+
+    Список сборок подменяем целиком: тесты ходить в сеть не должны."""
+
+    RELEASE = {
+        "version": "9.9.9",
+        "downloads": {
+            "android": "https://api.amnez.online/dl/Tunnelo-9.9.9.apk",
+            "windows": "https://api.amnez.online/dl/Tunnelo-Setup-9.9.9.exe",
+            "macos": "https://api.amnez.online/dl/Tunnelo-macOS-9.9.9.zip",
+        },
+    }
+
+    def setUp(self):
+        self.client = TestClient(site.app)
+        self.saved = site.latest_release
+
+    def tearDown(self):
+        site.latest_release = self.saved
+
+    def test_links_and_version_on_page(self):
+        site.latest_release = lambda: self.RELEASE
+        html = self.client.get("/").text
+        self.assertIn("Tunnelo-9.9.9.apk", html, "нет ссылки на APK")
+        self.assertIn("Tunnelo-Setup-9.9.9.exe", html, "нет ссылки на Windows")
+        self.assertIn("Tunnelo-macOS-9.9.9.zip", html, "нет ссылки на macOS")
+        self.assertIn("9.9.9", html, "не показан номер версии")
+
+    def test_section_hidden_without_releases(self):
+        site.latest_release = lambda: {}
+        html = self.client.get("/").text
+        self.assertNotIn("Скачать Tunnelo", html, "пустой раздел скачивания не должен рисоваться")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
