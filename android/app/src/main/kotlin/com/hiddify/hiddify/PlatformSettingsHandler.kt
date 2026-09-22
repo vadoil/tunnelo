@@ -48,6 +48,11 @@ class PlatformSettingsHandler : FlutterPlugin, MethodChannel.MethodCallHandler, 
             // в два касания. Без этого человеку приходится искать приложение
             // в списке из сотни других.
             OpenAppSettings("open_app_settings"),
+
+            // Системный экран VPN. Там включается «Постоянный VPN» — это
+            // единственная на Android настоящая гарантия, что туннель
+            // поднимется сам после перезагрузки и не умрёт в фоне.
+            OpenVpnSettings("open_vpn_settings"),
         }
     }
 
@@ -142,6 +147,27 @@ class PlatformSettingsHandler : FlutterPlugin, MethodChannel.MethodCallHandler, 
                 } catch (e: Exception) {
                     result.success(false)
                 }
+            }
+
+            Trigger.OpenVpnSettings.method -> {
+                // ACTION_VPN_SETTINGS ведёт прямо к списку VPN с шестерёнкой,
+                // за которой «Постоянный VPN». На части прошивок такого экрана
+                // нет — тогда открываем общие настройки, чтобы не упасть молча.
+                val intents = listOf(
+                    Intent("android.net.vpn.SETTINGS"),
+                    Intent(android.provider.Settings.ACTION_SETTINGS),
+                )
+                var opened = false
+                for (intent in intents) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try {
+                        (activity ?: Application.application).startActivity(intent)
+                        opened = true
+                        break
+                    } catch (_: Exception) {
+                    }
+                }
+                result.success(opened)
             }
 
             Trigger.GetInstalledPackages.method -> {

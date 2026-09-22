@@ -9,6 +9,7 @@ import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/app_update/notifier/app_update_notifier.dart';
 import 'package:hiddify/features/app_update/notifier/app_update_state.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_always_on_card.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_conflict_card.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_connect_area.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_server_pill.dart';
@@ -136,6 +137,10 @@ class HomePage extends HookConsumerWidget {
                           },
                           // Чужой VPN на устройстве ломает туннель — просим убрать.
                           const TunneloConflictCard(),
+                          // Две системные настройки Android, без которых
+                          // туннель всё-таки может погаснуть: включить их
+                          // может только человек.
+                          const TunneloAlwaysOnCard(),
                           // Российское идёт мимо VPN, но часть российских
                           // сервисов заблокирована. Плюсом человек отправляет
                           // такой адрес через туннель сам.
