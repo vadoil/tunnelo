@@ -30,7 +30,7 @@
 | Панель 3x-ui | `https://panel.amnez.online:54629/JHrp6hPbUORIYq4aUm` | `78.17.33.149` |
 | Сервис активации | `https://api.amnez.online` | там же, systemd `tunnelo-activation`, файл `/opt/tunnelo/activation-3xui.py`, окружение `/etc/default/tunnelo-activation` |
 | Узел fi-1 | `fi.amnez.online` → `217.177.33.106` | хостер **VDSka** (AS50053), Хельсинки; 3x-ui на `:2053` |
-| Узел fi-2 | `fi2.amnez.online` → `93.152.207.159` | хостер **Fornex** (fornex.com, оплата по СБП), сеть Global Connectivity Solutions AS215540, Хельсинки. Управляющие порты (22, 2053) снаружи закрыты — `node-ssh.sh fi-2` не проходит |
+| Узел fi-2 | `fi2.amnez.online` → `93.152.207.159` | Хельсинки, сеть Global Connectivity Solutions AS215540 (support@globconnex.com). **Хостер, которому платим, не установлен**: он реселлер и в whois не виден — искать по счетам (оплата по СБП). Управляющие порты (22, 2053) снаружи закрыты, `node-ssh.sh fi-2` не проходит |
 | Подписка | `https://panel.amnez.online/sub/{subId}` | обновление раз в 12 ч |
 | Сайт tunello.online | `27.102.139.44`, `/opt/tunnelo-site`, сервис `tunnelo-site.service` | исходники в `site/`; выкат: scp app.py, templates, static/style.css + `systemctl restart tunnelo-site` (бэкап app.py.bak-дата) |
 | Скачивание сборок | `https://api.amnez.online/dl/<файл>` | nginx, файлы в `/var/www/dl` на том же сервере; выкладывать `server/publish-release.sh`, он же пишет `latest.json` для проверки обновлений |
