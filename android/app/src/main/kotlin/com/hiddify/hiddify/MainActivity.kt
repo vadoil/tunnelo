@@ -102,12 +102,12 @@ class MainActivity : FlutterFragmentActivity(), ServiceConnection.Callback {
     private val notificationPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission(),
-        ) { isGranted ->
-            if (Settings.dynamicNotification && !isGranted) {
-                onServiceAlert(Alert.RequestNotificationPermission, null)
-            } else {
-                startService0()
-            }
+        ) { _ ->
+            // Отказ в уведомлениях не повод не подключать: служба переднего
+            // плана работает и без них, просто без строки в шторке. Раньше
+            // отказ заканчивался «Непредвиденным сбоем», и VPN не поднимался
+            // вовсе, а вернуть разрешение из того окна было нельзя.
+            startService0()
         }
 
     private val prepareLauncher =
