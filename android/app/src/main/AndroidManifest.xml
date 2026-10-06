@@ -161,7 +161,7 @@
             </intent-filter>
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="vpn" />
+                android:value="VPN connection maintained by VpnService while the user is connected" />
             <meta-data android:name="android.net.VpnService.SUPPORTS_ALWAYS_ON"
                 android:value="true"/>
         </service>
@@ -171,7 +171,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="proxy" />
+                android:value="Local proxy for the VPN connection while the user is connected" />
         </service>
         <!-- Tunnelo: после перезагрузки телефона и обновления приложения туннель
              поднимается сам, если человек не выключал его кнопкой. Класс
