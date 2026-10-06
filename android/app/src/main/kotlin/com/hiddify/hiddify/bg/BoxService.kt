@@ -126,6 +126,10 @@ class BoxService(
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Action.SERVICE_CLOSE -> {
+                    // Сюда приходит и «Стоп» из уведомления, минуя stop():
+                    // это тоже выключение человеком, иначе сторож в Dart
+                    // поднимет туннель обратно через пару секунд.
+                    Settings.startedByUser = false
                     stopService()
                 }
 

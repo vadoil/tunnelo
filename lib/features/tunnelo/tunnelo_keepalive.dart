@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:hiddify/core/preferences/general_preferences.dart';
+import 'package:hiddify/core/preferences/preferences_provider.dart';
 import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/utils/custom_loggers.dart';
@@ -70,6 +71,21 @@ class TunneloKeepAlive with InfraLogger {
 
   bool get _wantedOn => _ref.read(Preferences.startedByUser);
 
+  /// «Стоп» в уведомлении Android сбрасывает намерение прямо в общих
+  /// настройках, мимо Dart, а Dart держит их копию в памяти. Без перечитки
+  /// сторож считал это обрывом и через пару секунд поднимал туннель, который
+  /// человек только что выключил.
+  Future<bool> _stillWanted() async {
+    if (!_wantedOn) return false;
+    final prefs = _ref.read(sharedPreferencesProvider).requireValue;
+    await prefs.reload();
+    if (prefs.getBool("started_by_user") ?? false) return true;
+    loggy.info("выключено из уведомления — не поднимаю");
+    _attempt = 0;
+    await _ref.read(Preferences.startedByUser.notifier).update(false);
+    return false;
+  }
+
   void _cancelRetry() {
     _retry?.cancel();
     _retry = null;
@@ -101,7 +117,7 @@ class TunneloKeepAlive with InfraLogger {
     loggy.info("туннель упал, попытка $_attempt через ${wait.inSeconds} с");
     _retry = Timer(wait, () async {
       _retry = null;
-      if (_stopped || !_wantedOn) return;
+      if (_stopped || !await _stillWanted()) return;
       final state = _ref.read(connectionNotifierProvider);
       if (state case AsyncData(value: Connected() || Connecting())) return;
       await _ref.read(connectionNotifierProvider.notifier).reconnectAfterDrop();
