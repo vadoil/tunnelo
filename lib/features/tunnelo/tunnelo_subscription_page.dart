@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hiddify/features/tunnelo/tunnelo_activation.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_subscription.dart';
 import 'package:hiddify/features/tunnelo/tunnelo_theme.dart';
+import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// Подписка целиком: срок, устройства и всё, что с ней можно сделать.
@@ -81,6 +83,17 @@ class TunneloSubscriptionPage extends ConsumerWidget {
               subtitle: 'Промокод, код друга или перенос подписки',
               onTap: () => context.pushNamed('promoCode'),
             ),
+            // Google Play требует удаление аккаунта прямо из приложения.
+            // Заявка уходит с сайта: там проверяется пароль.
+            if (account != null)
+              _Action(
+                icon: Icons.delete_outline_rounded,
+                title: 'Удалить аккаунт',
+                subtitle: 'Заявка на сайте, удалим за 30 дней',
+                onTap: () => UriUtils.tryLaunch(
+                  Uri.parse('${TunneloConfig.siteUrl}/delete-account'),
+                ),
+              ),
           ],
         ),
       ),

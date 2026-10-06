@@ -71,6 +71,24 @@ class Cabinet(unittest.TestCase):
         self.assertIn('name="password"', html)
         self.assertIn("/cabinet/forgot", html, "нет ссылки «Забыли пароль»")
 
+    def test_delete_account_page_opens(self):
+        # Ссылку на неё требует Google Play: без удаления аккаунта не пропустят.
+        r = self.client.get("/delete-account")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('action="/delete-account"', r.text)
+        self.assertIn('name="password"', r.text)
+
+    def test_delete_account_wrong_password_explains(self):
+        async def fake(method, path, **kw):
+            return 401, {}
+        orig, site._activation = site._activation, fake
+        try:
+            r = self.client.post("/delete-account", data={"login": "x", "password": "y"})
+        finally:
+            site._activation = orig
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("не подошли", r.text)
+
     def test_forgot_page_opens(self):
         r = self.client.get("/cabinet/forgot")
         self.assertEqual(r.status_code, 200)

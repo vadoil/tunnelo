@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Удаление аккаунта — Tunnelo{% endblock %}
+{% block body %}
+<div class="wrap wrap-narrow">
+  <img class="cab-fox" src="/static/fox/lantern.png" alt="">
+
+  {% if sent %}
+    <h1>Заявка принята</h1>
+    <p class="sub">Удалим аккаунт в течение 30 дней и напишем на почту аккаунта, когда закончим.
+       Копия заявки уже ушла вам на почту.</p>
+    <p class="note">Передумали — ответьте на письмо или напишите на
+       <a href="mailto:{{ email }}">{{ email }}</a>.</p>
+  {% else %}
+    <h1>Удаление аккаунта</h1>
+    <p class="sub">Введите логин и пароль от Tunnelo — так мы убедимся, что аккаунт ваш.</p>
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+    <form method="post" action="/delete-account" class="cab-form">
+      <input class="field" name="login" placeholder="Логин или почта"
+             value="{{ login or '' }}" autocomplete="username" autofocus required>
+      <input class="field" name="password" type="password" placeholder="Пароль"
+             autocomplete="current-password" required>
+      <button class="btn btn-primary" type="submit">Удалить аккаунт</button>
+    </form>
+
+    <p class="note"><b>Что удалим:</b> почту, логин и пароль, ключ подписки, привязки
+       устройств и сведения о переданном трафике. Оставшиеся дни подписки сгорят,
+       деньги за них не возвращаются.</p>
+    <p class="note"><b>Что останется:</b> сведения об оплатах (номер операции, сумма, дата) —
+       их закон велит хранить в бухгалтерских документах. С аккаунтом они больше
+       не связаны.</p>
+    <p class="note">Не помните пароль — <a href="/cabinet/forgot">восстановите его</a>
+       или напишите на <a href="mailto:{{ email }}">{{ email }}</a> с почты аккаунта.</p>
+  {% endif %}
+</div>
+{% endblock %}

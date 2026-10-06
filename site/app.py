@@ -643,6 +643,13 @@ async def internal_mail(request: Request):
     if "@" not in to or not text:
         return JSONResponse({"error": "bad request"}, status_code=400)
 
+    if not await send_mail(to, subject, text):
+        return JSONResponse({"error": "send failed"}, status_code=502)
+    return {"ok": True}
+
+
+async def send_mail(to, subject, text):
+    """Письмо через внешний SMTP или локальный postfix. False — не ушло."""
     msg = EmailMessage()
     msg["From"] = MAIL_FROM
     msg["To"] = to
@@ -670,9 +677,61 @@ async def internal_mail(request: Request):
         await asyncio.to_thread(send)
     except Exception as e:
         LOG.error("письмо на %s не ушло: %s", to, e)
-        return JSONResponse({"error": "send failed"}, status_code=502)
+        return False
     LOG.info("письмо отправлено на %s", to)
-    return {"ok": True}
+    return True
+
+
+@app.get("/delete-account", response_class=HTMLResponse)
+async def delete_account_form(request: Request):
+    return templates.TemplateResponse("delete_account.html", _ctx(request))
+
+
+@app.post("/delete-account", response_class=HTMLResponse)
+async def delete_account(request: Request, login: str = Form(""), password: str = Form("")):
+    """
+    Заявка на удаление аккаунта. Её требует Google Play: если в приложении
+    можно завести аккаунт, удалить его тоже должно быть можно — из
+    приложения и по ссылке в интернете.
+
+    Пароль проверяем у сервиса активации, чтобы чужой аккаунт нельзя было
+    удалить по одному логину. Само удаление делает поддержка руками: оно
+    задевает и клиента в панели, а сведения об оплатах закон велит хранить.
+    """
+    login = login.strip().lower()
+    st, data = await _activation("POST", "/auth/login",
+                                 json={"login": login, "password": password})
+    if st == 0:
+        return templates.TemplateResponse("delete_account.html", _ctx(
+            request, error="Сервис сейчас не отвечает. Попробуйте через несколько минут "
+                           f"или напишите на {SUPPORT_EMAIL}.", login=login))
+    if st != 200 or not data.get("token"):
+        return templates.TemplateResponse("delete_account.html", _ctx(
+            request, error="Логин или пароль не подошли. Забыли пароль — восстановите его "
+                           "в личном кабинете или напишите нам с почты аккаунта.", login=login))
+
+    st, me = await _activation("GET", "/me", headers={"Authorization": "Bearer " + data["token"]})
+    email = (me or {}).get("email", "") if st == 200 else ""
+    stamp = datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
+    sent = await send_mail(
+        SUPPORT_EMAIL, f"Удалить аккаунт: {login}",
+        f"Заявка на удаление аккаунта с сайта, {stamp}.\n\n"
+        f"Логин: {login}\nПочта: {email or 'не получена'}\n\n"
+        "Пароль проверен. Удалить пользователя, клиента в панели и привязки "
+        "устройств в течение 30 дней; сведения об оплатах оставить на срок, "
+        "который требует закон.")
+    if not sent:
+        return templates.TemplateResponse("delete_account.html", _ctx(
+            request, error=f"Заявка не отправилась. Напишите нам на {SUPPORT_EMAIL} "
+                           "с почты аккаунта — удалим так же.", login=login))
+    LOG.info("заявка на удаление аккаунта %s", login)
+    if email:
+        await send_mail(
+            email, "Заявка на удаление аккаунта Tunnelo",
+            "Мы получили заявку на удаление вашего аккаунта Tunnelo "
+            f"({login}). Удалим его в течение 30 дней и напишем, когда закончим.\n\n"
+            f"Если заявку отправили не вы, ответьте на это письмо или напишите на {SUPPORT_EMAIL}.")
+    return templates.TemplateResponse("delete_account.html", _ctx(request, sent=True))
 
 
 @app.get("/paid", response_class=HTMLResponse)
