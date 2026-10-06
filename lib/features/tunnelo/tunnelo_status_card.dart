@@ -164,9 +164,12 @@ class TunneloStatusCard extends ConsumerWidget {
     'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
   ];
 
+  /// Год пишем, когда он не нынешний: без него годовая подписка в день
+  /// покупки читалась «до 6 октября» — будто кончается сегодня.
   static String _date(DateTime when) {
     final local = when.toLocal();
-    return '${local.day} ${_months[local.month - 1]}';
+    final day = '${local.day} ${_months[local.month - 1]}';
+    return local.year == DateTime.now().year ? day : '$day ${local.year}';
   }
 
   static String _traffic(SubscriptionInfo info) {

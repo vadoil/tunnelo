@@ -20,6 +20,12 @@ void main() {
       expect(line, isNot(contains('дн')));
     });
 
+    test('у годовой подписки виден год, иначе она «кончается сегодня»', () {
+      final expire = DateTime.now().add(const Duration(days: 365, hours: 1));
+      expect(TunneloStatusCard.headlineFor(sub(days: 365)),
+          endsWith(' ${expire.year}'));
+    });
+
     test('последний день и просрочка называются своими словами', () {
       expect(TunneloStatusCard.headlineFor(sub(days: 0)),
           'Подписка кончается сегодня');
