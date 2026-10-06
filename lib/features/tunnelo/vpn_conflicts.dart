@@ -31,6 +31,10 @@ class VpnConflict {
 }
 
 /// Известные VPN-клиенты на Android: пакет → имя для человека.
+///
+/// Новый пакет добавлять и в `<queries>` AndroidManifest.xml: без
+/// QUERY_ALL_PACKAGES Android показывает приложению только перечисленные там
+/// пакеты и те, что с иконкой на рабочем столе.
 const knownVpnPackages = <String, String>{
   'org.amnezia.vpn': 'AmneziaVPN',
   'org.outline.android.client': 'Outline',

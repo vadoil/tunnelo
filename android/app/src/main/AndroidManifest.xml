@@ -20,9 +20,44 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- QUERY_ALL_PACKAGES не нужен, и Google Play требует для него особого
+         обоснования. Убираем, даже если его принесёт библиотека. Списку
+         приложений для раздельного туннелирования хватает запроса «всё, что
+         с иконкой на рабочем столе»; поиску чужих VPN — их пакетов поимённо
+         (держать в согласии с knownVpnPackages в vpn_conflicts.dart). -->
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
+        tools:node="remove" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <package android:name="app.hiddify.com" />
+        <package android:name="ch.protonvpn.android" />
+        <package android:name="com.cloudflare.onedotonedotonedotone" />
+        <package android:name="com.expressvpn.vpn" />
+        <package android:name="com.freevpnplanet" />
+        <package android:name="com.happproxy" />
+        <package android:name="com.kaspersky.secure.connection" />
+        <package android:name="com.nordvpn.android" />
+        <package android:name="com.psiphon3" />
+        <package android:name="com.surfshark.vpnclient.android" />
+        <package android:name="com.tunnelbear.android" />
+        <package android:name="com.v2ray.ang" />
+        <package android:name="com.windscribe.vpn" />
+        <package android:name="com.wireguard.android" />
+        <package android:name="de.blinkt.openvpn" />
+        <package android:name="free.vpn.unblock.proxy.turbovpn" />
+        <package android:name="hotspotshield.android.vpn" />
+        <package android:name="io.nekohasekai.sfa" />
+        <package android:name="moe.nb4a" />
+        <package android:name="net.openvpn.openvpn" />
+        <package android:name="org.amnezia.vpn" />
+        <package android:name="org.browsec.vpn" />
+        <package android:name="org.outline.android.client" />
+    </queries>
 
     <application
         android:allowBackup="false"
