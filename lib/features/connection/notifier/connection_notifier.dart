@@ -122,6 +122,23 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
     }
   }
 
+  /// A subscription reload must not turn the VPN on or claim success while
+  /// another connection transition is still in progress.
+  Future<bool> applyProfileUpdate(ProfileEntity profile) async {
+    final current = state.asData?.value;
+    if (current is Disconnected) return true; // The next start reads the new file.
+    if (current is! Connected || !ref.read(Preferences.startedByUser)) return false;
+    final result = await _connectionRepo.reconnect(profile, ref.read(Preferences.disableMemoryLimit)).run();
+    if (!ref.read(Preferences.startedByUser)) {
+      await _connectionRepo.disconnect().run();
+      return false;
+    }
+    return result.match((failure) {
+      loggy.warning('subscription reload failed; will retry', failure);
+      return false;
+    }, (_) => true);
+  }
+
   final _singleStart = SingleCall();
 
   /// Поднять туннель после обрыва, о котором человек не просил.

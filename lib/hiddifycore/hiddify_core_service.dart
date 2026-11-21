@@ -260,9 +260,7 @@ class HiddifyCoreService with InfraLogger {
         if (res.messageType != MessageType.EMPTY) return left("${res.messageType} ${res.message}");
       } on GrpcError catch (e) {
         loggy.error("failed to restart bg core: $e");
-        if (e.code == StatusCode.unknown && !(e.message?.contains("HTTP/2 error") ?? false)) {
-          return left("${e.message}");
-        }
+        return left(e.message ?? e.toString());
       }
 
       return right(unit);

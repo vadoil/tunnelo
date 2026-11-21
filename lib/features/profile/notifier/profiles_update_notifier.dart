@@ -93,13 +93,13 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
     _foreground = true;
     if (!ref.read(Preferences.introCompleted)) return;
     _refreshManagedNextRun = true;
-    await _scheduler?.trigger();
+    await updateProfiles();
   }
 
   Future<void> trigger() async {
     loggy.debug("triggering update");
     _forceNextRun = true;
-    await _scheduler?.trigger();
+    await updateProfiles();
   }
 
   @visibleForTesting
@@ -133,7 +133,6 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
       _pendingReloads.removeWhere((id) => !ids.contains(id));
       for (final profile in remoteProfiles) {
         if (!_foreground) return;
-        await _applyPendingProfile(repository, profile.id);
         final managed = _isManaged(profile);
         final updateInterval = _updateIntervalFor(profile);
         final checked = _lastChecks[profile.id];
@@ -150,9 +149,9 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
                 sourceChanged ||
                 updateInterval <= clock().difference(lastCheck));
         if (force || due) {
+          final cancelToken = _pollCancelToken = CancelToken();
           RemoteProfileSource? source;
           if (managed) {
-            final cancelToken = _pollCancelToken = CancelToken();
             final fetched = await ref
                 .read(profileParserProvider)
                 .fetchRemoteSource(profile.url, cancelToken: cancelToken)
@@ -163,7 +162,10 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
               _report(profile, success: false, notify: force);
               return null;
             }, (value) => value);
-            if (source == null) continue;
+            if (source == null) {
+              await _applyPendingProfile(repository, profile.id);
+              continue;
+            }
             final cached = _sources[profile.id];
             if (!force &&
                 cached != null &&
@@ -171,61 +173,47 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
                 cached.version == source.fingerprint &&
                 cached.userOverride == profile.userOverride?.toStr()) {
               _lastChecks[profile.id] = clock();
+              await _applyPendingProfile(repository, profile.id);
               continue;
             }
             final current = (await repository.getById(profile.id).run()).getOrElse((_) => null);
             if (current is! RemoteProfileEntity || current.url != profile.url) continue;
           }
-          final previousProfile = (await repository.getById(profile.id).run()).getOrElse((_) => null);
-          final previousConfig = await repository.getRawConfig(profile.id).run();
-          final result = await repository
-              .upsertRemote(profile.url, source: source, cancelToken: _pollCancelToken)
-              .run();
-          if (_foreground) {
-            result.match(
-              (l) {
-                loggy.debug("error updating profile [${profile.id}]", l);
-                _report(profile, success: false, notify: force);
-              },
-              (_) {
-                loggy.debug("profile [${profile.id}] updated successfully");
-                _report(profile, success: true, notify: force);
-              },
-            );
-          }
-
-          if (result.isRight() && source != null) {
-            _sources[profile.id] = (
-              url: profile.url,
-              version: source.fingerprint,
-              userOverride: profile.userOverride?.toStr(),
-            );
-            _lastChecks[profile.id] = clock();
-          }
-
-          // Список на экране берётся из работающего ядра. Одной записи на
-          // диск недостаточно: применяем изменившийся профиль к туннелю.
-          if (result.isRight()) {
-            final currentConfig = await repository.getRawConfig(profile.id).run();
-            final currentProfile = (await repository.getById(profile.id).run()).getOrElse((_) => null);
-            if (currentConfig.isRight() &&
-                (previousConfig != currentConfig ||
-                    previousProfile?.profileOverride != currentProfile?.profileOverride)) {
-              _pendingReloads.add(profile.id);
+          final result = await repository.refreshRemote(profile, source: source, cancelToken: cancelToken).run();
+          final receipt = result.match((failure) {
+            loggy.debug('error updating profile [${profile.id}]', failure);
+            if (_foreground) _report(profile, success: false, notify: force);
+            return null;
+          }, (value) => value);
+          if (receipt != null) {
+            if (_foreground) _report(profile, success: true, notify: force);
+            if (source != null) {
+              _sources[profile.id] = (
+                url: profile.url,
+                version: source.fingerprint,
+                userOverride: profile.userOverride?.toStr(),
+              );
             }
-            await _applyPendingProfile(repository, profile.id);
+            _lastChecks[profile.id] = clock();
+            if (receipt.configurationChanged) _pendingReloads.add(profile.id);
           }
         } else {
           loggy.debug(
             "skipping profile [${profile.id}] update. last successful update: [${profile.lastUpdate}] - interval: [${profile.options?.updateInterval}]",
           );
         }
+        await _applyPendingProfile(repository, profile.id);
       }
     } finally {
       // Неудачная попытка не сдвигает срок следующего обновления: он
       // считается по lastUpdate, записанному только после успешной загрузки.
       _updating = false;
       _pollCancelToken = null;
+      // Resume/manual refresh during a slow download is coalesced into one
+      // fresh pass. Periodic ticks never build an unbounded request queue.
+      if (_foreground && (_forceNextRun || _refreshManagedNextRun)) {
+        await updateProfiles();
+      }
     }
   }
 
@@ -235,7 +223,8 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
     if (!_foreground) return;
     final profile = active.getOrElse((_) => null);
     if (profile?.id == id) {
-      await ref.read(connectionNotifierProvider.notifier).reconnect(profile);
+      final applied = await ref.read(connectionNotifierProvider.notifier).applyProfileUpdate(profile!);
+      if (!applied) return;
     }
     _pendingReloads.remove(id);
   }

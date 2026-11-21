@@ -59,12 +59,17 @@ class _Parser implements ProfileParser {
 
 class _Connection extends ConnectionNotifier {
   final reconnected = <ProfileEntity?>[];
+  bool canApply = true;
 
   @override
   Stream<ConnectionStatus> build() => Stream.value(const Connected());
 
   @override
-  Future<void> reconnect(ProfileEntity? profile) async => reconnected.add(profile);
+  Future<bool> applyProfileUpdate(ProfileEntity profile) async {
+    if (!canApply) return false;
+    reconnected.add(profile);
+    return true;
+  }
 }
 
 class _Repository implements ProfileRepository {
@@ -98,16 +103,17 @@ class _Repository implements ProfileRepository {
       TaskEither.right(profiles.where((p) => p.id == id).firstOrNull);
 
   @override
-  TaskEither<ProfileFailure, Unit> upsertRemote(
-    String url, {
-    UserOverride? userOverride,
+  TaskEither<ProfileFailure, ProfileRefreshResult?> refreshRemote(
+    RemoteProfileEntity expected, {
     CancelToken? cancelToken,
     RemoteProfileSource? source,
   }) => TaskEither(() async {
+    final url = expected.url;
     requested.add(url);
     appliedSources.add(source);
     await pending?.future;
     if (fail) return left(const ProfileFailure.unexpected());
+    final before = config;
     config = source?.content ?? nextConfig;
     profiles = [
       for (final p in profiles)
@@ -117,7 +123,12 @@ class _Repository implements ProfileRepository {
           p,
     ];
     afterApply?.call();
-    return right(unit);
+    return right(
+      ProfileRefreshResult(
+        configurationChanged:
+            RemoteProfileSource.configurationVersion(before) != RemoteProfileSource.configurationVersion(config),
+      ),
+    );
   });
 
   @override
@@ -345,6 +356,45 @@ void main() {
     await updater.updateProfiles();
     expect(connection.reconnected, hasLength(1));
     expect(repository.requested, hasLength(1));
+  });
+
+  test('не теряет обновление пока ядро подключается или предыдущая попытка не удалась', () async {
+    repository.profiles = [_profile(active: true)];
+    repository.nextConfig = 'new servers';
+    connection.canApply = false;
+    await updater.updateProfiles();
+    expect(connection.reconnected, isEmpty);
+    connection.canApply = true;
+    await updater.updateProfiles();
+    expect(connection.reconnected, hasLength(1));
+    await updater.updateProfiles();
+    expect(connection.reconnected, hasLength(1));
+  });
+
+  test('перестановка полей JSON не перезапускает туннель', () async {
+    repository.profiles = [_profile(active: true)];
+    repository.config = '{"server":"example.com","port":443}';
+    repository.nextConfig = ' { "port": 443, "server": "example.com" } ';
+    await updater.updateProfiles();
+    expect(connection.reconnected, isEmpty);
+  });
+
+  test('возврат во время загрузки запрашивает один свежий ответ после её завершения', () async {
+    SharedPreferences.setMockInitialValues({'intro_completed': true});
+    await container.read(sharedPreferencesProvider.future);
+    repository.pending = Completer<void>();
+    final running = updater.updateProfiles();
+    while (repository.requested.isEmpty) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    updater.suspend();
+    await updater.refresh();
+    parser.headers = {'profile-title': 'changed after resume'};
+    repository.nextConfig = 'changed while resuming';
+    repository.pending!.complete();
+    await running;
+    expect(parser.checks, 2);
+    expect(repository.config, 'changed while resuming');
   });
 
   test('настоящий планировщик проверяет при запуске и сразу после возврата из фона', () async {
