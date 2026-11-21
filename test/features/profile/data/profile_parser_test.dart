@@ -8,6 +8,36 @@ void main() {
   const validExtendedUrl = "https://example.com/configurations/user1/filename.yaml?test#b";
   const validSupportUrl = "https://example.com/support";
 
+  group('адрес загрузки подписки', () {
+    test('исправляет сохранённые адреса Tunnelo, которые теперь отвечают 404', () {
+      for (final host in ['panel.amnez.online', 'api.amnez.online']) {
+        expect(
+          ProfileParser.subscriptionDownloadUrl('https://$host/api/sub/test_key-1'),
+          'https://$host/sub/test_key-1',
+        );
+      }
+    });
+
+    test('сохраняет параметры, название профиля и завершающий слеш', () {
+      expect(
+        ProfileParser.subscriptionDownloadUrl(' https://panel.amnez.online/api/sub/test/?all=1#Tunnelo '),
+        'https://panel.amnez.online/sub/test/?all=1#Tunnelo',
+      );
+    });
+
+    test('сохраняет работающие адреса и ссылки других провайдеров', () {
+      for (final url in [
+        'https://api.amnez.online/sub/test',
+        'https://panel.amnez.online/sub/test',
+        'https://example.com/api/sub/test',
+        'https://panel.amnez.online:54629/api/sub/test',
+        'https://panel.amnez.online/another/api/sub/test',
+      ]) {
+        expect(ProfileParser.subscriptionDownloadUrl(url), url);
+      }
+    });
+  });
+
   group("parse", () {
     test("Should use filename in url with no headers and fragment", () {
       final profile = ProfileParser.parse(

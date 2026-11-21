@@ -53,6 +53,23 @@ class ProfileParser {
   final DioHttpClient _httpClient;
 
   ProfileParser({required Ref ref, required DioHttpClient httpClient}) : _ref = ref, _httpClient = httpClient;
+
+  /// Старый адрес Tunnelo /api/sub/ больше не обслуживается. Исправляем
+  /// запрос, сохраняя сам профиль, его настройки и ключ подписки.
+  @visibleForTesting
+  static String subscriptionDownloadUrl(String url) {
+    final value = url.trim();
+    final uri = Uri.tryParse(value);
+    if (uri != null &&
+        uri.scheme == 'https' &&
+        uri.port == 443 &&
+        (uri.host == 'panel.amnez.online' || uri.host == 'api.amnez.online') &&
+        RegExp(r'^/api/sub/[A-Za-z0-9_-]+/?$').hasMatch(uri.path)) {
+      return uri.replace(path: uri.path.replaceFirst('/api/sub/', '/sub/')).toString();
+    }
+    return value;
+  }
+
   TaskEither<ProfileFailure, ProfileEntriesCompanion> addLocal({
     required String id,
     required String content,
@@ -66,7 +83,7 @@ class ProfileParser {
             cancelToken: CancelToken(),
             ref: _ref,
           );
-        }, (_, __) => const ProfileFailure.unexpected())
+        }, (_, _) => const ProfileFailure.unexpected())
         .flatMap((_) => TaskEither.fromEither(populateHeaders(content: content)))
         .flatMap(
           (populatedHeaders) => TaskEither.fromEither(
@@ -151,7 +168,7 @@ class ProfileParser {
 
     final rs = await _httpClient
         .download(
-          url.trim(),
+          subscriptionDownloadUrl(url),
           tempFilePath,
           cancelToken: cancelToken,
           userAgent: _ref.read(ConfigOptions.useXrayCoreWhenPossible)

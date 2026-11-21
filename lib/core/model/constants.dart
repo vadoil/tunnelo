@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 abstract class Constants {
-  static const defaultSubscriptionTemplate = "https://panel.amnez.online/api/sub/{key}";
+  static const defaultSubscriptionTemplate = "https://api.amnez.online/sub/{key}";
   static const ruDirectDomainsUrl = "https://panel.amnez.online/lists/amnezia.json";
   static const ruDirectIpsUrl = "https://panel.amnez.online/lists/amnezia-ip-lite.json";
   static const appName = "Tunnelo";
