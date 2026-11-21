@@ -198,7 +198,7 @@ class ProfileParser {
     if (source != null) {
       if (cancelToken?.isCancelled ?? false) throw const ProfileFailure.cancelByUser();
       await File(tempFilePath).writeAsString(source.content);
-      remoteHeaders = source.headers;
+      remoteHeaders = Map<String, dynamic>.from(source.headers);
     } else {
       final rs = await _httpClient
           .download(

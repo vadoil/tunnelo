@@ -57,6 +57,7 @@ void main() {
     final source = (await parser.fetchRemoteSource('https://api.amnez.online/sub/test').run()).getOrElse(
       (e) => throw e,
     );
+    final fingerprint = source.fingerprint;
     final temp = await Directory.systemTemp.createTemp('tunnelo-subscription-test-');
     addTearDown(() => temp.delete(recursive: true));
     final path = '${temp.path}/profile';
@@ -79,6 +80,7 @@ void main() {
     expect(await File(path).readAsString(), source.content);
     expect(entry.name.value, 'New servers');
     expect(entry.updateInterval.value, const Duration(hours: 1));
+    expect(source.fingerprint, fingerprint);
   });
 
   test('пустой ответ сервера не принимается как новая подписка', () async {

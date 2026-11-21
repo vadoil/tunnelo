@@ -78,6 +78,7 @@ class _Repository implements ProfileRepository {
   bool fail = false;
   bool switchProfile = false;
   Completer<void>? pending;
+  void Function()? afterApply;
 
   @override
   Stream<Either<ProfileFailure, List<ProfileEntity>>> watchAll({
@@ -115,6 +116,7 @@ class _Repository implements ProfileRepository {
         else
           p,
     ];
+    afterApply?.call();
     return right(unit);
   });
 
@@ -318,6 +320,22 @@ void main() {
     await updater.updateProfiles();
     expect(parser.checks, 0);
     expect(repository.requested, isEmpty);
+  });
+
+  test('применяет обновление после возврата, если Android свернул приложение во время записи', () async {
+    SharedPreferences.setMockInitialValues({'intro_completed': true});
+    await container.read(sharedPreferencesProvider.future);
+    repository.profiles = [_profile(active: true)];
+    repository.nextConfig = 'new servers';
+    repository.afterApply = updater.suspend;
+    await updater.updateProfiles();
+    expect(repository.config, 'new servers');
+    expect(connection.reconnected, isEmpty);
+    repository.afterApply = null;
+    await updater.refresh();
+    await updater.updateProfiles();
+    expect(connection.reconnected, hasLength(1));
+    expect(repository.requested, hasLength(1));
   });
 
   test('настоящий планировщик проверяет при запуске и сразу после возврата из фона', () async {
