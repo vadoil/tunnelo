@@ -212,7 +212,7 @@ class BoxService(
             DefaultNetworkMonitor.start()
             Libbox.setMemoryLimit(!Settings.disableMemoryLimit)
             val newService = try {
-                Mobile.setup(
+                CoreSetup.background(
                     SetupOptions().also {
                         it.basePath = Settings.baseDir
                         it.workingDir = Settings.workingDir
@@ -389,6 +389,7 @@ class BoxService(
             }
             withContext(Dispatchers.Main) {
                 Mobile.close(4L)
+                CoreSetup.clear(platformInterface)
                 status.value = Status.Stopped
                 service.stopSelf()
             }
@@ -465,6 +466,7 @@ class BoxService(
 
     fun onDestroy() {
         healthMonitor.stop()
+        CoreSetup.clear(platformInterface)
         binder.close()
     }
 

@@ -586,6 +586,11 @@ class HiddifyCoreService with InfraLogger {
   }
 
   Future<void> closeFront() async {
+    // Android shares one Go instance between the UI and the VPN service.
+    // Closing its foreground channel also stops the shared tunnel; recreating
+    // it with a null platform interface then prevents native VPN recovery.
+    // Keep that channel alive while the foreground service owns the process.
+    if (PlatformUtils.isAndroid) return;
     if (!core.isInitialized()) {
       return;
     }
