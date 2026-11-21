@@ -103,6 +103,10 @@ jobs:
       - name: Prepare (flutter deps, кодогенерация)
         run: make tunnelo-android-prepare CHANNEL=prod
 
+      - name: Android tunnel recovery tests
+        working-directory: android
+        run: ./gradlew :app:testReleaseUnitTest -Ptarget=lib/main_prod.dart
+
       # Подпись релиза. Без ключа gradle берёт debug-ключ раннера, а он у
       # каждого прогона новый — обновиться поверх старой версии нельзя
       # («signatures do not match»). Секреты репозитория:
