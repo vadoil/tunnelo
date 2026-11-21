@@ -50,7 +50,7 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
       timeout: const Duration(minutes: 5),
       task: () async {
         loggy.debug("cycle [${cycleCount++}]");
-        await updateProfiles();
+        await updateProfiles(scheduled: true);
       },
     );
 
@@ -103,7 +103,7 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
   }
 
   @visibleForTesting
-  Future<void> updateProfiles() async {
+  Future<void> updateProfiles({bool scheduled = false}) async {
     if (_updating || !_foreground) return;
     _updating = true;
     final force = _forceNextRun;
@@ -145,7 +145,10 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
             (previousSource.url != profile.url || previousSource.userOverride != profile.userOverride?.toStr());
         final due =
             updateInterval != null &&
-            (refreshManaged && managed || sourceChanged || updateInterval <= clock().difference(lastCheck));
+            (refreshManaged && managed ||
+                scheduled && managed && updateInterval == interval ||
+                sourceChanged ||
+                updateInterval <= clock().difference(lastCheck));
         if (force || due) {
           RemoteProfileSource? source;
           if (managed) {

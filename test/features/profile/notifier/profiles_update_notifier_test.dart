@@ -289,6 +289,15 @@ void main() {
     expect(notifications.shown, 0);
   });
 
+  test('каждый плановый цикл проверяет подписку даже если предыдущая загрузка заняла время', () async {
+    await updater.updateProfiles(scheduled: true);
+    now = now.add(const Duration(seconds: 8));
+    repository.nextConfig = 'changed after previous slow download';
+    await updater.updateProfiles(scheduled: true);
+    expect(parser.checks, 2);
+    expect(repository.config, 'changed after previous slow download');
+  });
+
   test('изменение срока подписки обновляет профиль, рост трафика не перезапускает ядро', () async {
     parser.headers = {'subscription-userinfo': 'upload=1; download=2; total=0; expire=2000000000'};
     await updater.updateProfiles();
