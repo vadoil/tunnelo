@@ -90,8 +90,8 @@ COMPONENT Runtime RENAME hiddify-core.dll)
 install(FILES "../hiddify-core/bin/libcronet.dll" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
 COMPONENT Runtime RENAME libcronet.dll)
 
-install(FILES "../hiddify-core/bin/HiddifyCli.exe" DESTINATION "${CMAKE_INSTALL_PREFIX}"
-COMPONENT Runtime RENAME HiddifyCli.exe)
+# Tunnelo loads hiddify-core.dll directly. The retired CLI is not part of
+# current core archives and is not used by the Windows application.
 
 
 if(PLUGIN_BUNDLED_LIBRARIES)
