@@ -9,10 +9,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.os.PowerManager
+import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -33,6 +35,8 @@ import com.hiddify.core.mobile.Mobile
 
 import com.hiddify.core.api.v2.hcore.ChangeHiddifySettingsRequest
 import com.hiddify.core.api.v2.hcore.CoreClient
+import com.hiddify.core.api.v2.hcore.StartRequest
+import com.hiddify.core.api.v2.hcore.MessageType
 import com.hiddify.hiddify.utils.GrpcClientProvider
 import com.hiddify.core.libbox.CommandServer
 import com.hiddify.core.libbox.CommandServerHandler
@@ -50,6 +54,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.TimeUnit
+import org.json.JSONObject
 
 class BoxService(
         private val service: Service,
@@ -58,6 +64,7 @@ class BoxService(
 
     companion object {
         private const val TAG = "A/BoxService"
+        private const val EXTRA_START_CORE = "tunnelo.start_core"
 
         private var initializeOnce = false
         private lateinit var workingDir: File
@@ -92,10 +99,11 @@ class BoxService(
             return
         }
 
-        fun start() {
+        fun start(startCore: Boolean = false) {
             val intent = runBlocking {
                 withContext(Dispatchers.IO) {
                     Intent(Application.application, Settings.serviceClass())
+                        .putExtra(EXTRA_START_CORE, startCore)
                 }
             }
             ContextCompat.startForegroundService(Application.application, intent)
@@ -122,6 +130,39 @@ class BoxService(
 //    private var boxService: BoxService? = null
     private var commandServer: CommandServer? = null
     private var receiverRegistered = false
+    private val healthMonitor = TunnelHealthMonitor(
+        proxyPort = {
+            runCatching { JSONObject(Settings.coreOptionsJson).optInt("mixed-port", 12334) }
+                .getOrDefault(12334)
+        },
+        wanted = { Settings.startedByUser && status.value == Status.Started },
+        network = {
+            Application.connectivity.allNetworks.firstOrNull { candidate ->
+                val caps = Application.connectivity.getNetworkCapabilities(candidate)
+                caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    !caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+            }
+        },
+        elapsedMillis = SystemClock::elapsedRealtime,
+        recover = {
+            if (Settings.startedByUser && status.value == Status.Started && Settings.activeConfigPath.isNotBlank()) {
+                val call = GrpcClientProvider.grpcClient.create(CoreClient::class).Restart()
+                call.timeout.timeout(15, TimeUnit.SECONDS)
+                val response = call.executeBlocking(StartRequest(
+                        config_path = Settings.activeConfigPath,
+                        config_name = Settings.activeProfileName,
+                        disable_memory_limit = Settings.disableMemoryLimit,
+                        delay_start = true,
+                    ))
+                if (response.message_type != MessageType.EMPTY) {
+                    Log.w(TAG, "VPN recovery refused: ${response.message_type}")
+                }
+            }
+        },
+        log = { message, error ->
+            if (error == null) Log.i(TAG, message) else Log.w(TAG, message, error)
+        },
+    )
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
@@ -171,7 +212,7 @@ class BoxService(
             DefaultNetworkMonitor.start()
             Libbox.setMemoryLimit(!Settings.disableMemoryLimit)
             val newService = try {
-                Mobile.setup(
+                CoreSetup.background(
                     SetupOptions().also {
                         it.basePath = Settings.baseDir
                         it.workingDir = Settings.workingDir
@@ -238,6 +279,7 @@ class BoxService(
             // Будильник-сторож: переживает смерть процесса и поднимает туннель,
             // если систему прижало и она убила приложение целиком.
             WatchdogReceiver.schedule(service as android.content.Context)
+            healthMonitor.start()
         } catch (e: Exception) {
             stopAndAlert(Alert.StartService, e.message)
             return
@@ -251,6 +293,7 @@ class BoxService(
     }
 
     suspend fun serviceReload0() {
+        healthMonitor.stop()
         notification.close()
         status.postValue(Status.Starting)
 
@@ -300,6 +343,7 @@ class BoxService(
     }
 
     private fun stopService() {
+        healthMonitor.stop()
         if (status.value == Status.Stopped) return
         status.value = Status.Stopping
         if (receiverRegistered) {
@@ -345,6 +389,7 @@ class BoxService(
             }
             withContext(Dispatchers.Main) {
                 Mobile.close(4L)
+                CoreSetup.clear(platformInterface)
                 status.value = Status.Stopped
                 service.stopSelf()
             }
@@ -353,6 +398,7 @@ class BoxService(
     }
 
     private suspend fun stopAndAlert(type: Alert, message: String? = null) {
+        healthMonitor.stop()
         // Намерение не снимаем: ядро упало не потому, что человек этого хотел.
         // Снимает его только кнопка (stopService), а подняться заново —
         // задача сторожа в приложении и перезагрузки телефона.
@@ -380,10 +426,14 @@ class BoxService(
         // ядро запустить некому — обычно это делает приложение через gRPC.
         // Поэтому просим сервис поднять ядро самостоятельно, как после
         // перезагрузки телефона.
-        if (intent == null) {
+        if (status.value != Status.Stopped) return Service.START_STICKY
+        if (intent == null && !Settings.startedByUser) {
+            service.stopSelf()
+            return Service.START_NOT_STICKY
+        }
+        if (intent == null || intent.getBooleanExtra(EXTRA_START_CORE, false)) {
             Settings.startCoreAfterStartingService = true
         }
-        if (status.value != Status.Stopped) return Service.START_STICKY
         status.value = Status.Starting
 
         if (!receiverRegistered) {
@@ -415,6 +465,8 @@ class BoxService(
     }
 
     fun onDestroy() {
+        healthMonitor.stop()
+        CoreSetup.clear(platformInterface)
         binder.close()
     }
 

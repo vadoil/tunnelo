@@ -260,9 +260,7 @@ class HiddifyCoreService with InfraLogger {
         if (res.messageType != MessageType.EMPTY) return left("${res.messageType} ${res.message}");
       } on GrpcError catch (e) {
         loggy.error("failed to restart bg core: $e");
-        if (e.code == StatusCode.unknown && !(e.message?.contains("HTTP/2 error") ?? false)) {
-          return left("${e.message}");
-        }
+        return left(e.message ?? e.toString());
       }
 
       return right(unit);
@@ -586,6 +584,11 @@ class HiddifyCoreService with InfraLogger {
   }
 
   Future<void> closeFront() async {
+    // Android uses one Go instance for the UI and the VPN service.
+    // Recreating the UI channel can reset the shared platform context.
+    // Keep it alive while Android owns the process; CoreSetup retains the
+    // VPN bridge when the UI starts after the background service.
+    if (PlatformUtils.isAndroid) return;
     if (!core.isInitialized()) {
       return;
     }

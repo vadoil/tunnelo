@@ -906,6 +906,8 @@ class H(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header("Content-Type", headers.get("Content-Type", "text/plain; charset=utf-8"))
+        self.send_header("Cache-Control", "no-store, max-age=0")
+        self.send_header("Pragma", "no-cache")
         for h in SUB_PASS_HEADERS:
             if headers.get(h) is not None:
                 self.send_header(h, headers[h])

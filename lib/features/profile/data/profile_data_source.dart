@@ -16,6 +16,11 @@ abstract interface class ProfileDataSource {
   Stream<List<ProfileEntry>> watchAll({required ProfilesSort sort, required SortMode sortMode});
   Future<void> insert(ProfileEntriesCompanion entry);
   Future<void> edit(String id, ProfileEntriesCompanion entry);
+  Future<bool> editIfUnchanged(
+    ProfileEntry expected,
+    ProfileEntriesCompanion entry,
+    Future<void> Function() commitConfig,
+  );
   Future<void> deleteById(String id, bool isActive);
 }
 
@@ -33,7 +38,7 @@ class ProfileDao extends DatabaseAccessor<Db> with _$ProfileDaoMixin, InfraLogge
   @override
   Future<ProfileEntry?> getByUrl(String url) async {
     return await (select(profileEntries)
-          ..where((tbl) => tbl.url.like('%$url%'))
+          ..where((tbl) => tbl.url.equals(url))
           ..limit(1))
         .getSingleOrNull();
   }
@@ -127,4 +132,18 @@ class ProfileDao extends DatabaseAccessor<Db> with _$ProfileDaoMixin, InfraLogge
       }
     });
   }
+
+  @override
+  Future<bool> editIfUnchanged(
+    ProfileEntry expected,
+    ProfileEntriesCompanion entry,
+    Future<void> Function() commitConfig,
+  ) => transaction(() async {
+    final current = await getById(expected.id);
+    // Switching the active profile is allowed; editing or deleting it is not.
+    if (current == null || current != expected.copyWith(active: current.active)) return false;
+    await commitConfig();
+    await (update(profileEntries)..where((tbl) => tbl.id.equals(expected.id))).write(entry);
+    return true;
+  });
 }

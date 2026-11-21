@@ -37,8 +37,7 @@ class WatchdogReceiver : BroadcastReceiver() {
             return
         }
         try {
-            Settings.startCoreAfterStartingService = true
-            BoxService.start()
+            BoxService.start(startCore = true)
             Log.d(TAG, "поднимаю туннель по будильнику")
         } catch (e: Exception) {
             // Чаще всего это ForegroundServiceStartNotAllowedException: система

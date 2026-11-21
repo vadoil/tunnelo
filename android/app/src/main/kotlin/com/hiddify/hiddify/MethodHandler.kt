@@ -3,6 +3,7 @@ package com.hiddify.hiddify
 import android.net.VpnService
 import android.util.Log
 import com.hiddify.hiddify.bg.BoxService
+import com.hiddify.hiddify.bg.CoreSetup
 //import com.hiddify.hiddify.bg.BoxService.Companion.workingDir
 import com.hiddify.hiddify.constant.Status
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -96,7 +97,7 @@ class MethodHandler(private val scope: CoroutineScope) : FlutterPlugin,
                         val grpcPort = args["grpcPort"] as Int
                         Log.d("debugmode","${Settings.debugMode}")
                         runCatching {
-                            Mobile.setup(
+                            CoreSetup.foreground(
                                 SetupOptions().also {
                                     it.basePath = Settings.baseDir
                                     it.workingDir = Settings.workingDir
@@ -106,7 +107,7 @@ class MethodHandler(private val scope: CoroutineScope) : FlutterPlugin,
                                     it.listen= "127.0.0.1:" + grpcPort
                                     it.secret=""
                                     it.debug = Settings.debugMode
-                                },null)
+                                })
 
 //                            Libbox.setup(Settings.baseDir, Settings.workingDir, Settings.tempDir, false)
                             Libbox.redirectStderr(File(Settings.workingDir, "stderr2.log").path)
