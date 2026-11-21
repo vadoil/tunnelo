@@ -5,15 +5,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/notification/in_app_notification_controller.dart';
+import 'package:hiddify/core/preferences/preferences_provider.dart';
 import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/profile/data/profile_data_providers.dart';
+import 'package:hiddify/features/profile/data/profile_parser.dart';
 import 'package:hiddify/features/profile/data/profile_repository.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/model/profile_failure.dart';
 import 'package:hiddify/features/profile/model/profile_sort_enum.dart';
+import 'package:hiddify/features/profile/model/remote_profile_source.dart';
 import 'package:hiddify/features/profile/notifier/profiles_update_notifier.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 
 class _Updater extends ForegroundProfilesUpdateNotifier {
@@ -22,11 +26,35 @@ class _Updater extends ForegroundProfilesUpdateNotifier {
 }
 
 class _Notifications extends InAppNotificationController {
+  int shown = 0;
   @override
-  ToastificationItem? showErrorToast(String message) => null;
+  ToastificationItem? showErrorToast(String message) {
+    shown++;
+    return null;
+  }
 
   @override
-  ToastificationItem? showSuccessToast(String message) => null;
+  ToastificationItem? showSuccessToast(String message) {
+    shown++;
+    return null;
+  }
+}
+
+class _Parser implements ProfileParser {
+  _Parser(this.repository);
+  final _Repository repository;
+  int checks = 0;
+  bool fail = false;
+  Map<String, dynamic> headers = {};
+  @override
+  TaskEither<ProfileFailure, RemoteProfileSource> fetchRemoteSource(String url, {CancelToken? cancelToken}) =>
+      TaskEither(() async {
+        checks++;
+        if (fail) return left(const ProfileFailure.unexpected());
+        return right(RemoteProfileSource(content: repository.nextConfig, headers: Map.of(headers)));
+      });
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _Connection extends ConnectionNotifier {
@@ -44,6 +72,7 @@ class _Repository implements ProfileRepository {
 
   List<ProfileEntity> profiles;
   final requested = <String>[];
+  final appliedSources = <RemoteProfileSource?>[];
   String config = 'old servers';
   String nextConfig = 'old servers';
   bool fail = false;
@@ -64,21 +93,30 @@ class _Repository implements ProfileRepository {
   TaskEither<ProfileFailure, String> getRawConfig(String id) => TaskEither.right(config);
 
   @override
-  TaskEither<ProfileFailure, Unit> upsertRemote(String url, {UserOverride? userOverride, CancelToken? cancelToken}) =>
-      TaskEither(() async {
-        requested.add(url);
-        await pending?.future;
-        if (fail) return left(const ProfileFailure.unexpected());
-        config = nextConfig;
-        profiles = [
-          for (final p in profiles)
-            if (p is RemoteProfileEntity && p.url == url)
-              p.copyWith(lastUpdate: DateTime.now(), active: !switchProfile && p.active)
-            else
-              p,
-        ];
-        return right(unit);
-      });
+  TaskEither<ProfileFailure, ProfileEntity?> getById(String id) =>
+      TaskEither.right(profiles.where((p) => p.id == id).firstOrNull);
+
+  @override
+  TaskEither<ProfileFailure, Unit> upsertRemote(
+    String url, {
+    UserOverride? userOverride,
+    CancelToken? cancelToken,
+    RemoteProfileSource? source,
+  }) => TaskEither(() async {
+    requested.add(url);
+    appliedSources.add(source);
+    await pending?.future;
+    if (fail) return left(const ProfileFailure.unexpected());
+    config = source?.content ?? nextConfig;
+    profiles = [
+      for (final p in profiles)
+        if (p is RemoteProfileEntity && p.url == url)
+          p.copyWith(lastUpdate: DateTime.now(), active: !switchProfile && p.active)
+        else
+          p,
+    ];
+    return right(unit);
+  });
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -105,26 +143,34 @@ void main() {
   late _Connection connection;
   late ProviderContainer container;
   late ForegroundProfilesUpdateNotifier updater;
+  late _Parser parser;
+  late _Notifications notifications;
+  late DateTime now;
 
   setUp(() async {
     repository = _Repository([_profile()]);
     connection = _Connection();
+    parser = _Parser(repository);
+    notifications = _Notifications();
+    now = DateTime.now();
     container = ProviderContainer(
       overrides: [
         foregroundProfilesUpdateNotifierProvider.overrideWith(_Updater.new),
         profileRepositoryProvider.overrideWith((ref) => repository),
+        profileParserProvider.overrideWith((ref) => parser),
         translationsProvider.overrideWith((ref) => TranslationsEn()),
-        inAppNotificationControllerProvider.overrideWithValue(_Notifications()),
+        inAppNotificationControllerProvider.overrideWithValue(notifications),
         connectionNotifierProvider.overrideWith(() => connection),
       ],
     );
     await container.read(translationsProvider.future);
     updater = container.read(foregroundProfilesUpdateNotifierProvider.notifier);
+    updater.clock = () => now;
   });
 
   tearDown(() => container.dispose());
 
-  test('обновляет старую подписку Tunnelo без интервала, затем ждёт 15 минут', () async {
+  test('обновляет старую подписку Tunnelo без интервала, затем ждёт 10 секунд', () async {
     await updater.updateProfiles();
     await updater.updateProfiles();
     expect(repository.requested, ['https://api.amnez.online/sub/test']);
@@ -138,10 +184,10 @@ void main() {
     expect(repository.requested, hasLength(2));
   });
 
-  test('для Tunnelo проверяет серверы через 15 минут даже с редким интервалом панели', () async {
+  test('для Tunnelo проверяет серверы через 10 секунд даже с редким интервалом панели', () async {
     repository.profiles = [
       _profile(
-        age: const Duration(minutes: 16),
+        age: const Duration(seconds: 11),
         options: const ProfileOptions(updateInterval: Duration(days: 1)),
       ),
     ];
@@ -214,5 +260,88 @@ void main() {
     repository.switchProfile = true;
     await updater.updateProfiles();
     expect(connection.reconnected, isEmpty);
+  });
+
+  test('видит изменение через 10 секунд после успешного обновления', () async {
+    repository.profiles = [_profile(active: true)];
+    await updater.updateProfiles();
+    now = now.add(const Duration(seconds: 11));
+    repository.nextConfig = 'new address and servers';
+    await updater.updateProfiles();
+    expect(parser.checks, 2);
+    expect(repository.config, 'new address and servers');
+    expect(connection.reconnected, hasLength(1));
+    expect(repository.appliedSources.last?.content, 'new address and servers');
+  });
+
+  test('не пересобирает и не перезапускает неизменившуюся подписку при частых проверках', () async {
+    repository.profiles = [_profile(active: true)];
+    await updater.updateProfiles();
+    for (var i = 0; i < 3; i++) {
+      now = now.add(const Duration(seconds: 11));
+      await updater.updateProfiles();
+    }
+    expect(parser.checks, 4);
+    expect(repository.requested, hasLength(1));
+    expect(connection.reconnected, isEmpty);
+    expect(notifications.shown, 0);
+  });
+
+  test('изменение срока подписки обновляет профиль, рост трафика не перезапускает ядро', () async {
+    parser.headers = {'subscription-userinfo': 'upload=1; download=2; total=0; expire=2000000000'};
+    await updater.updateProfiles();
+    now = now.add(const Duration(seconds: 11));
+    parser.headers = {'subscription-userinfo': 'upload=3; download=4; total=0; expire=2000000000'};
+    await updater.updateProfiles();
+    expect(repository.requested, hasLength(1));
+    now = now.add(const Duration(seconds: 11));
+    parser.headers = {'subscription-userinfo': 'upload=3; download=4; total=0; expire=2100000000'};
+    await updater.updateProfiles();
+    expect(repository.requested, hasLength(2));
+  });
+
+  test('ошибка проверки сохраняет рабочий список и повторяется в следующем цикле', () async {
+    await updater.updateProfiles();
+    now = now.add(const Duration(seconds: 11));
+    parser.fail = true;
+    repository.nextConfig = 'new servers';
+    await updater.updateProfiles();
+    expect(repository.config, 'old servers');
+    parser.fail = false;
+    await updater.updateProfiles();
+    expect(repository.config, 'new servers');
+    expect(notifications.shown, 0);
+  });
+
+  test('останавливает частые запросы в фоне', () async {
+    updater.suspend();
+    await updater.updateProfiles();
+    expect(parser.checks, 0);
+    expect(repository.requested, isEmpty);
+  });
+
+  test('настоящий планировщик проверяет при запуске и сразу после возврата из фона', () async {
+    SharedPreferences.setMockInitialValues({'intro_completed': true});
+    repository.profiles = [_profile(age: Duration.zero)];
+    final live = ProviderContainer(
+      overrides: [
+        profileRepositoryProvider.overrideWith((ref) => repository),
+        profileParserProvider.overrideWith((ref) => parser),
+        inAppNotificationControllerProvider.overrideWithValue(notifications),
+      ],
+    );
+    addTearDown(live.dispose);
+    await live.read(sharedPreferencesProvider.future);
+    final worker = live.read(foregroundProfilesUpdateNotifierProvider.notifier);
+    await live.read(foregroundProfilesUpdateNotifierProvider.future);
+    await Future<void>.delayed(Duration.zero);
+    expect(parser.checks, 1);
+    worker.suspend();
+    repository.nextConfig = 'changed while backgrounded';
+    await worker.updateProfiles();
+    expect(parser.checks, 1);
+    await worker.refresh();
+    expect(parser.checks, 2);
+    expect(repository.config, 'changed while backgrounded');
   });
 }

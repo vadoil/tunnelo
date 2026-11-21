@@ -1,12 +1,98 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hiddify/core/http_client/dio_http_client.dart';
+import 'package:hiddify/core/http_client/http_client_provider.dart';
+import 'package:hiddify/core/preferences/preferences_provider.dart';
+import 'package:hiddify/features/profile/data/profile_data_providers.dart';
 import 'package:hiddify/features/profile/data/profile_parser.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+
+class _SourceClient implements DioHttpClient {
+  int requests = 0;
+  bool? usedDirect;
+  String content = 'hysteria2://test@server.example:443?sni=server.example#New';
+  @override
+  Future<Response<T>> get<T>(
+    String url, {
+    CancelToken? cancelToken,
+    String? userAgent,
+    ({String username, String password})? credentials,
+    bool proxyOnly = false,
+    bool directOnly = false,
+  }) async {
+    requests++;
+    usedDirect = directOnly;
+    return Response<T>(
+      requestOptions: RequestOptions(path: url),
+      statusCode: 200,
+      data: content as T,
+      headers: Headers.fromMap({
+        'profile-title': ['New servers'],
+        'profile-update-interval': ['1'],
+      }),
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw StateError('Unexpected second network request');
+}
 
 void main() {
   const validBaseUrl = "https://example.com/configurations/user1/filename.yaml";
   const validExtendedUrl = "https://example.com/configurations/user1/filename.yaml?test#b";
   const validSupportUrl = "https://example.com/support";
+
+  test('применяет полученную подписку с заголовками без повторной загрузки', () async {
+    SharedPreferences.setMockInitialValues({});
+    final client = _SourceClient();
+    final container = ProviderContainer(overrides: [httpClientProvider.overrideWith((ref) => client)]);
+    addTearDown(container.dispose);
+    await container.read(sharedPreferencesProvider.future);
+    final parser = container.read(profileParserProvider);
+    final source = (await parser.fetchRemoteSource('https://api.amnez.online/sub/test').run()).getOrElse(
+      (e) => throw e,
+    );
+    final temp = await Directory.systemTemp.createTemp('tunnelo-subscription-test-');
+    addTearDown(() => temp.delete(recursive: true));
+    final path = '${temp.path}/profile';
+    final result = await parser
+        .updateRemote(
+          rp: RemoteProfileEntity(
+            id: 'id',
+            active: true,
+            name: 'Old',
+            url: 'https://api.amnez.online/sub/test',
+            lastUpdate: DateTime(2020),
+          ),
+          tempFilePath: path,
+          source: source,
+        )
+        .run();
+    final entry = result.getOrElse((e) => throw e);
+    expect(client.requests, 1);
+    expect(client.usedDirect, isTrue);
+    expect(await File(path).readAsString(), source.content);
+    expect(entry.name.value, 'New servers');
+    expect(entry.updateInterval.value, const Duration(hours: 1));
+  });
+
+  test('пустой ответ сервера не принимается как новая подписка', () async {
+    SharedPreferences.setMockInitialValues({});
+    final client = _SourceClient()..content = '';
+    final container = ProviderContainer(overrides: [httpClientProvider.overrideWith((ref) => client)]);
+    addTearDown(container.dispose);
+    await container.read(sharedPreferencesProvider.future);
+    final result = await container
+        .read(profileParserProvider)
+        .fetchRemoteSource('https://api.amnez.online/sub/test')
+        .run();
+    expect(result.isLeft(), isTrue);
+  });
 
   group('адрес загрузки подписки', () {
     test('исправляет сохранённые адреса Tunnelo, которые теперь отвечают 404', () {

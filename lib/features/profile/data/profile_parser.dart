@@ -9,6 +9,7 @@ import 'package:hiddify/core/http_client/dio_http_client.dart';
 import 'package:hiddify/features/profile/data/profile_data_mapper.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/model/profile_failure.dart';
+import 'package:hiddify/features/profile/model/remote_profile_source.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/singbox/model/singbox_proxy_type.dart';
 import 'package:hiddify/utils/utils.dart';
@@ -70,6 +71,30 @@ class ProfileParser {
     return value;
   }
 
+  TaskEither<ProfileFailure, RemoteProfileSource> fetchRemoteSource(String url, {CancelToken? cancelToken}) =>
+      TaskEither.tryCatch(() async {
+        final response = await _httpClient.get<String>(
+          subscriptionDownloadUrl(url),
+          cancelToken: cancelToken,
+          directOnly: true,
+          userAgent: _ref.read(ConfigOptions.useXrayCoreWhenPossible)
+              ? _httpClient.userAgent.replaceAll("HiddifyNext", "HiddifyNextX")
+              : null,
+        );
+        final content = response.data;
+        if (response.statusCode != 200 || content == null || content.trim().isEmpty) {
+          throw const ProfileFailure.invalidConfig('Subscription is empty or unavailable');
+        }
+        return RemoteProfileSource(
+          content: content,
+          headers: {
+            for (final key in allowedProfileHeaders)
+              if (response.headers.map[key] case final List<String> values when values.isNotEmpty)
+                key: values.length == 1 ? values.first : values,
+          },
+        );
+      }, (error, stack) => error is ProfileFailure ? error : ProfileFailure.unexpected(error, stack));
+
   TaskEither<ProfileFailure, ProfileEntriesCompanion> addLocal({
     required String id,
     required String content,
@@ -108,7 +133,8 @@ class ProfileParser {
     required String tempFilePath,
     required UserOverride? userOverride,
     CancelToken? cancelToken,
-  }) => _downloadProfile(url, tempFilePath, cancelToken).flatMap(
+    RemoteProfileSource? source,
+  }) => _downloadProfile(url, tempFilePath, cancelToken, source: source).flatMap(
     (remoteHeaders) =>
         TaskEither.fromEither(
           populateHeaders(content: File(tempFilePath).readAsStringSync(), remoteHeaders: remoteHeaders),
@@ -134,7 +160,8 @@ class ProfileParser {
     required RemoteProfileEntity rp,
     required String tempFilePath,
     CancelToken? cancelToken,
-  }) => _downloadProfile(rp.url, tempFilePath, cancelToken).flatMap(
+    RemoteProfileSource? source,
+  }) => _downloadProfile(rp.url, tempFilePath, cancelToken, source: source).flatMap(
     (remoteHeaders) =>
         TaskEither.fromEither(
           populateHeaders(content: File(tempFilePath).readAsStringSync(), remoteHeaders: remoteHeaders),
@@ -161,37 +188,45 @@ class ProfileParser {
   TaskEither<ProfileFailure, Map<String, dynamic>> _downloadProfile(
     String url,
     String tempFilePath,
-    CancelToken? cancelToken,
-  ) => TaskEither.tryCatch(() async {
+    CancelToken? cancelToken, {
+    RemoteProfileSource? source,
+  }) => TaskEither.tryCatch(() async {
     // if (url.startsWith("http://"))
     //   throw const ProfileFailure.invalidUrl('HTTP is not supported. Please use HTTPS for secure connection.');
 
-    final rs = await _httpClient
-        .download(
-          subscriptionDownloadUrl(url),
-          tempFilePath,
-          cancelToken: cancelToken,
-          userAgent: _ref.read(ConfigOptions.useXrayCoreWhenPossible)
-              ? _httpClient.userAgent.replaceAll("HiddifyNext", "HiddifyNextX")
-              : null,
-        )
-        .catchError((err) {
-          if (CancelToken.isCancel(err as DioException)) {
-            throw const ProfileFailure.cancelByUser('HTTP request for getting profile content canceled by user.');
-          }
-          throw err;
-        });
+    Map<String, dynamic> remoteHeaders;
+    if (source != null) {
+      if (cancelToken?.isCancelled ?? false) throw const ProfileFailure.cancelByUser();
+      await File(tempFilePath).writeAsString(source.content);
+      remoteHeaders = source.headers;
+    } else {
+      final rs = await _httpClient
+          .download(
+            subscriptionDownloadUrl(url),
+            tempFilePath,
+            cancelToken: cancelToken,
+            userAgent: _ref.read(ConfigOptions.useXrayCoreWhenPossible)
+                ? _httpClient.userAgent.replaceAll("HiddifyNext", "HiddifyNextX")
+                : null,
+          )
+          .catchError((err) {
+            if (CancelToken.isCancel(err as DioException)) {
+              throw const ProfileFailure.cancelByUser('HTTP request for getting profile content canceled by user.');
+            }
+            throw err;
+          });
+      remoteHeaders = rs.headers.map.map((key, value) {
+        if (value.length == 1) return MapEntry(key, value.first);
+        return MapEntry(key, value);
+      });
+    }
     await expandRemoteLinesInParallel(
       tempFilePath: tempFilePath,
       httpClient: _httpClient,
       cancelToken: cancelToken ?? CancelToken(),
       ref: _ref,
     );
-    // fixing headers before return
-    return rs.headers.map.map((key, value) {
-      if (value.length == 1) return MapEntry(key, value.first);
-      return MapEntry(key, value);
-    });
+    return remoteHeaders;
   }, (err, st) => err is ProfileFailure ? err : ProfileFailure.unexpected(err, st));
   Future<void> expandRemoteLinesInParallel({
     required String tempFilePath,

@@ -98,8 +98,11 @@ class DioHttpClient with InfraLogger {
     String? userAgent,
     ({String username, String password})? credentials,
     bool proxyOnly = false,
+    bool directOnly = false,
   }) async {
-    final mode = proxyOnly
+    final mode = directOnly
+        ? "direct"
+        : proxyOnly
         ? "proxy"
         : await isPortOpen("127.0.0.1", port)
         ? "both"

@@ -39,6 +39,7 @@ class App extends HookConsumerWidget with WidgetsBindingObserver, PresLogger {
 
   void onPause(WidgetRef ref) {
     if (PlatformUtils.isDesktop) return;
+    ref.read(foregroundProfilesUpdateNotifierProvider.notifier).suspend();
     isOnPauseCalled = true;
     ref.read(hiddifyCoreServiceProvider).closeFront();
   }

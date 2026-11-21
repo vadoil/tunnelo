@@ -12,6 +12,7 @@ import 'package:hiddify/features/profile/data/profile_path_resolver.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/model/profile_failure.dart';
 import 'package:hiddify/features/profile/model/profile_sort_enum.dart';
+import 'package:hiddify/features/profile/model/remote_profile_source.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/hiddifycore/hiddify_core_service.dart';
 import 'package:hiddify/utils/custom_loggers.dart';
@@ -28,7 +29,12 @@ abstract interface class ProfileRepository {
     ProfilesSort sort = ProfilesSort.lastUpdate,
     SortMode sortMode = SortMode.ascending,
   });
-  TaskEither<ProfileFailure, Unit> upsertRemote(String url, {UserOverride? userOverride, CancelToken? cancelToken});
+  TaskEither<ProfileFailure, Unit> upsertRemote(
+    String url, {
+    UserOverride? userOverride,
+    CancelToken? cancelToken,
+    RemoteProfileSource? source,
+  });
   TaskEither<ProfileFailure, Unit> addLocal(String content, {UserOverride? userOverride});
   TaskEither<ProfileFailure, Unit> offlineUpdate(ProfileEntity nProfile, String nContent);
   TaskEither<ProfileFailure, Unit> validateConfig(String path, String tempPath, String? profileOverride, bool debug);
@@ -124,7 +130,12 @@ class ProfileRepositoryImpl with ExceptionHandler, InfraLogger implements Profil
   }
 
   @override
-  TaskEither<ProfileFailure, Unit> upsertRemote(String url, {UserOverride? userOverride, CancelToken? cancelToken}) =>
+  TaskEither<ProfileFailure, Unit> upsertRemote(
+    String url, {
+    UserOverride? userOverride,
+    CancelToken? cancelToken,
+    RemoteProfileSource? source,
+  }) =>
       TaskEither.tryCatch(
         () async => await _profileDataSource.getByUrl(url).then((profEntry) => profEntry?.toEntity()),
         ProfileFailure.unexpected,
@@ -140,7 +151,7 @@ class ProfileRepositoryImpl with ExceptionHandler, InfraLogger implements Profil
               profEntity = profEntity.copyWith(userOverride: userOverride);
             }
             return _profileParser
-                .updateRemote(rp: profEntity, tempFilePath: tempFile.path, cancelToken: cancelToken)
+                .updateRemote(rp: profEntity, tempFilePath: tempFile.path, cancelToken: cancelToken, source: source)
                 .flatMap(
                   (profEntity) =>
                       validateConfig(file.path, tempFile.path, profEntity.profileOverride.value, false).flatMap(
@@ -159,6 +170,7 @@ class ProfileRepositoryImpl with ExceptionHandler, InfraLogger implements Profil
                   tempFilePath: tempFile.path,
                   userOverride: userOverride,
                   cancelToken: cancelToken,
+                  source: source,
                 )
                 .flatMap(
                   (profEntity) =>
